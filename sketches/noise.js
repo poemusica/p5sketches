@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CURL NOISE LOGIC
-sketch = function (s) {
+var sketch = function (s) {
     var
         title = 'perlin',
         winW, winH,
