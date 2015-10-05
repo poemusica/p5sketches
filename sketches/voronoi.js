@@ -3,7 +3,8 @@
 var sketch = function (p) {
     var sites = [],
         parabolaPts = [],
-        sweep;
+        sweep,
+        looping = true;
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
@@ -58,6 +59,11 @@ var sketch = function (p) {
         // p.resizeCanvas(p.windowWidth, p.windowHeight);
     }
 
+    p.mouseClicked = function() {
+        if (looping) { p.noLoop(); looping = false; }
+        else { p.loop(); looping = true; }
+    }
+
     function midpt(site) {
         var diff = (sweep - site.y)/2;
         p.point(site.x, sweep - diff);
@@ -66,10 +72,13 @@ var sketch = function (p) {
     function parabola(site) {
         var x = 0;
         while (x < p.width) {
-            var y = (p.sq(x - site.x) + p.sq(site.y) - p.sq(sweep)) / (2 * (site.y - sweep)) ;
+            var y = (p.sq(x - site.x) + p.sq(site.y) - p.sq(sweep)) / (2 * (site.y - sweep)),
+                vertex = p.createVector(x, y);
             p.curveVertex(x, y);
             x += 5;
-            parabolaPts.push(p.createVector(x, y));
+            // read only!
+            vertex.site = site;
+            parabolaPts.push(vertex);
         }
     }
 
@@ -85,7 +94,7 @@ var sketch = function (p) {
                     if (point.y > maxY) { maxY = point.y; }
                 }
             }
-            if (match == true) { p.curveVertex(x - 5, maxY) };
+            if (match == true) { p.curveVertex(x, maxY) };
             x += 1;
         }
     }
