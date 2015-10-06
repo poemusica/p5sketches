@@ -3,6 +3,9 @@
 var sketch = function (p) {
     var sites = [],
         parabolaPts = [],
+        beachPts = [],
+        vertices = [],
+        arcPairs = {},
         sweep,
         looping = true;
 
@@ -18,8 +21,13 @@ var sketch = function (p) {
     p.draw = function () {
         p.background(0);
         parabolaPts = [];
+        beachPts = [];
         for(var i = 0; i < sites.length; i++) {
             var site = sites[i];
+            // site event
+            if (site.y == sweep) {
+
+            }
             if (site.y < sweep) {
                 // site-to-sweep line
                 p.stroke(175);
@@ -35,7 +43,7 @@ var sketch = function (p) {
                 // midpoint from site to sweep
                 p.stroke(0, 255, 255);
                 p.strokeWeight(8);
-                midpt(site);
+                p.point(site.x, sweep - (sweep - site.y)/2);
             }
             // site
             p.stroke(255);
@@ -43,16 +51,31 @@ var sketch = function (p) {
             p.point(site.x, site.y);
         }
         // beach line
-        p.strokeWeight(1);
         p.stroke(255, 255, 0);
+        p.strokeWeight(1);
         p.beginShape();
         beachLine();
         p.endShape();
+        // vertices
+        findVertexes();
+        p.strokeWeight(8);
+        p.stroke(0, 255, 0);
+        for (var key in arcPairs) {
+            if (arcPairs.hasOwnProperty(key)) {
+                var value = arcPairs[key];
+                p.point(value.start.x, value.start.y);
+                if (value.end) {
+                    p.point(value.end.x, value.end.y);
+                    p.line(value.start.x, value.start.y, value.end.x, value.end.y);
+                }
+            }
+        }
         // sweep line
         p.stroke(255);
         p.strokeWeight(5);
         p.line(0, sweep, p.width, sweep);
-        if (sweep < p.height) { sweep++; }
+        if (sweep < p.height + 1000) { sweep++; }
+        else { p.noLoop(); }
     }
 
     p.windowResized = function () {
@@ -62,11 +85,6 @@ var sketch = function (p) {
     p.mouseClicked = function() {
         if (looping) { p.noLoop(); looping = false; }
         else { p.loop(); looping = true; }
-    }
-
-    function midpt(site) {
-        var diff = (sweep - site.y)/2;
-        p.point(site.x, sweep - diff);
     }
 
     function parabola(site) {
@@ -85,19 +103,71 @@ var sketch = function (p) {
     function beachLine() {
         var x = 0;
         while (x < p.width) {
-            var maxY = 0,
-                match = false;
+            var maxY = -1,
+                match = false,
+                winner = p.createVector(x, -1);
             for (var i = 0; i < parabolaPts.length; i++) {
                 var point = parabolaPts[i];
                 if (point.x == x) {
                     match = true;
-                    if (point.y > maxY) { maxY = point.y; }
+                    if (point.y > maxY) {
+                        maxY = point.y;
+                        winner = point;
+                    }
                 }
             }
-            if (match == true) { p.curveVertex(x, maxY) };
+            if (match == true) {
+                p.curveVertex(winner.x, winner.y);
+                beachPts.push(winner);
+            };
             x += 1;
         }
     }
+
+    function findVertexes() {
+        if (beachPts.length > 2) {
+            for (var i = 0; i < beachPts.length - 2; i++) {
+                var left = beachPts[i],
+                    mid = beachPts[i + 1],
+                    right = beachPts[i + 2];
+                if (left.site && mid.site && !mid.site.equals(left.site) && !arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
+                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y] = {start: left, end: null};
+                }
+                else if (left.site && mid.site && !mid.site.equals(left.site) && arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
+                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y].end = mid;
+                }
+                if (left.site && mid.site && right.site && !mid.site.equals(left.site) && !mid.site.equals(right.site)) {
+                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y].end = left;
+                }
+            }
+            var left = beachPts[beachPts.length - 2],
+                mid = beachPts[beachPts.length - 1];
+            if (left.site && mid.site && !mid.site.equals(left.site) && !arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
+                arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y] = {start: left, end: null};
+            }
+        }
+    }
+
+    // function edgePt() {
+    //     if (beachPts.length > 1) {
+    //         for (var i = 0; i < beachPts.length - 1; i++) {
+    //             var a = beachPts[i],
+    //                 b = beachPts[i + 1];
+    //             if (a.site && b.site && !a.site.equals(b.site)) {
+    //                 var c = p5.Vector.lerp(a, b, 0.5),
+    //                     m = p5.Vector.lerp(a.site, b.site, 0.5),
+    //                     // slope of edge
+    //                     slope = -1/((a.site.y - b.site.y) / (a.site.x - b.site.x)),
+    //                     // y intercept of edge
+    //                     b = m.y - (slope * m.x),
+    //                     // x intercept of edge
+    //                     intercept = p.createVector(-b / slope, 0);
+    //                 // edges.push(c);
+    //             }
+    //         }
+    //     }
+    // }
+
 }
 
 // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
