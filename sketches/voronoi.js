@@ -130,20 +130,32 @@ var sketch = function (p) {
                 var left = beachPts[i],
                     mid = beachPts[i + 1],
                     right = beachPts[i + 2];
-                if (left.site && mid.site && !mid.site.equals(left.site) && !arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
-                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y] = {start: left, end: null};
-                }
-                else if (left.site && mid.site && !mid.site.equals(left.site) && arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
-                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y].end = mid;
-                }
-                if (left.site && mid.site && right.site && !mid.site.equals(left.site) && !mid.site.equals(right.site)) {
-                    arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y].end = left;
+                if (left.site && mid.site) {
+                    var key1 = 'p' + left.site.x + left.site.y + mid.site.x + mid.site.y,
+                        key2 = 'p' + mid.site.x + mid.site.y + left.site.x + left.site.y;
+                    if (!mid.site.equals(left.site) && !arcPairs.hasOwnProperty(key1) && !arcPairs.hasOwnProperty(key2)) {
+                        arcPairs[key1] = {start: left, end: null};
+                    } else if (!mid.site.equals(left.site)) {
+                        if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = mid; }
+                        else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = mid; }
+                    }
+                    if (right.site && !mid.site.equals(left.site) && !mid.site.equals(right.site)) {
+                        if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = left; }
+                        else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = left; }
+                    }
                 }
             }
             var left = beachPts[beachPts.length - 2],
                 mid = beachPts[beachPts.length - 1];
-            if (left.site && mid.site && !mid.site.equals(left.site) && !arcPairs.hasOwnProperty('p' + left.site.x + left.site.y + mid.site.x + mid.site.y)) {
-                arcPairs['p' + left.site.x + left.site.y + mid.site.x + mid.site.y] = {start: left, end: null};
+            if (left.site && mid.site) {
+                var key1 = 'p' + left.site.x + left.site.y + mid.site.x + mid.site.y,
+                    key2 = 'p' + mid.site.x + mid.site.y + left.site.x + left.site.y;
+                if (!mid.site.equals(left.site) && !arcPairs.hasOwnProperty(key1) && !arcPairs.hasOwnProperty(key2)) {
+                    arcPairs[key1] = {start: left, end: null};
+                } else if (!mid.site.equals(left.site)) {
+                    if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = mid; }
+                    else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = mid; }
+                }
             }
         }
     }
