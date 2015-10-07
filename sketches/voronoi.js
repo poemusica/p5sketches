@@ -46,7 +46,7 @@ var sketch = function (p) {
                 p.point(site.x, sweep - (sweep - site.y)/2);
             }
             // site
-            p.stroke(255);
+            p.stroke(255, 0, 255);
             p.strokeWeight(8);
             p.point(site.x, site.y);
         }
