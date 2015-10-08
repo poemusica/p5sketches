@@ -1,5 +1,6 @@
 // Fortune's algorithm for constructing voronoi diagram.
 // http://www.ams.org/samplings/feature-column/fcarc-voronoi
+// http://www.skynet.ie/~sos/mapviewer/docs/Voronoi_Diagram_Notes_1.pdf
 var sketch = function (p) {
     var sites = [],
         parabolaPts = [],
