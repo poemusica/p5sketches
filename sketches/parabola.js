@@ -1,16 +1,19 @@
 // References
 //  *   Directrix-focus equation for parabola:
 //      http://hotmath.com/hotmath_help/topics/finding-the-equation-of-a-parabola-given-focus-and-directrix.html
+//  *   Intersection of two parabolas
+//      http://zonalandeducation.com/mmts/intersections/intersectionOfTwoParabollas1/intersectionOfTwoParabolas1.htm
 
 var sketch = function (p) {
     var foci = [],
         directrix,
-        dragged = false;
+        mouseStart,
+        mouseEnd;
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         directrix = 0;
-    }
+    };
 
     p.draw = function () {
         p.background(0);
@@ -33,24 +36,24 @@ var sketch = function (p) {
                 x += 5;
             }
             p.endShape();
-            // Draw intersections of parabolas.
+            // Check for intersections with other parabolas.
             if (foci.length > 1) {
-                // standard form variables.
+                // Standard form variables.
                 var fdenom = 2 * (focus.y - directrix),
                     fa = 1 / fdenom,
                     fb = -(2 * focus.x) / fdenom,
                     fc = p.sq(focus.x)/fdenom + p.sq(focus.y)/fdenom - p.sq(directrix)/fdenom;
-                // Remove current focus from list.
+                // Remove current parabola's focus from others.
                 others.splice(0, 1);
-                // Check for intersections with other parabolas.
+                // Check current parabola against each remaining parabola in others.
                 for (var j = 0; j < others.length; j++) {
                     var gfocus = others[j],
-                        // other parabola's standard form variables.
+                        // Other parabola's standard form variables.
                         gdenom = 2 * (gfocus.y - directrix),
                         ga = 1 / gdenom,
                         gb = -(2 * gfocus.x) / gdenom,
                         gc = p.sq(gfocus.x)/gdenom + p.sq(gfocus.y)/gdenom - p.sq(directrix)/gdenom,
-                        // variables for quadradic formula
+                        // Variables for quadradic formula.
                         a = fa - ga,
                         b = fb - gb,
                         c = fc - gc,
@@ -63,12 +66,14 @@ var sketch = function (p) {
                     if (discriminant === 0) {
                         var x1 = -b / (2 * fa),
                             y1 = a * p.sq(x1) + fb * x1 + fc;
+                        // Draw intersection point.
                         p.point(x1, y1);
                     } else if (discriminant > 0) {
                         var x1 = (-b + p.sqrt(discriminant)) / (2 * a),
                             x2 = (-b - p.sqrt(discriminant)) / (2 * a),
                             y1 = fa * p.sq(x1) + fb * x1 + fc,
                             y2 = fa * p.sq(x2) + fb * x2 + fc;
+                        // Draw intersection points.
                         p.point(x1, y1);
                         p.point(x2, y2);
                     }
@@ -92,23 +97,25 @@ var sketch = function (p) {
         p.stroke(255);
         p.strokeWeight(1);
         p.line(0, directrix, p.width, directrix);
-    }
+    };
 
-    p.mouseDragged = function() {
-        directrix = p.mouseY;
-        dragged = true;
-        // prevent default
-        return false;
-    }
-
-    p.mouseClicked = function() {
-        if (!dragged) {
+    // Workaround for p5 mouseDragged bug.
+    p.mousePressed = function() {
+        mouseStart = p.createVector(p.mouseX, p.mouseY);
+    };
+    p.mouseReleased = function() {
+        mouseEnd = p.createVector(p.mouseX, p.mouseY);
+        if (mouseStart.equals(mouseEnd)) {
             foci.push(p.createVector(p.mouseX, p.mouseY));
         }
-        dragged = false;
-        // prevent default
-        return false;
-    }
+    };
+
+    // p5 bug: This function triggers even if the mouse was only clicked and not dragged.
+    p.mouseDragged = function() {
+        if (p.mouseX != p.pmouseX && p.mouseY != p.pmouseY) {
+            directrix = p.mouseY;
+        }
+    };
 
 }
 
