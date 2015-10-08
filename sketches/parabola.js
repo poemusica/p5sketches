@@ -12,7 +12,7 @@ var sketch = function (p) {
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
-        directrix = 0;
+        directrix = p.height/2;
     };
 
     p.draw = function () {
