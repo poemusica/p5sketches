@@ -1,107 +1,137 @@
-// Fortune's algorithm for constructing voronoi diagram.
-// http://www.ams.org/samplings/feature-column/fcarc-voronoi
-// http://www.skynet.ie/~sos/mapviewer/docs/Voronoi_Diagram_Notes_1.pdf
+// References
+// *    Fortune's algorithm for constructing voronoi diagram.
+//      *   http://www.ams.org/samplings/feature-column/fcarc-voronoi
+//      *   http://www.skynet.ie/~sos/mapviewer/docs/Voronoi_Diagram_Notes_1.pdf
+//      *   http://www.cs.sfu.ca/~binay/813.2011/Fortune.pdf
+//      *   http://nms.lcs.mit.edu/~aklmiu/6.838/L7.pdf
+
 var sketch = function (p) {
-    var sites = [],
+    var foci = [],
+        directrix,
+        sites = [],
+        // For visualizing beach line only.
         parabolaPts = [],
-        beachPts = [],
-        vertices = [],
-        arcPairs = {},
-        sweep,
+        // For playing/pausing animation.
         looping = true;
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         for (var i = 0; i < 10; i++) {
-            var site = p.createVector(Math.floor(Math.random() * p.width), Math.floor(Math.random() * p.height));
-            sites.push(site);
+            foci.push(p.createVector(Math.floor(Math.random()* p.width), Math.floor(Math.random() * p.height)));
         }
-        sweep = 0;
-    }
+        // Sort foci by y value low to high.
+        foci.sort(function(a, b) { return a.y - b.y });
+        directrix = 0;
+        eventQueue = foci.slice();
+    };
 
     p.draw = function () {
         p.background(0);
         parabolaPts = [];
-        beachPts = [];
-        for(var i = 0; i < sites.length; i++) {
-            var site = sites[i];
-            // site event
-            if (site.y == sweep) {
-
+        // Add or remove sites. Draw foci.
+        for (var i = 0; i < foci.length; i++) {
+            var focus = foci[i];
+            // Site event.
+            // Add focus to list of sites.
+            if (focus.y == directrix) {
+                sites.push(focus);
             }
-            if (site.y < sweep) {
-                // site-to-sweep line
-                p.stroke(175);
-                p.strokeWeight(1);
-                p.line(site.x, site.y, site.x, sweep);
-                // parabola
-                p.stroke(255, 0, 0);
-                p.strokeWeight(2);
-                p.noFill();
-                p.beginShape();
-                parabola(site);
-                p.endShape();
-                // midpoint from site to sweep
-                p.stroke(0, 255, 255);
-                p.strokeWeight(8);
-                p.point(site.x, sweep - (sweep - site.y)/2);
-            }
-            // site
+            //TODO: Remove sites.
+            // Draw focus-vertex line.
+            vertex = p.createVector(focus.x, directrix - (directrix - focus.y)/2);
             p.stroke(255, 0, 255);
-            p.strokeWeight(8);
-            p.point(site.x, site.y);
+            p.strokeWeight(1);
+            p.line(focus.x, focus.y, vertex.x, vertex.y);
+            // Draw vertex.
+            p.stroke(255, 0, 255);
+            p.strokeWeight(5);
+            p.point(vertex.x, vertex.y);
+            // Draw focus.
+            p.stroke(0, 255, 0);
+            p.strokeWeight(5);
+            p.point(focus.x, focus.y);
         }
-        // beach line
-        p.stroke(255, 255, 0);
-        p.strokeWeight(1);
-        p.beginShape();
-        beachLine();
-        p.endShape();
-        // vertices
-        findVertexes();
-        p.strokeWeight(8);
-        p.stroke(0, 255, 0);
-        for (var key in arcPairs) {
-            if (arcPairs.hasOwnProperty(key)) {
-                var value = arcPairs[key];
-                p.point(value.start.x, value.start.y);
-                if (value.end) {
-                    p.point(value.end.x, value.end.y);
-                    p.line(value.start.x, value.start.y, value.end.x, value.end.y);
+        // Draw parabolas and intersections for sites.
+        var others = sites.slice();
+        for (var i = 0; i < sites.length; i++) {
+            var vertex,
+                focus = sites[i],
+                x = 0;
+            // Draw parabola.
+            p.noFill();
+            p.stroke(255, 0, 255);
+            p.strokeWeight(2);
+            p.beginShape();
+            while (x < p.width) {
+                var y = (p.sq(x - focus.x) + p.sq(focus.y) - p.sq(directrix)) / (2 * (focus.y - directrix));
+                // Draw parabola point sample.
+                p.curveVertex(x, y);
+                parabolaPts.push(p.createVector(x, y));
+                // Sample in increments of 5px.
+                x += 5;
+            }
+            p.endShape();
+            // Check for intersections with other parabolas.
+            if (sites.length > 1) {
+                // Standard form variables.
+                var fdenom = 2 * (focus.y - directrix),
+                    fa = 1 / fdenom,
+                    fb = -(2 * focus.x) / fdenom,
+                    fc = p.sq(focus.x)/fdenom + p.sq(focus.y)/fdenom - p.sq(directrix)/fdenom;
+                // Remove current parabola's focus from others.
+                others.splice(0, 1);
+                // Check current parabola against each remaining parabola in others.
+                for (var j = 0; j < others.length; j++) {
+                    var gfocus = others[j],
+                        // Other parabola's standard form variables.
+                        gdenom = 2 * (gfocus.y - directrix),
+                        ga = 1 / gdenom,
+                        gb = -(2 * gfocus.x) / gdenom,
+                        gc = p.sq(gfocus.x)/gdenom + p.sq(gfocus.y)/gdenom - p.sq(directrix)/gdenom,
+                        // Variables for quadradic formula.
+                        a = fa - ga,
+                        b = fb - gb,
+                        c = fc - gc,
+                        discriminant = p.sq(b) - 4 * a * c;
+                    // If discriminant is zero, there is one intersection.
+                    // If discriminant is positive, there are two intersections.
+                    // If discriminant is negative, there are no intersections.
+                    p.stroke(255, 255, 0);
+                    p.strokeWeight(8);
+                    if (discriminant === 0) {
+                        var x1 = -b / (2 * fa),
+                            y1 = a * p.sq(x1) + fb * x1 + fc;
+                        // Draw intersection point.
+                        p.point(x1, y1);
+                    } else if (discriminant > 0) {
+                        var x1 = (-b + p.sqrt(discriminant)) / (2 * a),
+                            x2 = (-b - p.sqrt(discriminant)) / (2 * a),
+                            y1 = fa * p.sq(x1) + fb * x1 + fc,
+                            y2 = fa * p.sq(x2) + fb * x2 + fc;
+                        // Draw intersection points.
+                        p.point(x1, y1);
+                        p.point(x2, y2);
+                    }
                 }
             }
         }
-        // sweep line
+        // Draw beach line. (Visual aid only.)
+        beachLine();
+        // Draw directrix.
         p.stroke(255);
-        p.strokeWeight(5);
-        p.line(0, sweep, p.width, sweep);
-        if (sweep < p.height + 1000) { sweep++; }
-        else { p.noLoop(); }
-    }
-
-    p.windowResized = function () {
-        // p.resizeCanvas(p.windowWidth, p.windowHeight);
-    }
-
-    p.mouseClicked = function() {
-        if (looping) { p.noLoop(); looping = false; }
-        else { p.loop(); looping = true; }
-    }
-
-    function parabola(site) {
-        var x = 0;
-        while (x < p.width) {
-            var y = (p.sq(x - site.x) + p.sq(site.y) - p.sq(sweep)) / (2 * (site.y - sweep)),
-                vertex = p.createVector(x, y);
-            p.curveVertex(x, y);
-            x += 5;
-            // read only!
-            vertex.site = site;
-            parabolaPts.push(vertex);
+        p.strokeWeight(1);
+        p.line(0, directrix, p.width, directrix);
+        // Increment directrix.
+        // For visualization: Normally directrix can snap to next focus.
+        if (directrix < p.height) {
+            directrix++;
         }
-    }
+    };
 
     function beachLine() {
+        p.stroke(0, 255, 255);
+        p.strokeWeight(1);
+        p.beginShape();
         var x = 0;
         while (x < p.width) {
             var maxY = -1,
@@ -119,67 +149,16 @@ var sketch = function (p) {
             }
             if (match == true) {
                 p.curveVertex(winner.x, winner.y);
-                beachPts.push(winner);
             };
             x += 1;
         }
+        p.endShape();
     }
 
-    function findVertexes() {
-        if (beachPts.length > 2) {
-            for (var i = 0; i < beachPts.length - 2; i++) {
-                var left = beachPts[i],
-                    mid = beachPts[i + 1],
-                    right = beachPts[i + 2];
-                if (left.site && mid.site) {
-                    var key1 = 'p' + left.site.x + left.site.y + mid.site.x + mid.site.y,
-                        key2 = 'p' + mid.site.x + mid.site.y + left.site.x + left.site.y;
-                    if (!mid.site.equals(left.site) && !arcPairs.hasOwnProperty(key1) && !arcPairs.hasOwnProperty(key2)) {
-                        arcPairs[key1] = {start: left, end: null};
-                    } else if (!mid.site.equals(left.site)) {
-                        if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = mid; }
-                        else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = mid; }
-                    }
-                    if (right.site && !mid.site.equals(left.site) && !mid.site.equals(right.site)) {
-                        if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = left; }
-                        else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = left; }
-                    }
-                }
-            }
-            var left = beachPts[beachPts.length - 2],
-                mid = beachPts[beachPts.length - 1];
-            if (left.site && mid.site) {
-                var key1 = 'p' + left.site.x + left.site.y + mid.site.x + mid.site.y,
-                    key2 = 'p' + mid.site.x + mid.site.y + left.site.x + left.site.y;
-                if (!mid.site.equals(left.site) && !arcPairs.hasOwnProperty(key1) && !arcPairs.hasOwnProperty(key2)) {
-                    arcPairs[key1] = {start: left, end: null};
-                } else if (!mid.site.equals(left.site)) {
-                    if (arcPairs.hasOwnProperty(key1)) { arcPairs[key1].end = mid; }
-                    else if (arcPairs.hasOwnProperty(key2)) { arcPairs[key2].end = mid; }
-                }
-            }
-        }
-    }
-
-    // function edgePt() {
-    //     if (beachPts.length > 1) {
-    //         for (var i = 0; i < beachPts.length - 1; i++) {
-    //             var a = beachPts[i],
-    //                 b = beachPts[i + 1];
-    //             if (a.site && b.site && !a.site.equals(b.site)) {
-    //                 var c = p5.Vector.lerp(a, b, 0.5),
-    //                     m = p5.Vector.lerp(a.site, b.site, 0.5),
-    //                     // slope of edge
-    //                     slope = -1/((a.site.y - b.site.y) / (a.site.x - b.site.x)),
-    //                     // y intercept of edge
-    //                     b = m.y - (slope * m.x),
-    //                     // x intercept of edge
-    //                     intercept = p.createVector(-b / slope, 0);
-    //                 // edges.push(c);
-    //             }
-    //         }
-    //     }
-    // }
+    p.mouseClicked = function() {
+        if (looping) { p.noLoop(); looping = false; }
+        else { p.loop(); looping = true; }
+    };
 
 }
 
