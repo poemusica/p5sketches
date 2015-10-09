@@ -22,7 +22,6 @@ var sketch = function (p) {
         // Sort foci by y value low to high.
         foci.sort(function(a, b) { return a.y - b.y });
         directrix = 0;
-        eventQueue = foci.slice();
     };
 
     p.draw = function () {
