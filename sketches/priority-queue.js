@@ -1,38 +1,39 @@
-
 // Priority queue as a binary (min) heap.
 // Resources:
 //  *   http://eloquentjavascript.net/1st_edition/appendix2.html
 
 var sketch = function (p) {
     var heap,
-        frames;
+        prev = "";
 
     p.setup = function () {
         var scoreFunction = function(a) { return a; }
         p.createCanvas(p.windowWidth, p.windowHeight);
-        p.rectMode(p.CENTER);
         heap = binaryHeap(scoreFunction);
         frames = [];
     };
 
     p.draw = function () {
         p.background(0);
+        p.textSize(14);
+        p.textFont("Helvetica");
+        p.stroke(255);
         p.fill(255);
-        p.rect(p.width/2, p.height/2, 50, 50);
+        p.text('current', p.width/4, p.height/4 - 14, p.textWidth('current'), 14);
+        p.text(heap.content, p.width/4, p.height/4, 70, 80);
+        p.text('previous', p.width/4, p.height/4 - (14*5), p.textWidth('previous'), 14);
+        p.text(prev, p.width/4, p.height/4 - (14*4), p.textWidth(prev), 14);
     };
 
     p.keyTyped = function() {
         if (p.key === '+') {
             var value = Math.floor(Math.random() * 100 + 1);
+            prev = heap.content.slice();
             console.log('push ' + value);
-            console.log(heap.content);
             heap.push(value);
-            console.log(heap.content);
         } else if (p.key === '-') {
-            console.log('pop');
-            console.log(heap.content);
+            prev = heap.content.slice();
             heap.pop();
-            console.log(heap.content);
         }
         return false;
     };
@@ -121,7 +122,7 @@ var sketch = function (p) {
                             child2Score = this.scoreFxn(child2),
                             // (Note on ternary operator syntax:
                             // condition ? result if condition true : result if condition false.)
-                            score = (swap = null ? elemScore : child1Score);
+                            score = (swap == null ? elemScore : child1Score);
                         if (child2Score < score) { swap = child2index; }
                     }
                     // If no swap needed, stop.
