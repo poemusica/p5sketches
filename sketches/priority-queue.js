@@ -19,10 +19,12 @@ var sketch = function (p) {
         p.textFont("Helvetica");
         p.stroke(255);
         p.fill(255);
-        p.text('current', p.width/4, p.height/4 - 14, p.textWidth('current'), 14);
+        var message = 'Push to heap with + key. Pop from heap with - key.';
+        p.text('current', p.width/4, p.height/4 - 14, p.textWidth('current') * 2, 14);
         p.text(heap.content, p.width/4, p.height/4, 70, 80);
-        p.text('previous', p.width/4, p.height/4 - (14*5), p.textWidth('previous'), 14);
-        p.text(prev, p.width/4, p.height/4 - (14*4), p.textWidth(prev), 14);
+        p.text('previous', p.width/4, p.height/4 - (14*5), p.textWidth('previous') * 2, 14);
+        p.text(prev, p.width/4, p.height/4 - (14*4), p.textWidth(prev) * 2, 14);
+        p.text(message, p.width/4, p.height/4 - (14*8), p.textWidth(message) * 2, 14);
     };
 
     p.keyTyped = function() {
