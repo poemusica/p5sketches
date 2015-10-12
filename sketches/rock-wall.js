@@ -5,7 +5,7 @@ var sketch = function (p) {
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         makeWall();
-    }
+    };
 
     p.draw = function () {
         p.background(0);
@@ -25,11 +25,11 @@ var sketch = function (p) {
             prev = v;
         }
         p.line(prev.x, prev.y, 0, p.windowHeight + 100);
-    }
+    };
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
-    }
+    };
 
     function makeWall() {
         var offset = 100,

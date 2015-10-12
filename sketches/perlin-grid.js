@@ -28,7 +28,7 @@ var sketch = function (s) {
 
         // 233,220,228
         // 219,203,225
-    }
+    };
 
     s.draw = function () {
         // s.background(255);
@@ -43,12 +43,12 @@ var sketch = function (s) {
                 s.pop();
            }
         }
-    }
+    };
 
     s.windowResized = function () {
         s.resizeCanvas(window.innerWidth, window.innerHeight);
         init_dimensions();
-    }
+    };
 
     s.keyPressed = function() {
         if (s.keyCode === s.ENTER) {
@@ -62,7 +62,7 @@ var sketch = function (s) {
             color_index -= 1;
             if (color_index < 0) { color_index = color_pairs.length - 1; }
         }
-    }
+    };
 
     function init_dimensions() {
         rows = s.floor(window.innerHeight/resolution);

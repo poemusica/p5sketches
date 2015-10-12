@@ -52,7 +52,7 @@ var sketch = function (p) {
         console.log(headIdx)
         head = physics.particles[Math.floor(headIdx)];
         head.lock();
-    }
+    };
 
     p.draw = function () {
         p.background(0);
@@ -63,11 +63,11 @@ var sketch = function (p) {
             vs = physics.springs[i];
             p.line(vs.a.x, vs.a.y, vs.b.x, vs.b.y);
         }
-    }
+    };
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
-    }
+    };
 }
 
 // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.

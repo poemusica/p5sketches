@@ -24,19 +24,19 @@ var sketch = function (s) {
         }
         body = document.getElementsByTagName('body')[0];
         apiSrc = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColors';
-    }
+    };
     ////////////////////////////////////////////////////////////////////////////
     // Draws.
     s.draw = function () {
         s.background(config.bg);
         nsys.run();
-    }
+    };
     ////////////////////////////////////////////////////////////////////////////
     // Window resizing logic
     s.windowResized = function () {
         s.resizeCanvas(s.windowWidth, s.windowHeight);
         nsys.update();
-    }
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     // Defines node.
@@ -123,7 +123,7 @@ var sketch = function (s) {
     // User input logic
     s.mouseClicked = function() {
         getColors();
-    }
+    };
     ////////////////////////////////////////////////////////////////////////////
     // Retrieves data from colourlovers API.
     function getColors() {
