@@ -3,13 +3,13 @@
 //  *   http://eloquentjavascript.net/1st_edition/appendix2.html
 
 var sketch = function (p) {
-    var heap,
+    var priorityQueue,
         prev = "";
 
     p.setup = function () {
         var scoreFunction = function(a) { return a; }
         p.createCanvas(p.windowWidth, p.windowHeight);
-        heap = binaryHeap(scoreFunction);
+        priorityQueue = binaryHeap(scoreFunction);
         frames = [];
     };
 
@@ -19,9 +19,9 @@ var sketch = function (p) {
         p.textFont("Helvetica");
         p.stroke(255);
         p.fill(255);
-        var message = 'Push to heap with + key. Pop from heap with - key.';
+        var message = 'Push to queue with + key. Pop from queue with - key.';
         p.text('current', p.width/4, p.height/4 - 14, p.textWidth('current') * 2, 14);
-        p.text(heap.content, p.width/4, p.height/4, 70, 80);
+        p.text(priorityQueue.content, p.width/4, p.height/4, 70, 80);
         p.text('previous', p.width/4, p.height/4 - (14*5), p.textWidth('previous') * 2, 14);
         p.text(prev, p.width/4, p.height/4 - (14*4), p.textWidth(prev) * 2, 14);
         p.text(message, p.width/4, p.height/4 - (14*8), p.textWidth(message) * 2, 14);
@@ -30,12 +30,12 @@ var sketch = function (p) {
     p.keyTyped = function() {
         if (p.key === '+') {
             var value = Math.floor(Math.random() * 100 + 1);
-            prev = heap.content.slice();
+            prev = priorityQueue.content.slice();
             console.log('push ' + value);
-            heap.push(value);
+            priorityQueue.push(value);
         } else if (p.key === '-') {
-            prev = heap.content.slice();
-            heap.pop();
+            prev = priorityQueue.content.slice();
+            priorityQueue.pop();
         }
         return false;
     };
