@@ -3,14 +3,16 @@
 var sketch = function (s) {
     var
         title = "constellations",
-        nsys,
+        locations = [],
+        velocities = [],
+        colors = [],
         body,
         apiCall,
         apiSrc,
         config = {
             bg: s.color(255),
             colors: [s.color(0)],
-            maxNodes: 150,
+            maxPoints: 150,
             minDist: 75
         };
     ////////////////////////////////////////////////////////////////////////////
@@ -18,9 +20,10 @@ var sketch = function (s) {
     s.setup = function () {
         s.createCanvas(s.windowWidth, s.windowHeight);
         s.frameRate(60);
-        nsys = nodeSys();
-        for (var i = 0; i < s.constrain(Math.floor(s.max(s.windowWidth, s.windowHeight)/5), 0, config.maxNodes); i++) {
-            nsys.addNode();
+        for (var i = 0; i < s.constrain(Math.floor(s.max(s.windowWidth, s.windowHeight)/5), 0, config.maxPoints); i++) {
+            locations.push(s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight));
+            velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
+            colors.push(config.colors[0]);
         }
         body = document.getElementsByTagName('body')[0];
         apiSrc = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColors';
@@ -28,95 +31,66 @@ var sketch = function (s) {
     ////////////////////////////////////////////////////////////////////////////
     // Draws.
     s.draw = function () {
+        var others = locations.slice();
         s.background(config.bg);
-        nsys.run();
+        // Update and display points.
+        update();
+        // Display connections. O(n!)
+        // Loop through locations backwards.
+        for (var i = locations.length - 1; i > -1; i--) {
+            var n = locations[i];
+            // Remove n from choices.
+            others.pop();
+            // Match n with remaining choices.
+            for (var j = 0; j < others.length; j++) {
+                var m = others[j],
+                    d = p5.Vector.dist(n, m);
+                if (d < config.minDist) {
+                    var c = s.lerpColor(colors[i], colors[j], 0.5);
+                    s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(255, 0, d/config.minDist));
+                    s.line(n.x, n.y, m.x, m.y);
+                }
+            }
+        }
     };
     ////////////////////////////////////////////////////////////////////////////
     // Window resizing logic
     s.windowResized = function () {
         s.resizeCanvas(s.windowWidth, s.windowHeight);
-        nsys.update();
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Defines node.
-    function node (v) {
-        return {
-            loc: s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight),
-            vel: v.setMag(s.constrain(Math.random() * 4, 0.5, 4)),
-            fill: config.colors[0],
-            update: function () {
-                this.loc.add(this.vel);
-            },
-            wrap: function () {
-                if (this.loc.x > s.windowWidth) {
-                    this.loc.x = 0;
-                }
-                if (this.loc.x < 0) {
-                    this.loc.x = s.windowWidth;
-                }
-                if (this.loc.y > s.windowHeight) {
-                    this.loc.y = 0;
-                }
-                if (this.loc.y < 0) {
-                    this.loc.y = s.windowHeight;
-                }
-            },
-            display: function () {
-                s.push();
-                s.translate(this.loc.x, this.loc.y);
-                s.noStroke();
-                s.fill(this.fill);
-                s.ellipse(0, 0, 3, 3);
-                s.pop();
-            },
-            run: function () {
-                this.update();
-                this.wrap();
-                this.display();
+        var target = s.min(Math.floor(s.max(s.width, s.height)/5), config.maxPoints);
+        if (locations.length < target) {
+            while (locations.length < target) {
+                locations.push(s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight));
+                velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
+                colors.push(config.colors[Math.floor(Math.random() * config.colors.length)]);
+            }
+        } else if (locations.length > target) {
+            while (locations.length > target) {
+                locations.pop();
+                velocities.pop();
+                colors.pop();
             }
         }
-    }
+    };
     ////////////////////////////////////////////////////////////////////////////
-    // Defines node.
-    function nodeSys () {
-        return {
-            nodes: [],
-            addNode: function () {
-                this.nodes.push(node(p5.Vector.random2D()));
-            },
-            removeNode: function () {
-                this.nodes.pop();
-            },
-            update: function () {
-                var target = s.min(Math.floor(s.max(s.windowWidth, s.windowHeight)/5), config.maxNodes);
-                if (this.nodes.length < target) {
-                    while (this.nodes.length < target) { this.addNode(); }
-                } else if (this.nodes.length > target) {
-                    while (this.nodes.length > target) { this.removeNode(); }
-                }
-            },
-            run: function () {
-                // draw nodes
-                for (var i = 0; i < this.nodes.length; i++) {
-                    var n = this.nodes[i];
-                    n.run();
-                }
-                // draw connections
-                for (var i = 0; i < this.nodes.length; i++) {
-                    var n = this.nodes[i];
-                    for (var j = 0; j < this.nodes.length; j++) {
-                        var m = this.nodes[j];
-                        if (n != m) {
-                            var d = p5.Vector.dist(n.loc, m.loc);
-                            if (d < config.minDist) {
-                                s.stroke(s.red(n.fill), s.green(n.fill), s.blue(n.fill), s.lerp(255, 0, d/config.minDist));
-                                s.line(n.loc.x, n.loc.y, m.loc.x, m.loc.y);
-                            }
-                        }
-                    }
-                }
-            }
+    // Updates points.
+    function update() {
+        for (var i = 0; i < locations.length; i++) {
+            var loc = locations[i];
+            // Add velocity to location.
+            locations[i] = loc.add(velocities[i]);
+            // Screen wrap.
+            if (loc.x > s.windowWidth) { loc.x = 0; }
+            if (loc.x < 0) { loc.x = s.windowWidth; }
+            if (loc.y > s.windowHeight) { loc.y = 0; }
+            if (loc.y < 0) { loc.y = s.windowHeight; }
+            // Display.
+            s.push();
+            s.translate(loc.x, loc.y);
+            s.noStroke();
+            s.fill(colors[i]);
+            s.ellipse(0, 0, 3, 3);
+            s.pop();
         }
     }
     ////////////////////////////////////////////////////////////////////////////
@@ -139,7 +113,6 @@ var sketch = function (s) {
     ////////////////////////////////////////////////////////////////////////////
     // Callback function for colourlovers API call.
     function parseColors(json) {
-        console.log(json);
         if (json[0].colors.length > 2) {
             config.colors = [];
             config.bg = '#' + json[0].colors[0];
@@ -147,8 +120,8 @@ var sketch = function (s) {
                 config.colors.push(s.color('#' + json[0].colors[i]));
             }
         }
-        for (var i = 0; i < nsys.nodes.length; i++) {
-            nsys.nodes[i].fill = config.colors[Math.floor(Math.random() * config.colors.length)];
+        for (var i = 0; i < colors.length; i++) {
+            colors[i] = config.colors[Math.floor(Math.random() * config.colors.length)];
         }
     }
     ////////////////////////////////////////////////////////////////////////////
@@ -156,6 +129,5 @@ var sketch = function (s) {
     sketch.title = title;
     sketch.parseColors = parseColors;
 }
-
 // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
 var p5sketch = new p5(sketch, 'p5-sketch');
