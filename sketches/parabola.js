@@ -16,26 +16,18 @@ var sketch = function (p) {
     };
 
     p.draw = function () {
+        var others = foci.slice(),
+            vertex;
         p.background(0);
         // Draw foci and parabolas.
-        var others = foci.slice();
         for (var i = 0; i < foci.length; i++) {
             var vertex,
-                focus = foci[i],
-                x = 0;
+                focus = foci[i];
             // Draw parabola.
             p.noFill();
             p.stroke(255, 0, 255);
             p.strokeWeight(2);
-            p.beginShape();
-            while (x < p.width) {
-                var y = (p.sq(x - focus.x) + p.sq(focus.y) - p.sq(directrix)) / (2 * (focus.y - directrix));
-                // Draw parabola point sample.
-                p.curveVertex(x, y);
-                // Sample in increments of 5px.
-                x += 5;
-            }
-            p.endShape();
+            drawArc(focus);
             // Check for intersections with other parabolas.
             if (foci.length > 1) {
                 // Standard form variables.
@@ -97,7 +89,31 @@ var sketch = function (p) {
         p.stroke(255);
         p.strokeWeight(1);
         p.line(0, directrix, p.width, directrix);
+        // Draw hypothetical parabola based on mouse position.
+        p.stroke(0, 255, 255, 150);
+        p.strokeWeight(5);
+        p.point(p.mouseX, p.mouseY);
+        p.strokeWeight(1);
+        vertex = p.createVector(p.mouseX, directrix - (directrix - p.mouseY)/2);
+        p.line(p.mouseX, p.mouseY, vertex.x, vertex.y);
+        p.strokeWeight(2);
+        p.noFill();
+        drawArc(p.createVector(p.mouseX, p.mouseY));
+
     };
+
+    function drawArc(focus) {
+        var x = 0;
+        p.beginShape();
+        while (x < p.width) {
+            var y = (p.sq(x - focus.x) + p.sq(focus.y) - p.sq(directrix)) / (2 * (focus.y - directrix));
+            // Draw parabola point sample.
+            p.curveVertex(x, y);
+            // Sample in increments of 5px.
+            x += 5;
+        }
+        p.endShape();
+    }
 
     // Workaround for p5 mouseDragged bug.
     p.mousePressed = function() {
