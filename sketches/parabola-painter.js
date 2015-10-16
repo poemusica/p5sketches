@@ -1,23 +1,24 @@
 // References
 //  *   Directrix-focus equation for parabola:
 //      http://hotmath.com/hotmath_help/topics/finding-the-equation-of-a-parabola-given-focus-and-directrix.html
-//  *   Intersection of two parabolas
-//      http://zonalandeducation.com/mmts/intersections/intersectionOfTwoParabollas1/intersectionOfTwoParabolas1.htm
-
 var sketch = function (p) {
     var foci = [],
         directrices = [],
         orientations = [],
+        colors = [],
         directrix,
         orientation = 'H',
         drawArcs = {},
         getVertex = {},
+        drawDirectrix = {},
         mouseStart,
         mouseEnd,
         drawArcHoriz,
         drawArcVert,
         getVertexHoriz,
-        getVertexVert;
+        getVertexVert,
+        drawDirectixHoriz,
+        drawDirectrixVert;
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
@@ -26,6 +27,8 @@ var sketch = function (p) {
         drawArcs['V'] = drawArcVert;
         getVertex['H'] = getVertexHoriz;
         getVertex['V'] = getVertexVert;
+        drawDirectrix['H'] = drawDirectixHoriz;
+        drawDirectrix['V'] = drawDirectrixVert;
     };
 
     p.draw = function () {
@@ -40,27 +43,27 @@ var sketch = function (p) {
                 orient = orientations[i];
             // Draw parabola.
             p.noFill();
-            p.stroke(255, 0, 255);
+            p.stroke(colors[i]);
             p.strokeWeight(2);
             drawArcs[orient](focus, direct);
             // Draw focus-vertex line.
             vertex = getVertex[orient](focus, direct);
-            p.stroke(255, 0, 255);
+            p.stroke(colors[i]);
             p.strokeWeight(1);
             p.line(focus.x, focus.y, vertex.x, vertex.y);
             // Draw vertex.
-            p.stroke(255, 0, 255);
+            p.stroke(colors[i]);
             p.strokeWeight(5);
             p.point(vertex.x, vertex.y);
             // Draw focus.
-            p.stroke(255, 0, 255);
+            p.stroke(colors[i]);
             p.strokeWeight(5);
             p.point(focus.x, focus.y);
         }
         // Draw directrix.
         p.stroke(255);
         p.strokeWeight(1);
-        p.line(0, directrix, p.width, directrix);
+        drawDirectrix[orientation]();
         // Draw hypothetical parabola based on mouse position.
         p.stroke(0, 255, 255, 150);
         p.strokeWeight(5);
@@ -85,7 +88,7 @@ var sketch = function (p) {
     drawArcHoriz = function(focus, direct) {
         var x = 0;
         p.beginShape();
-        while (x < p.width) {
+        while (x <= p.width) {
             var y = (p.sq(x - focus.x) + p.sq(focus.y) - p.sq(direct)) / (2 * (focus.y - direct));
             // Draw parabola point sample.
             p.curveVertex(x, y);
@@ -97,7 +100,7 @@ var sketch = function (p) {
     drawArcVert = function(focus, direct) {
         var y = 0;
         p.beginShape();
-        while (y < p.height) {
+        while (y <= p.height) {
             var x = (p.sq(y - focus.y) + p.sq(focus.x) - p.sq(direct)) / (2 * (focus.x - direct));
             // Draw parabola point sample.
             p.curveVertex(x, y);
@@ -128,7 +131,7 @@ var sketch = function (p) {
             foci.push(p.createVector(p.mouseX, p.mouseY));
             directrices.push(directrix);
             orientations.push(orientation.slice(0));
-            console.log(orientation);
+            colors.push(p.color(p.random(0, 255), p.random(0, 255), p.random(0, 255), 200));
         }
     };
 
@@ -136,14 +139,14 @@ var sketch = function (p) {
         if (p.keyCode == p.UP_ARROW) {
             if (orientation == 'H') { orientation = 'V'; }
             else { orientation = 'H'; }
-            console.log(orientation);
         }
     }
 
     // p5 bug: This function triggers even if the mouse was only clicked and not dragged.
     p.mouseDragged = function() {
         if (p.mouseX != p.pmouseX && p.mouseY != p.pmouseY) {
-            directrix = p.mouseY;
+            if (orientation == 'H') { directrix = p.mouseY; };
+            if (orientation == 'V') {directrix = p.mouseX; }
         }
     };
 
