@@ -8,24 +8,21 @@ var sketch = function (p) {
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.rectMode(p.CENTER);
-        for (var i = 0; i < 100; i++) {
+        p.colorMode(p.HSB, 360, 100, 100, 1);
+        // Populate points.
+        for (var i = 0; i < 50; i++) {
             points.push(p.createVector(p.random(0, p.width), p.random(0, p.height)));
         }
+        // Initialize and populate quadtree.
         root = quadtree(p.createVector(p.width/2, p.height/2));
-    };
-
-    p.draw = function () {
-        p.background(0);
         for (var i = 0; i < points.length; i++) {
             depth = 0;
             quadtreeInsert(points[i], root);
         }
-        p.stroke(255);
-        p.strokeWeight(3);
-        for (var i = 0; i < points.length; i++) {
-            p.point(points[i].x, points[i].y);
-        }
-        p.noLoop();
+    };
+
+    p.draw = function () {
+        quadtreeTraverse(root, 0);
     };
 
     p.windowResized = function () {
@@ -43,13 +40,44 @@ var sketch = function (p) {
         }
     }
 
+    function quadtreeTraverse(quad, deep) {
+        deep++;
+        // Base case 1: Quadtree has data.
+        if (quad.data instanceof p5.Vector) {
+            var c = p.color(p.map(p.noise(quad.data.x, quad.data.y, p.frameCount/250), 0, 1, 0, 360), 100, 100);
+            deep--;
+            p.stroke(0, 0, 100);
+            p.strokeWeight(1);
+            p.fill(c);
+            p.rect(quad.center.x, quad.center.y, 2 * (p.width/p.pow(2, deep + 1)), 2 * (p.height/p.pow(2, deep + 1)));
+            p.stroke(0);
+            p.strokeWeight(3);
+            // p.point(quad.data.x, quad.data.y);
+            return;
+        }
+        // Base case 2: Quadtree is empty.
+        if (quad.data === false) {
+            deep--;
+            return;
+        }
+        // Recursive case
+        quadtreeTraverse(quad.nw, deep);
+        quadtreeTraverse(quad.sw, deep);
+        quadtreeTraverse(quad.ne, deep);
+        quadtreeTraverse(quad.se, deep);
+    }
+
     function quadtreeInsert(point, quad) {
         depth++;
         // Case 1: Quadtree has no data (and therefore no children).
         if (quad.data === false) {
+            var c = p.color(p.map(p.noise(point.x, point.y, p.frameCount/250), 0, 1, 0, 360), 100, 100);
             // Store point in data slot.
             quad.data = point;
             depth--;
+            p.stroke(0, 0, 100);
+            p.fill(c);
+            p.rect(quad.center.x, quad.center.y, 2* p.width/p.pow(2, depth + 1), 2 * p.height/p.pow(2, depth + 1));
             return;
         }
         // Case 2: Quadtree has only data (and therefore no children).
@@ -74,14 +102,14 @@ var sketch = function (p) {
 
             // Draw quadrants
             p.noFill();
-            p.stroke(0, 255, 255);
+            p.stroke(0, 0, 100);
             p.strokeWeight(1);
             // NW
             p.rect(quad.center.x - x, quad.center.y - y, 2 * x, 2 * y);
             // SW
             p.rect(quad.center.x - x, quad.center.y + y, 2 * x, 2 * y);
             // NE
-           p.rect(quad.center.x + x, quad.center.y - y, 2 * x, 2 * y);
+            p.rect(quad.center.x + x, quad.center.y - y, 2 * x, 2 * y);
             // SE
             p.rect(quad.center.x + x, quad.center.y - y, 2 * x, 2 * y);
         }
