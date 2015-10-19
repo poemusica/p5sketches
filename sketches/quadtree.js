@@ -3,12 +3,15 @@ var sketch = function (p) {
         stack = [],
         root,
         center,
-        depth;
+        depth,
+        colors = [];
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.rectMode(p.CENTER);
         p.colorMode(p.HSB, 360, 100, 100, 1);
+        // Select random colors
+        getColors();
         // Populate points.
         for (var i = 0; i < 50; i++) {
             points.push(p.createVector(p.random(0, p.width), p.random(0, p.height)));
@@ -29,6 +32,12 @@ var sketch = function (p) {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
     };
 
+    function getColors() {
+        colors = [];
+        colors.push(p.createVector(p.random(0, 360), 100, 100, 1));
+        colors.push(p.createVector(p.random(0, 360), 100, 100, 1));
+    }
+
     function quadtree(loc) {
         return {
             data: false,
@@ -44,11 +53,12 @@ var sketch = function (p) {
         deep++;
         // Base case 1: Quadtree has data.
         if (quad.data instanceof p5.Vector) {
-            var c = p.color(p.map(p.noise(quad.data.x, quad.data.y, p.frameCount/250), 0, 1, 0, 360), 100, 100);
+            var amt = p.noise(quad.data.x, quad.data.y, p.frameCount/250),
+                c = p5.Vector.lerp(colors[0], colors[1], amt);
             deep--;
             p.stroke(0, 0, 100);
             p.strokeWeight(1);
-            p.fill(c);
+            p.fill(c.x, c.y, c.z);
             p.rect(quad.center.x, quad.center.y, 2 * (p.width/p.pow(2, deep + 1)), 2 * (p.height/p.pow(2, deep + 1)));
             p.stroke(0);
             p.strokeWeight(3);
@@ -71,13 +81,13 @@ var sketch = function (p) {
         depth++;
         // Case 1: Quadtree has no data (and therefore no children).
         if (quad.data === false) {
-            var c = p.color(p.map(p.noise(point.x, point.y, p.frameCount/250), 0, 1, 0, 360), 100, 100);
+            var n = p.round(p.random(0, 1));
             // Store point in data slot.
             quad.data = point;
             depth--;
             p.stroke(0, 0, 100);
-            p.fill(c);
-            p.rect(quad.center.x, quad.center.y, 2* p.width/p.pow(2, depth + 1), 2 * p.height/p.pow(2, depth + 1));
+            p.fill(colors[n].x, colors[n].y, colors[n].z);
+            p.rect(quad.center.x, quad.center.y, 2 * p.width/p.pow(2, depth + 1), 2 * p.height/p.pow(2, depth + 1));
             return;
         }
         // Case 2: Quadtree has only data (and therefore no children).
