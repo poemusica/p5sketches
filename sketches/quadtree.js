@@ -9,7 +9,6 @@ var sketch = function (p) {
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.rectMode(p.CENTER);
-        p.colorMode(p.HSB, 360, 100, 100, 1);
         // Select random colors
         getColors();
         // Populate points.
@@ -34,8 +33,8 @@ var sketch = function (p) {
 
     function getColors() {
         colors = [];
-        colors.push(p.createVector(p.random(0, 360), 100, 100, 1));
-        colors.push(p.createVector(p.random(0, 360), 100, 100, 1));
+        colors.push(p.createVector(p.random(0, 255), p.random(0, 255), p.random(0, 255)));
+        colors.push(p.createVector(p.random(0, 255), p.random(0, 255), p.random(0, 255)));
     }
 
     function quadtree(loc) {
@@ -53,10 +52,10 @@ var sketch = function (p) {
         deep++;
         // Base case 1: Quadtree has data.
         if (quad.data instanceof p5.Vector) {
-            var amt = p.noise(quad.data.x, quad.data.y, p.frameCount/250),
+            var amt = p.noise(quad.data.x, quad.data.y, p.frameCount/100),
                 c = p5.Vector.lerp(colors[0], colors[1], amt);
             deep--;
-            p.stroke(0, 0, 100);
+            p.stroke(255);
             p.strokeWeight(1);
             p.fill(c.x, c.y, c.z);
             p.rect(quad.center.x, quad.center.y, 2 * (p.width/p.pow(2, deep + 1)), 2 * (p.height/p.pow(2, deep + 1)));
@@ -85,7 +84,7 @@ var sketch = function (p) {
             // Store point in data slot.
             quad.data = point;
             depth--;
-            p.stroke(0, 0, 100);
+            p.stroke(255);
             p.fill(colors[n].x, colors[n].y, colors[n].z);
             p.rect(quad.center.x, quad.center.y, 2 * p.width/p.pow(2, depth + 1), 2 * p.height/p.pow(2, depth + 1));
             return;
@@ -112,7 +111,7 @@ var sketch = function (p) {
 
             // Draw quadrants
             p.noFill();
-            p.stroke(0, 0, 100);
+            p.stroke(255);
             p.strokeWeight(1);
             // NW
             p.rect(quad.center.x - x, quad.center.y - y, 2 * x, 2 * y);
