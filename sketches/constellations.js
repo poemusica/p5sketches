@@ -15,7 +15,7 @@ var sketch = function (s) {
             bg: s.color(255),
             colors: [s.color(0)],
             maxPoints: 250,
-            minDist: 75
+            minDist: 45
         };
     ////////////////////////////////////////////////////////////////////////////
     // Sets up sketch.
