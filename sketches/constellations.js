@@ -6,13 +6,15 @@ var sketch = function (s) {
         locations = [],
         velocities = [],
         colors = [],
+        cellSize = 30,
+        hashTable = {},
         body,
         apiCall,
         apiSrc,
         config = {
             bg: s.color(255),
             colors: [s.color(0)],
-            maxPoints: 150,
+            maxPoints: 250,
             minDist: 75
         };
     ////////////////////////////////////////////////////////////////////////////
@@ -25,6 +27,7 @@ var sketch = function (s) {
             velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
             colors.push(config.colors[0]);
         }
+        console.log(locations.length);
         body = document.getElementsByTagName('body')[0];
         apiSrc = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColors';
     };
@@ -35,21 +38,35 @@ var sketch = function (s) {
         s.background(config.bg);
         // Update and display points.
         update();
-        // Display connections. O(n!)
-        // Loop through locations backwards.
-        for (var i = locations.length - 1; i > -1; i--) {
-            var n = locations[i];
-            // Remove n from choices.
-            others.pop();
-            // Match n with remaining choices.
-            for (var j = 0; j < others.length; j++) {
-                var m = others[j],
-                    d = p5.Vector.dist(n, m);
-                if (d < config.minDist) {
-                    var c = s.lerpColor(colors[i], colors[j], 0.5);
-                    s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(255, 0, d/config.minDist));
-                    s.line(n.x, n.y, m.x, m.y);
+        // Draw connections.
+        for (var i = 0; i < locations.length; i++) {
+            var loc = locations[i],
+                key = hash(loc), 
+                y = -1;
+            // Check nearest neighbors (current cell an 8 surrounding cells).
+            while (y < 2) {
+                x = -1;
+                while (x < 2) {
+                    // If neighboring cell is empty, continue.
+                    if (hashTable[key.y + y] === undefined || hashTable[key.y + y][key.x + x] === undefined) { 
+                        x++; 
+                        continue;
+                    }
+                    var others = hashTable[key.y + y][key.x + x];
+                    // Check if neighboring points are in range.
+                    for (var j = 0; j < others.length; j++) {
+                        var neighbor = others[j],
+                            d = p5.Vector.dist(loc, neighbor);
+                        if (d < config.minDist) {
+                            // Draw connection.
+                            var c = colors[i];
+                            s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(127, 0, d/config.minDist));
+                            s.line(loc.x, loc.y, neighbor.x, neighbor.y); 
+                        }
+                    }
+                    x++;
                 }
+                y++;
             }
         }
     };
@@ -73,10 +90,14 @@ var sketch = function (s) {
         }
     };
     ////////////////////////////////////////////////////////////////////////////
-    // Updates points.
+    // Updates and draws locations.
     function update() {
+        // Clear hash table.
+        hashTable = {};
+        // Update locations and draw points.
         for (var i = 0; i < locations.length; i++) {
-            var loc = locations[i];
+            var loc = locations[i],
+                key;
             // Add velocity to location.
             locations[i] = loc.add(velocities[i]);
             // Screen wrap.
@@ -84,14 +105,24 @@ var sketch = function (s) {
             if (loc.x < 0) { loc.x = s.windowWidth; }
             if (loc.y > s.windowHeight) { loc.y = 0; }
             if (loc.y < 0) { loc.y = s.windowHeight; }
+            // Put location into bucket.
+            key = hash(loc);
+            if (hashTable[key.y] === undefined) { hashTable[key.y] = {}; }
+            if (hashTable[key.y][key.x] == undefined) { hashTable[key.y][key.x] = []; }
+            hashTable[key.y][key.x].push(loc);
             // Display.
             s.push();
             s.translate(loc.x, loc.y);
-            s.noStroke();
-            s.fill(colors[i]);
-            s.ellipse(0, 0, 3, 3);
+            s.stroke(colors[i]);
+            s.strokeWeight(3);
+            s.point(0, 0);
             s.pop();
         }
+    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Assigns coords to bucket. 
+    function hash(point) {
+        return {x: Math.round(point.x/cellSize), y: Math.round(point.y/cellSize)};
     }
     ////////////////////////////////////////////////////////////////////////////
     // User input logic
