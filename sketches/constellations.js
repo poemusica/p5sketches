@@ -33,7 +33,7 @@ var sketch = function (s) {
             velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
         }
         console.log('points:', locations.length);
-        console.log('w x h:', Math.floor(s.width/cellSize) + 1, Math.floor(s.height/cellSize) + 1); 
+        console.log('w x h:', Math.floor(s.width/cellSize) + 1, Math.floor(s.height/cellSize) + 1);
         body = document.getElementsByTagName('body')[0];
         apiSrc = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColors';
     };
@@ -59,7 +59,7 @@ var sketch = function (s) {
                             others;
                         if (hashTable[y + block.y] === undefined || hashTable[y + block.y][x + block.x] === undefined) { continue; }
                         others = hashTable[y + block.y][x + block.x];
-                        // If the neighboring cell exists, check the current object against all others in it. 
+                        // If the neighboring cell exists, check the current object against all others in it.
                         for (var j = 0; j < others.length; j++) {
                             var neighbor = others[j],
                                 d = p5.Vector.dist(loc, neighbor);
@@ -67,6 +67,7 @@ var sketch = function (s) {
                             if (d < config.minDist) {
                                 var c = loc.color;
                                 s.stroke(c);
+                                s.strokeWeight(1);
                                 // s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(127, 0, d/config.minDist));
                                 s.line(loc.x, loc.y, neighbor.x, neighbor.y);
                             }
@@ -119,18 +120,16 @@ var sketch = function (s) {
             // Debug: Draw cells.
             // s.noFill();
             // s.stroke(255);
+            // s.strokeWeight(1);
             // s.rect(key.x * cellSize, key.y * cellSize, cellSize, cellSize);
             // Display.
-            s.push();
-            s.translate(loc.x, loc.y);
             s.stroke(loc.color);
             s.strokeWeight(3);
-            s.point(0, 0);
-            s.pop();
+            s.point(loc.x, loc.y);
         }
     }
     ///////////////////////////////////////////////////////////////////////////
-    // Assigns coords to bucket. 
+    // Assigns coords to bucket.
     function hash(point) {
         return {x: Math.floor(point.x/cellSize), y: Math.floor(point.y/cellSize)};
     }
