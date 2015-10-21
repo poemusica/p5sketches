@@ -81,7 +81,7 @@ var sketch = function (s) {
     // Window resizing logic
     s.windowResized = function () {
         s.resizeCanvas(s.windowWidth, s.windowHeight);
-        var target = s.min(Math.floor(s.max(s.width, s.height)/5), config.maxPoints);
+        var target = s.min(Math.floor(s.max(s.width, s.height)/4), config.maxPoints);
         if (locations.length < target) {
             while (locations.length < target) {
                 var v = s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight);
