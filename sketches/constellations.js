@@ -1,11 +1,15 @@
 ////////////////////////////////////////////////////////////////////////////////
+// REFERENCES
+// *    Spatial hash
+//      http://www.gamedev.net/page/resources/_/technical/game-programming/spatial-hashing-r2697
+////////////////////////////////////////////////////////////////////////////////
 // CONSTELLATIONS LOGIC
 var sketch = function (s) {
     var
         title = "constellations",
         locations = [],
         velocities = [],
-        cellSize = 50,
+        cellSize = 75,
         hashTable = {},
         neigborhood = [{x: 0, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 0}],
         body,
@@ -15,7 +19,7 @@ var sketch = function (s) {
             bg: s.color(255),
             colors: [s.color(0)],
             maxPoints: 500,
-            minDist: 50
+            minDist: 75
         };
     ////////////////////////////////////////////////////////////////////////////
     // Sets up sketch.
@@ -28,32 +32,38 @@ var sketch = function (s) {
             locations.push(v);
             velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
         }
-        console.log(locations.length);
+        console.log('points:', locations.length);
+        console.log('w x h:', Math.floor(s.width/cellSize) + 1, Math.floor(s.height/cellSize) + 1); 
         body = document.getElementsByTagName('body')[0];
         apiSrc = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColors';
     };
     ////////////////////////////////////////////////////////////////////////////
     // Draws.
     s.draw = function () {
-        var others = locations.slice();
         s.background(config.bg);
         // Update and display points.
         update();
+        // Display connections.
+        // Check each cell in  the grid.
         for (var y = 0; y < Math.floor(s.height/cellSize) + 1; y++) {
             if (hashTable[y] === undefined) { continue; }
             for (var x = 0; x < Math.floor(s.width/cellSize) + 1; x++) {
                 var bucket = hashTable[y][x];
                 if (bucket === undefined) { continue; }
+                // If the cell exists, examine each object in it.
                 for (var i = 0; i < bucket.length; i++) {
                     var loc = bucket[i];
+                    // Check against others within the cell and its neighboring cells (SW, S, SE, E).
                     for (var n = 0; n < neigborhood.length; n++) {
                         var block = neigborhood[n],
                             others;
                         if (hashTable[y + block.y] === undefined || hashTable[y + block.y][x + block.x] === undefined) { continue; }
                         others = hashTable[y + block.y][x + block.x];
+                        // If the neighboring cell exists, check the current object against all others in it. 
                         for (var j = 0; j < others.length; j++) {
                             var neighbor = others[j],
                                 d = p5.Vector.dist(loc, neighbor);
+                            // If the object and its neighbor are within a minimum distance, draw their connection.
                             if (d < config.minDist) {
                                 var c = loc.color;
                                 s.stroke(c);
