@@ -56,7 +56,8 @@ var sketch = function (s) {
                 if (bucket === undefined) { continue; }
                 // If the cell exists, examine each object in it.
                 for (var i = 0; i < bucket.length; i++) {
-                    var loc = bucket[i];
+                    var loc = bucket[i],
+                        connections = 0;
                     // Check against others within the cell and its neighboring cells (SW, S, SE, E).
                     for (var n = 0; n < neigborhood.length; n++) {
                         var block = neigborhood[n],
@@ -68,14 +69,23 @@ var sketch = function (s) {
                             var neighbor = others[j],
                                 d = p5.Vector.dist(loc, neighbor);
                             // If the object and its neighbor are within a minimum distance, draw their connection.
-                            if (d < config.minDist) {
+                            if (d < config.minDist && d > 0) {
                                 var c = loc.color;
+                                connections++;
+                                // Nice effects, but too expensive.
+                                // s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(127, 0, d/config.minDist));
+                                // s.strokeWeight(s.lerp(4, 0.5, d/config.minDist));
                                 s.stroke(c);
                                 s.strokeWeight(1);
-                                // s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(127, 0, d/config.minDist));
                                 s.line(loc.x, loc.y, neighbor.x, neighbor.y);
                             }
                         }
+                    }
+                    // Draw point if it connects to at least one other point.
+                    if (connections > 0) {
+                        s.stroke(loc.color);
+                        s.strokeWeight(4);
+                        s.point(loc.x, loc.y);
                     }
                 }
             }
@@ -101,7 +111,7 @@ var sketch = function (s) {
         }
     };
     ////////////////////////////////////////////////////////////////////////////
-    // Updates and draws locations.
+    // Updates locations.
     function update() {
         // Clear hash table.
         hashTable = {};
@@ -121,15 +131,6 @@ var sketch = function (s) {
             if (hashTable[key.y] === undefined) { hashTable[key.y] = {}; }
             if (hashTable[key.y][key.x] == undefined) { hashTable[key.y][key.x] = []; }
             hashTable[key.y][key.x].push(loc);
-            // Debug: Draw cells.
-            // s.noFill();
-            // s.stroke(255);
-            // s.strokeWeight(1);
-            // s.rect(key.x * cellSize, key.y * cellSize, cellSize, cellSize);
-            // Display.
-            s.stroke(loc.color);
-            s.strokeWeight(3);
-            s.point(loc.x, loc.y);
         }
     }
     ///////////////////////////////////////////////////////////////////////////
