@@ -152,8 +152,8 @@ var sketch = function (s) {
         }
         apiCall = document.createElement('script');
         apiCall.id = 'color-script';
-        // apiCall.src = apiSrcColour + '&' + (new Date().getTime());
-        apiCall.src = apiSrcColr  + '&' + (new Date().getTime());
+        apiCall.src = apiSrcColour + '&' + (new Date().getTime());
+        //apiCall.src = apiSrcColr  + '&' + (new Date().getTime());
         body.appendChild(apiCall);
     }
     ////////////////////////////////////////////////////////////////////////////
