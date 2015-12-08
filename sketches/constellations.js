@@ -4,7 +4,7 @@
 //      http://www.gamedev.net/page/resources/_/technical/game-programming/spatial-hashing-r2697
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTELLATIONS LOGIC
-var sketch = function (s) {
+var sketch = function (p) {
     var
         title = "constellations",
         locations = [],
@@ -19,39 +19,40 @@ var sketch = function (s) {
         config = {
             alpha: 100,
             bg: null,
-            colors: [s.color(0)],
+            colors: [p.color(0)],
             maxPoints: 500,
             minDist: 75
         };
     ////////////////////////////////////////////////////////////////////////////
     // Sets up sketch.
-    s.setup = function () {
-        s.createCanvas(s.windowWidth, s.windowHeight);
-        s.frameRate(60);
-        config.bg = s.color(255, config.alpha);
-        for (var i = 0; i < s.constrain(Math.floor(s.max(s.windowWidth, s.windowHeight)/4), 0, config.maxPoints); i++) {
-            var v = s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight);
+    p.setup = function () {
+        p.createCanvas(p.windowWidth, p.windowHeight);
+        p.colorMode(p.RGB);
+        p.frameRate(60);
+        config.bg = p.color(255, config.alpha);
+        for (var i = 0; i < p.constrain(Math.floor(p.max(p.windowWidth, p.windowHeight)/4), 0, config.maxPoints); i++) {
+            var v = p.createVector(Math.random() * p.windowWidth, Math.random() * p.windowHeight);
             v.color = config.colors[0];
             locations.push(v);
-            velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
+            velocities.push(p5.Vector.random2D().setMag(p.constrain(Math.random() * 4, 0.5, 4)));
         }
         console.log('points:', locations.length);
-        console.log('w x h:', Math.floor(s.width/cellSize) + 1, Math.floor(s.height/cellSize) + 1);
+        console.log('w x h:', Math.floor(p.width/cellSize) + 1, Math.floor(p.height/cellSize) + 1);
         body = document.getElementsByTagName('body')[0];
         apiSrcColour = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColours';
         apiSrcColr = 'http://www.colr.org/json/scheme/random?callback=sketch.parseColrs';
     };
     ////////////////////////////////////////////////////////////////////////////
     // Draws.
-    s.draw = function () {
-        s.background(config.bg);
+    p.draw = function () {
+        p.background(config.bg);
         // Update and display points.
         update();
         // Display connections.
         // Check each cell in  the grid.
-        for (var y = 0; y < Math.floor(s.height/cellSize) + 1; y++) {
+        for (var y = 0; y < Math.floor(p.height/cellSize) + 1; y++) {
             if (hashTable[y] === undefined) { continue; }
-            for (var x = 0; x < Math.floor(s.width/cellSize) + 1; x++) {
+            for (var x = 0; x < Math.floor(p.width/cellSize) + 1; x++) {
                 var bucket = hashTable[y][x];
                 if (bucket === undefined) { continue; }
                 // If the cell exists, examine each object in it.
@@ -73,19 +74,19 @@ var sketch = function (s) {
                                 var c = loc.color;
                                 connections++;
                                 // Nice effects, but too expensive.
-                                // s.stroke(s.red(c), s.green(c), s.blue(c), s.lerp(127, 0, d/config.minDist));
-                                // s.strokeWeight(s.lerp(4, 0.5, d/config.minDist));
-                                s.stroke(c);
-                                s.strokeWeight(1);
-                                s.line(loc.x, loc.y, neighbor.x, neighbor.y);
+                                // p.stroke(p.red(c), p.green(c), p.blue(c), p.lerp(127, 0, d/config.minDist));
+                                // p.strokeWeight(p.lerp(4, 0.5, d/config.minDist));
+                                p.stroke(c);
+                                p.strokeWeight(1);
+                                p.line(loc.x, loc.y, neighbor.x, neighbor.y);
                             }
                         }
                     }
                     // Draw point if it connects to at least one other point.
                     if (connections > 0) {
-                        s.stroke(loc.color);
-                        s.strokeWeight(4);
-                        s.point(loc.x, loc.y);
+                        p.stroke(loc.color);
+                        p.strokeWeight(4);
+                        p.point(loc.x, loc.y);
                     }
                 }
             }
@@ -93,15 +94,15 @@ var sketch = function (s) {
     };
     ////////////////////////////////////////////////////////////////////////////
     // Window resizing logic
-    s.windowResized = function () {
-        s.resizeCanvas(s.windowWidth, s.windowHeight);
-        var target = s.min(Math.floor(s.max(s.width, s.height)/4), config.maxPoints);
+    p.windowResized = function () {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+        var target = p.min(Math.floor(p.max(p.width, p.height)/4), config.maxPoints);
         if (locations.length < target) {
             while (locations.length < target) {
-                var v = s.createVector(Math.random() * s.windowWidth, Math.random() * s.windowHeight);
+                var v = p.createVector(Math.random() * p.windowWidth, Math.random() * p.windowHeight);
                 v.color = config.colors[Math.floor(Math.random() * config.colors.length)];
                 locations.push(v);
-                velocities.push(p5.Vector.random2D().setMag(s.constrain(Math.random() * 4, 0.5, 4)));
+                velocities.push(p5.Vector.random2D().setMag(p.constrain(Math.random() * 4, 0.5, 4)));
             }
         } else if (locations.length > target) {
             while (locations.length > target) {
@@ -122,10 +123,10 @@ var sketch = function (s) {
             // Add velocity to location.
             locations[i] = loc.add(velocities[i]);
             // Screen wrap.
-            if (loc.x > s.windowWidth) { loc.x = 0; }
-            if (loc.x < 0) { loc.x = s.windowWidth; }
-            if (loc.y > s.windowHeight) { loc.y = 0; }
-            if (loc.y < 0) { loc.y = s.windowHeight; }
+            if (loc.x > p.windowWidth) { loc.x = 0; }
+            if (loc.x < 0) { loc.x = p.windowWidth; }
+            if (loc.y > p.windowHeight) { loc.y = 0; }
+            if (loc.y < 0) { loc.y = p.windowHeight; }
             // Put location into bucket.
             key = hash(loc);
             if (hashTable[key.y] === undefined) { hashTable[key.y] = {}; }
@@ -140,7 +141,7 @@ var sketch = function (s) {
     }
     ////////////////////////////////////////////////////////////////////////////
     // User input logic
-    s.mouseClicked = function() {
+    p.mouseClicked = function() {
         getColors();
     };
     ////////////////////////////////////////////////////////////////////////////
@@ -161,12 +162,12 @@ var sketch = function (s) {
     // Callback function for colourlovers API call.
     function parseColours(json) {
         if (json[0].colors.length > 2) {
-            var bg = s.color('#' + json[0].colors[0]);
+            var bg = p.color('#' + json[0].colors[0]);
             config.colors = [];
-            config.bg = s.color(s.red(bg), s.green(bg), s.blue(bg), config.alpha);
+            config.bg = p.color(p.red(bg), p.green(bg), p.blue(bg), config.alpha);
 
             for (var i = 1; i < json[0].colors.length; i++) {
-                config.colors.push(s.color('#' + json[0].colors[i]));
+                config.colors.push(p.color('#' + json[0].colors[i]));
             }
         }
         for (var i = 0; i < locations.length; i++) {
@@ -179,12 +180,12 @@ var sketch = function (s) {
         if (json.schemes == []) { return; }
         colors = json.schemes[0].colors;
         if (colors.length > 1) {
-            var bg = s.color('#' + colors[0]);
+            var bg = p.color('#' + colors[0]);
             config.colors = [];
-            config.bg = s.color(s.red(bg), s.green(bg), s.blue(bg), config.alpha);
+            config.bg = p.color(p.red(bg), p.green(bg), p.blue(bg), config.alpha);
 
             for (var i = 1; i < colors.length; i++) {
-                config.colors.push(s.color('#' + colors[i]));
+                config.colors.push(p.color('#' + colors[i]));
             }
         }
         for (var i = 0; i < locations.length; i++) {

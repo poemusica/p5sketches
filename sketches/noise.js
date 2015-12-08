@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CURL NOISE LOGIC
-var sketch = function (s) {
+var sketch = function (p) {
     var
         title = 'perlin',
         winW, winH,
@@ -15,39 +15,39 @@ var sketch = function (s) {
         emitter;
     ////////////////////////////////////////////////////////////////////////////
     // Sets up sketch.
-    s.setup = function () {
-        // s.noiseSeed(53);
+    p.setup = function () {
+        // p.noiseSeed(53);
         winW = document.getElementsByTagName('html')[0].clientWidth;
         winH = document.getElementsByTagName('html')[0].clientHeight;
-        s.createCanvas(winW, winH);
-        s.colorMode(s.HSB, 360, 100, 100, 1);
+        p.createCanvas(winW, winH);
+        p.colorMode(p.HSB, 360, 100, 100, 1);
         setSizes();
     };
 
     ////////////////////////////////////////////////////////////////////////////
     // Draws.
-    s.draw = function () {
-        // var hue = s.color((s.frameCount/10) % 360, 100, 100, 1);
-        // s.background(0, 0.02);
+    p.draw = function () {
+        // var hue = p.color((p.frameCount/10) % 360, 100, 100, 1);
+        // p.background(0, 0.02);
         if (particles.length < maxParticles) {
             // particles.push(emitter.copy());
-            particles.push(s.createVector(Math.random() * winW, Math.random() * winH));
+            particles.push(p.createVector(Math.random() * winW, Math.random() * winH));
             polarities.push(1);
             ages.push(1000);
         }
-        s.noFill();
-        // s.stroke(270, 100, 100, 0.5);
-        s.stroke((s.frameCount/10) % 360, 100, 100, 1);
+        p.noFill();
+        // p.stroke(270, 100, 100, 0.5);
+        p.stroke((p.frameCount/10) % 360, 100, 100, 1);
         for (var i = 0; i < particles.length; i++) {
             if (ages[i] > 0) {
                 var loc = particles[i],
                     vel = curl(loc.x, loc.y, 1).setMag(maxSpeed);
-                    // vel = curl(loc.x, loc.y, s.frameCount).setMag(maxSpeed);
+                    // vel = curl(loc.x, loc.y, p.frameCount).setMag(maxSpeed);
                 vel.mult(polarities[i]);
                 loc.add(vel);
                 // wall(loc, i);
                 // contain(loc, i);
-                s.ellipse(loc.x, loc.y, 2, 2);
+                p.ellipse(loc.x, loc.y, 2, 2);
                 ages[i] -= 1;
                 // if (ages[i] <= 0) {
                 //     particles[i] = emitter.copy();
@@ -59,10 +59,10 @@ var sketch = function (s) {
     };
     ////////////////////////////////////////////////////////////////////////////
     // Window resizing logic
-    s.windowResized = function () {
+    p.windowResized = function () {
         winW = document.getElementsByTagName('html')[0].clientWidth;
         winH = document.getElementsByTagName('html')[0].clientHeight;
-        s.resizeCanvas(winW, winH);
+        p.resizeCanvas(winW, winH);
         setSizes();
         particles = [];
         polarities = [];
@@ -71,9 +71,9 @@ var sketch = function (s) {
     ////////////////////////////////////////////////////////////////////////////
     // Sets barrier and emitter info based on window size.
     function setSizes() {
-        barrier = s.createVector(winW/2, winH/2);
-        barrierSize = s.min(winW - 50, winH - 50);
-        emitter = s.createVector(winW/2, winH/2);
+        barrier = p.createVector(winW/2, winH/2);
+        barrierSize = p.min(winW - 50, winH - 50);
+        emitter = p.createVector(winW/2, winH/2);
     }
     ////////////////////////////////////////////////////////////////////////////
     // Uses finite difference method to compute curl of a gradient of a
@@ -89,7 +89,7 @@ var sketch = function (s) {
         n1 = rampedPotential((x + eps), y, t);
         n2 = rampedPotential((x - eps), y, t);
         b = (n1 - n2)/(2 * eps);
-        return s.createVector(a, -b);
+        return p.createVector(a, -b);
     }
     function gradient(x, y, t) {
         var eps = 1,
@@ -102,19 +102,19 @@ var sketch = function (s) {
         n1 = scaledNoise((x + eps), y, t);
         n2 = scaledNoise((x - eps), y, t);
         b = (n1 - n2)/(2 * eps);
-        return s.createVector(b, a);
+        return p.createVector(b, a);
     }
 
     function perlin(x, y, t) {
         var a, b;
         a = scaledNoise(x, 1, t);
         b = scaledNoise(1, y, t);
-        return s.createVector(a, b);
+        return p.createVector(a, b);
     }
     ////////////////////////////////////////////////////////////////////////////
     // Computes value of Perlin noise at a coordinate.
     function scaledNoise(x, y, t) {
-        return s.noise(x * noiseScale, y * noiseScale, t * noiseScale);
+        return p.noise(x * noiseScale, y * noiseScale, t * noiseScale);
     }
     ////////////////////////////////////////////////////////////////////////////
     // Modulates the potential field by applying a ramp through zero based on
@@ -148,15 +148,15 @@ var sketch = function (s) {
     }
 
     function perlinVel (x, y, t) {
-        var v = s.createVector();
+        var v = p.createVector();
             n = scaledNoise(x, y, t);
-        n = s.map(n, 0, 1, 0, s.TWO_PI);
-        v.x = s.cos(n);
-        v.y = s.sin(n);
+        n = p.map(n, 0, 1, 0, p.TWO_PI);
+        v.x = p.cos(n);
+        v.y = p.sin(n);
         return v;
     }
     function wall(loc, i) {
-        var newVel = s.createVector(0, 0);
+        var newVel = p.createVector(0, 0);
         if (loc.x <= 0) { newVel.x = -loc.x; }
         else if (loc.x >= winW) { newVel.x = winW - loc.x; }
         if (loc.y <= 0) { newVel.y = -loc.y; }
