@@ -4,11 +4,3 @@ body {
     /*overflow: hidden;*/
     font-family: monospace;
 }
-
-.slide {
-    -webkit-appearance: none;
-    width: 80px;
-    height: 15px;
-    border-radius: 8px;
-    background-color: red;
-}
