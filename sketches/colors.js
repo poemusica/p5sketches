@@ -16,7 +16,7 @@ var sketch = function (p) {
             // Complementary: Choose rangeAngle2 = 0, offsetAngle1 = 180.
             // Split Complementary: Choose offset angles 180 +/- a small angle. The second and third ranges must be smaller than the difference between the two offset angles.
             // Triad: Choose offset angles 120 and 240.
-            offsetAngle1: 210,
+            offsetAngle1: 240,
             offsetAngle2: 180,
             rangeAngle0: 25,
             rangeAngle1: 15,
@@ -38,9 +38,9 @@ var sketch = function (p) {
         guiElt.style.top = '0px';
         gui.add(data, 'offsetAngle1', 0, 360).onChange(function() { updateColors(); });
         gui.add(data, 'offsetAngle2', 0, 360).onChange(function() { updateColors(); });
-        gui.add(data, 'rangeAngle0', 0, 360).onChange(function() { updateColors(); });
-        gui.add(data, 'rangeAngle1', 0, 360).onChange(function() { updateColors(); });
-        gui.add(data, 'rangeAngle2', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data, 'rangeAngle0', 0, 360).onChange(function() { data.randAngles = setRandAngles(); updateColors(); });
+        gui.add(data, 'rangeAngle1', 0, 360).onChange(function() { data.randAngles = setRandAngles(); updateColors(); });
+        gui.add(data, 'rangeAngle2', 0, 360).onChange(function() { data.randAngles = setRandAngles(); updateColors(); });
         gui.add(data,'refresh').name('refresh palette');
         setBasics();
         positions = setPositions();
@@ -124,6 +124,24 @@ var sketch = function (p) {
                     randomAngle += data.offsetAngle1;
                 } else { randomAngle += data.offsetAngle2; }
             }
+            hslColor = p.color( (data.referenceAngle + randomAngle) % 360, data.saturation, data.luminance);
+            result.push(hslColor);
+        }
+        return result;
+    }
+
+    function colorHarmonizerAlt() {
+        var result = [],
+            rangeAngleSum = data.rangeAngle0 + data.rangeAngle1 + data.rangeAngle2;
+        p.colorMode(p.HSL, 360, 100, 100);
+        for (var i = 0; i < positions.length; i++) {
+            var randomAngle = data.randAngles[i],
+                hslColor;
+            if (randomAngle < data.rangeAngle0) {
+                randomAngle -= data.rangeAngle0/2;
+            } else if (randomAngle < data.rangeAngle0 + data.rangeAngle1) {
+                randomAngle += (data.offsetAngle1 - data.rangeAngle1);
+            } else { randomAngle += (data.offsetAngle2 - data.rangeAngle2); }
             hslColor = p.color( (data.referenceAngle + randomAngle) % 360, data.saturation, data.luminance);
             result.push(hslColor);
         }
