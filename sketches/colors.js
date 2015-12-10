@@ -6,6 +6,23 @@ var sketch = function (p) {
             height: 50,
             colors: [ ]
         },
+        data = {
+            referenceAngle: null,
+            saturation: null,
+            lightness: null,
+            refresh: function() { refresh(); },
+            randAngles: [],
+            // Analogous: Choose second and third ranges 0.
+            // Complementary: Choose rangeAngle2 = 0, offsetAngle1 = 180.
+            // Split Complementary: Choose offset angles 180 +/- a small angle. The second and third ranges must be smaller than the difference between the two offset angles.
+            // Triad: Choose offset angles 120 and 240.
+            offsetAngle1: 210,
+            offsetAngle2: 180,
+            rangeAngle0: 25,
+            rangeAngle1: 15,
+            rangeAngle2: 10,
+        },
+        gui,
         apiCall,
         apiSrcColour = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColours',
         body;
@@ -13,7 +30,22 @@ var sketch = function (p) {
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         body = document.getElementsByTagName('body')[0];
-        init();
+        gui = new dat.GUI( { autoPlace: false } );
+        var guiElt = gui.domElement;
+        document.getElementById('p5-sketch').appendChild(guiElt);
+        guiElt.style.position = 'fixed';
+        guiElt.style.left = '0px';
+        guiElt.style.top = '0px';
+        gui.add(data, 'offsetAngle1', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data, 'offsetAngle2', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data, 'rangeAngle0', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data, 'rangeAngle1', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data, 'rangeAngle2', 0, 360).onChange(function() { updateColors(); });
+        gui.add(data,'refresh').name('refresh palette');
+        setBasics();
+        positions = setPositions();
+        data.randAngles = setRandAngles();
+        colors = colorHarmonizer();
     };
 
     p.draw = function () {
@@ -31,14 +63,34 @@ var sketch = function (p) {
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
-        init();
+        positions = setPositions();
+        data.randAngles = setRandAngles();
+        colors = colorHarmonizer();
     };
 
-    function init() {
-        positions = setPositions();
-        colors = [];
-        colors = triadMixer();
-        //colors = colorHarmonizer();
+    function updateColors() {
+        colors = colorHarmonizer();
+    }
+
+    function refresh() {
+        setBasics();
+        data.randAngles = setRandAngles();
+        colors = colorHarmonizer();
+    }
+
+    function setBasics() {
+        data.referenceAngle = p.random(0, 360);
+        data.saturation = p.random(60, 100);
+        data.luminance = p.random(50, 70);
+    }
+
+    function setRandAngles() {
+        var result = [],
+            rangeAngleSum = data.rangeAngle0 + data.rangeAngle1 + data.rangeAngle2;
+        for (var i = 0; i < positions.length; i++) {
+            result.push(p.random(0, rangeAngleSum));
+        }
+        return result;
     }
 
     // Returns an array of positions based on window dimensions.
@@ -62,35 +114,23 @@ var sketch = function (p) {
     // Adapted from http://devmag.org.za/2012/07/29/how-to-choose-colours-procedurally-algorithms/
     function colorHarmonizer() {
         var result = [],
-            referenceAngle = p.random(0, 360),
-            // Analogous: Choose second and third ranges 0.
-            // Complementary: Choose rangeAngle2 = 0, offsetAngle1 = 180.
-            // Split Complementary: Choose offset angles 180 +/- a small angle. The second and third ranges must be smaller than the difference between the two offset angles.
-            // Triad: Choose offset angles 120 and 240.
-            offsetAngle1 = 210, 
-            offsetAngle2 = 180,
-            rangeAngle0 = 25, 
-            rangeAngle1 = 15, 
-            rangeAngle2 = 10,
-            rangeAngleSum = rangeAngle0 + rangeAngle1 + rangeAngle2,
-            saturation = p.random(60, 100), 
-            luminance = p.random(50, 70);
+            rangeAngleSum = data.rangeAngle0 + data.rangeAngle1 + data.rangeAngle2;
         p.colorMode(p.HSL, 360, 100, 100);
         for (var i = 0; i < positions.length; i++) {
-            var randomAngle = p.random(0, rangeAngleSum),
+            var randomAngle = data.randAngles[i],
                 hslColor;
-            if (randomAngle > rangeAngle0) {
-                if (randomAngle < rangeAngle0 + rangeAngle1) {
-                    randomAngle += offsetAngle1;
-                } else { randomAngle += offsetAngle2; }
+            if (randomAngle > data.rangeAngle0) {
+                if (randomAngle < data.rangeAngle0 + data.rangeAngle1) {
+                    randomAngle += data.offsetAngle1;
+                } else { randomAngle += data.offsetAngle2; }
             }
-            hslColor = p.color( (referenceAngle + randomAngle) % 360, saturation, luminance);
+            hslColor = p.color( (data.referenceAngle + randomAngle) % 360, data.saturation, data.luminance);
             result.push(hslColor);
         }
         return result;
     }
 
-    // Given an array of color options, returns an array of colors associated with positions array. 
+    // Given an array of color options, returns an array of colors associated with positions array.
     // Uses white as a starting color. Blends each new color with it's neighbor using color lerping.
     function lerpNeighbor() {
         var result = [],
@@ -211,5 +251,9 @@ var sketch = function (p) {
     sketch.parseColours = parseColours;
 
 }
-// Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
-var p5sketch = new p5(sketch, 'p5-sketch');
+
+
+window.onload = function() {
+    // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
+    var p5sketch = new p5(sketch, 'p5-sketch');
+};
