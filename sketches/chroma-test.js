@@ -5,21 +5,17 @@ var sketch = function (p) {
         config = {
             width: 50,
             height: 50,
-            colorStart: null, 
-            colorEnd: null,
-            colorMid1: null,
-            colorMid2: null,
-            satStep: 0,
-            litStep: 0
+            colorA: chroma('#000000'),
+            colorB: chroma('#000000'),
+            colorC: chroma('#FFFFFF'),
+            colorD: chroma('#FFFFFF'),
         },
         data = {
-            saturation: 80,
-            lightness: 80,
-            hueA: null,
-            hueB: null,
-            hueC: null,
-            hueD: null,
-            refresh: function() { refresh(); },
+            colorA: config.colorA.hex(),
+            colorB: config.colorB.hex(),
+            colorC: config.colorC.hex(),
+            colorD: config.colorD.hex(),
+            randomize: function() { randomize(); },
         },
         gui;
 
@@ -31,21 +27,15 @@ var sketch = function (p) {
         guiElt.style.position = 'fixed';
         guiElt.style.left = '0px';
         guiElt.style.top = '0px';
-        config.colorStart = chroma.random().set('hcl.c', data.saturation - config.satStep).set('hcl.l', data.lightness - config.litStep);
-        config.colorMid1 = chroma.hcl((config.colorStart.get('hcl.h') + 60) % 360, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorMid2 = chroma.hcl((config.colorStart.get('hcl.h') + 120) % 360, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorEnd = chroma.hcl((config.colorStart.get('hcl.h') + 180) % 360, data.saturation, data.lightness);
-        data.hueA = config.colorStart.get('hcl.h');
-        data.hueB = config.colorMid1.get('hcl.h');
-        data.hueC = config.colorMid2.get('hcl.h');
-        data.hueD = config.colorEnd.get('hcl.h');
-        gui.add(data, 'saturation', 31, 100).onChange(function() { updatePalette(); });
-        gui.add(data, 'lightness', 25, 100).onChange(function() { updatePalette(); });
-        gui.add(data, 'hueA', 0, 360).name('start hue').onChange(function() { updatePalette(); });
-        gui.add(data, 'hueB', 0, 360).name('blend hue 1').onChange(function() { updatePalette(); });
-        gui.add(data, 'hueC', 0, 360).name('blend hue 2').onChange(function() { updatePalette(); });
-        gui.add(data, 'hueD', 0, 360).name('end hue').onChange(function() { updatePalette(); });
-        gui.add(data,'refresh').name('refresh palette');
+        var a = gui.addColor(data, 'colorA'),
+            b = gui.addColor(data, 'colorB'),
+            c = gui.addColor(data, 'colorC'),
+            d = gui.addColor(data, 'colorD');
+        a.onChange( function() { updatePalette(); } );
+        b.onChange( function() { updatePalette(); } );
+        c.onChange( function() { updatePalette(); } );
+        d.onChange( function() { updatePalette(); } );
+        gui.add(data,'randomize').name('random colors');
         positions = setPositions();
         palette = setPalette();
         colors = setColors(positions.length);
@@ -86,12 +76,15 @@ var sketch = function (p) {
 
     // Returns array of colors from chroma.
     function setPalette() {
-        config.colorStart = chroma.hcl(data.hueA, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorMid1 = chroma.hcl(data.hueB, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorMid2 = chroma.hcl(data.hueC, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorEnd = chroma.hcl(data.hueD, data.saturation, data.lightness);
-        var result,
-            bezInterpolator = chroma.bezier([config.colorStart, config.colorMid1, config.colorMid2, config.colorEnd])
+        config.colorA = chroma(data.colorA);
+        config.colorB = chroma(data.colorB);
+        config.colorC = chroma(data.colorC);
+        config.colorD = chroma(data.colorD);
+        var l = [config.colorA, config.colorB, config.colorC, config.colorD];
+        l.sort(function(a, b) {
+          return b.get('hcl.l') - a.get('hcl.l');
+        });
+        var bezInterpolator = chroma.bezier([l[0], l[1], l[2], l[3]])
         return chroma.scale(bezInterpolator).padding(0).correctLightness(true).colors(9);
     }
 
@@ -107,29 +100,38 @@ var sketch = function (p) {
         return result;
     }
 
-    function updatePalette(n) {
+    function updatePalette() {
         palette = setPalette();
         colors = setColors(positions.length);
     }
 
-    function refresh() {
-        config.colorStart = chroma.random().set('hcl.c', data.saturation - config.satStep).set('hcl.l', data.lightness - config.litStep);
-        config.colorMid1 = chroma.hcl((config.colorStart.get('hcl.h') + 60) % 360, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorMid2 = chroma.hcl((config.colorStart.get('hcl.h') + 120) % 360, data.saturation - config.satStep, data.lightness - config.litStep);
-        config.colorEnd = chroma.hcl((config.colorStart.get('hcl.h') + 180) % 360, data.saturation, data.lightness);
-        data.hueA = config.colorStart.get('hcl.h');
-        data.hueB = config.colorMid1.get('hcl.h');
-        data.hueC = config.colorMid2.get('hcl.h');
-        data.hueD = config.colorEnd.get('hcl.h');
-        palette = setPalette();
-        colors = setColors(positions.length);
+    function randomize() {
+        data.colorA = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
+        data.colorB = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
+        data.colorC = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
+        data.colorD = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
         for (var i in gui.__controllers) {
             gui.__controllers[i].updateDisplay();
         }
+        updatePalette();
+    }
+
+    function reorder() {
+        var l = [config.colorA, config.colorB, config.colorC, config.colorD];
+            l.sort(function(a, b) {
+            return b.get('hcl.l') - a.get('hcl.l');
+        });
+        config.colorA = l[0];
+        config.colorB = l[1];
+        config.colorC = l[2];
+        config.colorD = l[3];
+        data.colorA = config.colorA.hex(),
+        data.colorB = config.colorB.hex(),
+        data.colorC = config.colorC.hex(),
+        data.colorD = config.colorD.hex();
     }
 
 }
-
 
 window.onload = function() {
     // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
