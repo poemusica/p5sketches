@@ -5,10 +5,10 @@ var sketch = function (p) {
         config = {
             width: 50,
             height: 50,
-            colorA: chroma('#000000'),
-            colorB: chroma('#000000'),
-            colorC: chroma('#FFFFFF'),
-            colorD: chroma('#FFFFFF'),
+            colorA: chroma('#FFFFFF'),
+            colorB: chroma('#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6)),
+            colorC: chroma('#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6)),
+            colorD: chroma('#000000'),
         },
         data = {
             colorA: config.colorA.hex(),
@@ -27,9 +27,9 @@ var sketch = function (p) {
         guiElt.style.position = 'fixed';
         guiElt.style.left = '0px';
         guiElt.style.top = '0px';
-        var a = gui.addColor(data, 'colorA'),
-            b = gui.addColor(data, 'colorB'),
-            c = gui.addColor(data, 'colorC'),
+        var a = gui.addColor(data, 'colorA');
+            b = gui.addColor(data, 'colorB');
+            c = gui.addColor(data, 'colorC');
             d = gui.addColor(data, 'colorD');
         a.onChange( function() { updatePalette(); } );
         b.onChange( function() { updatePalette(); } );
@@ -37,6 +37,7 @@ var sketch = function (p) {
         d.onChange( function() { updatePalette(); } );
         gui.add(data,'randomize').name('random colors');
         positions = setPositions();
+        reorder();
         palette = setPalette();
         colors = setColors(positions.length);
     };
@@ -110,25 +111,29 @@ var sketch = function (p) {
         data.colorB = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
         data.colorC = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
         data.colorD = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
-        for (var i in gui.__controllers) {
-            gui.__controllers[i].updateDisplay();
-        }
+        reorder();
         updatePalette();
     }
 
+    function sortUI() { // wip
+        var items = document.getElementsByClassName('color');
+        for (var i = 0; i < items.length; i++) {
+            console.log(items.cssStyle);
+        }
+    }
+
     function reorder() {
-        var l = [config.colorA, config.colorB, config.colorC, config.colorD];
+        var l = [chroma(data.colorA), chroma(data.colorB), chroma(data.colorC), chroma(data.colorD)];
             l.sort(function(a, b) {
             return b.get('hcl.l') - a.get('hcl.l');
         });
-        config.colorA = l[0];
-        config.colorB = l[1];
-        config.colorC = l[2];
-        config.colorD = l[3];
-        data.colorA = config.colorA.hex(),
-        data.colorB = config.colorB.hex(),
-        data.colorC = config.colorC.hex(),
-        data.colorD = config.colorD.hex();
+        data.colorA = l[0].hex();
+        data.colorB = l[1].hex();
+        data.colorC = l[2].hex();
+        data.colorD = l[3].hex();
+        for (var i in gui.__controllers) {
+            gui.__controllers[i].updateDisplay();
+        }
     }
 
 }
