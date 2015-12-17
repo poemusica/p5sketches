@@ -2989,6 +2989,8 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
 
     ColorController.superclass.call(this, object, property);
 
+    this.__old_value = undefined;
+
     this.__color = new Color(this.getValue());
     this.__temp = new Color(0);
 
@@ -3000,6 +3002,13 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
 
     this.__selector = document.createElement('div');
     this.__selector.className = 'selector';
+    
+    dom.bind(this.__selector, 'mouseleave', function(e){
+      if (this.__onFinishChange && this.__old_value !== this.getValue()) {
+        this.__onFinishChange.call(this, this.getValue());
+        this.__old_value = this.getValue();
+      }
+    });
 
     this.__saturation_field = document.createElement('div');
     this.__saturation_field.className = 'saturation-field';
@@ -3132,6 +3141,10 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
         _this.setValue(_this.__color.toOriginal());
       } else {
         this.value = _this.__color.toString();
+      }
+      if (this.__onFinishChange && this.__old_value !== this.getValue()) {
+        this.__onFinishChange.call(this, this.getValue());
+        this.__old_value = this.getValue();
       }
     }
 
