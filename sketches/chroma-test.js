@@ -32,9 +32,13 @@ var sketch = function (p) {
             c = gui.addColor(data, 'colorC');
             d = gui.addColor(data, 'colorD');
         a.onChange( function() { updatePalette(); } );
+        a.onFinishChange(function(){ sortUI(); });
         b.onChange( function() { updatePalette(); } );
+        b.onFinishChange(function(){ sortUI(); });
         c.onChange( function() { updatePalette(); } );
+        c.onFinishChange(function(){ sortUI(); });
         d.onChange( function() { updatePalette(); } );
+        d.onFinishChange(function(){ sortUI(); });
         gui.add(data,'randomize').name('random colors');
         positions = setPositions();
         reorder();
