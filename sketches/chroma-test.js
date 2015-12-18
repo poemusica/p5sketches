@@ -58,6 +58,7 @@ var sketch = function (p) {
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         positions = setPositions();
+        updatePalette();
     };
 
     // Returns an array of positions based on window dimensions.
@@ -111,14 +112,28 @@ var sketch = function (p) {
         data.colorB = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
         data.colorC = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
         data.colorD = '#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6);
-        reorder();
+        for (var i in gui.__controllers) {
+            gui.__controllers[i].updateDisplay();
+        }
+        //reorder();
         updatePalette();
+        sortUI();
     }
 
-    function sortUI() { // wip
-        var items = document.getElementsByClassName('color');
+    function sortUI() {
+        var items = document.getElementsByClassName('color'),
+            ul = items[0].parentElement,
+            itemList = [];
         for (var i = 0; i < items.length; i++) {
-            console.log(items.cssStyle);
+            itemList.push(items[i]); 
+        }
+        itemList.sort( function(a, b) {
+            var colorA = chroma(a.getElementsByClassName('c')[0].firstChild.value),
+                colorB = chroma(b.getElementsByClassName('c')[0].firstChild.value);
+            return colorB.get('hcl.l') - colorA.get('hcl.l');
+        });
+        for (var i = 0; i < itemList.length; i++) {
+            ul.insertBefore(itemList[i], ul.lastChild);
         }
     }
 
