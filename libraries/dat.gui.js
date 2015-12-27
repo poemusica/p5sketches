@@ -3004,9 +3004,9 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
     this.__selector.className = 'selector';
     
     dom.bind(this.__selector, 'mouseleave', function(e){
-      if (this.__onFinishChange && this.__old_value !== this.getValue()) {
-        this.__onFinishChange.call(this, this.getValue());
-        this.__old_value = this.getValue();
+      if (_this.__onFinishChange && _this.__old_value !== _this.getValue()) {
+        _this.__onFinishChange.call(_this, _this.getValue());
+        _this.__old_value = _this.getValue();
       }
     });
 
@@ -3142,9 +3142,9 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
       } else {
         this.value = _this.__color.toString();
       }
-      if (this.__onFinishChange && this.__old_value !== this.getValue()) {
-        this.__onFinishChange.call(this, this.getValue());
-        this.__old_value = this.getValue();
+      if (_this.__onFinishChange && _this.__old_value !== _this.getValue()) {
+        _this.__onFinishChange.call(_this, _this.getValue());
+        _this.__old_value = _this.getValue();
       }
     }
 
