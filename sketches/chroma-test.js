@@ -99,9 +99,11 @@ var sketch = function (p) {
         config.width = p.max(p.width/3, 200);
         config.height = p.max(p.height/8, 45);
         positions = setPositions();
-        if (data.tidy) { positions = centerPositions(positions); }
         rotations = setRotations(positions.length);
-        if (data.tidy) { rotations = resetRotations(positions.length); }
+        if (data.tidy) { 
+            positions = centerPositions(positions);
+            rotations = resetRotations(positions.length);
+        }
         updatePalette();
         p.loop();
     };
@@ -230,4 +232,3 @@ window.onload = function() {
     // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
     var p5sketch = new p5(sketch, 'p5-sketch');
 };
-
