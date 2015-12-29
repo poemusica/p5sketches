@@ -4,6 +4,8 @@ var sketch = function (p) {
         positions,
         rotations,
         palette,
+        targetPos = null,
+        targetRot = null,
         // Config data
         config = {
             width: null,
@@ -36,8 +38,11 @@ var sketch = function (p) {
         config.height = p.max(p.height/8, 45);
         // Set up render arrays.
         positions = setPositions();
+        //positions = centerPositions(positions);
         rotations = setRotations(positions.length);
         palette = setPalette();
+        targetPos = positions.slice();
+        targetRot = rotations.slice();
         // Set up GUI in DOM.
         gui = new dat.GUI( { autoPlace: false } );
         guiElt = gui.domElement;
@@ -68,11 +73,11 @@ var sketch = function (p) {
         });
         gui.add(data,'tidy').name('Tidy').onFinishChange( function() {
             if (data.tidy) { 
-                positions = centerPositions(positions); 
-                rotations = resetRotations(positions.length);
+                targetPos = centerPositions(positions);
+                targetRot = resetRotations(positions.length);
             } else { 
-                positions = setPositions(); 
-                rotations = setRotations(positions.length);
+                targetPos = setPositions();
+                targetRot = setRotations(positions.length);
             }
             p.loop();
         });
@@ -82,6 +87,8 @@ var sketch = function (p) {
 
     p.draw = function () {
         p.background('#DCDCDC');
+        translate();
+        rotate();
         for (var i = 0; i < positions.length; i++) {
             p.noStroke();
             p.fill(palette[i]);
@@ -91,8 +98,37 @@ var sketch = function (p) {
             p.rect(0, 0, config.width, config.height);
             p.pop();
         }
-        p.noLoop();
+        //p.noLoop();
     };
+
+    function translate() {
+        var loop = false;
+        for (var i = 0; i < positions.length; i++) {
+            var pos = positions[i];
+                target = targetPos[i]
+                step = 0;
+            if (target > pos) { step = 1; }
+            if (target < pos) { step = -1; }
+            if (Math.abs(pos - target) <= step) { positions[i].x = target; }
+            else { positions[i].x += step; loop = true; }
+        }
+        if (!loop) { p.noLoop(); }
+    }
+
+    function rotate() {
+        var loop = false;
+        for (var i = 0; i < rotations.length; i++) {
+            var r = rotations[i],
+                target = targetRot[i],
+                step = 0;
+            if (target > r) { step = 1; }
+            if (target < r) { step = -1; }
+            step = p.radians(step);
+            if (Math.abs(r - target) <= step) { rotations[i] = target; }
+            else { rotations[i] += step; loop = true; }
+        }
+        if (!loop) { p.noLoop(); }
+    }
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -104,6 +140,8 @@ var sketch = function (p) {
             positions = centerPositions(positions);
             rotations = resetRotations(positions.length);
         }
+        targetPos = positions.slice();
+        targetRot = rotations.slice();
         updatePalette();
         p.loop();
     };
