@@ -10,7 +10,7 @@ var sketch = function (p) {
         config = {
             width: null,
             height: null,
-            tranSpeed: 2,
+            tranSpeed: 4,
             chromaA: null,
             chromaB: null,
             chromaC: null,
@@ -56,27 +56,20 @@ var sketch = function (p) {
         b = gui.addColor(data, 'swatchB').name("Color");
         c = gui.addColor(data, 'swatchC').name("Color");
         d = gui.addColor(data, 'swatchD').name("Color");
-        a.onChange( function() { updatePalette(); p.loop(); } );
+        a.onChange( function() { palette = setPalette(); p.loop(); } );
         a.onFinishChange(function(){ sortUI(); p.loop(); });
-        b.onChange( function() { updatePalette(); p.loop(); } );
+        b.onChange( function() { palette = setPalette(); p.loop(); } );
         b.onFinishChange(function(){ sortUI(); p.loop(); });
-        c.onChange( function() { updatePalette(); p.loop(); } );
+        c.onChange( function() { palette = setPalette(); p.loop(); } );
         c.onFinishChange(function(){ sortUI(); p.loop(); });
-        d.onChange( function() { updatePalette(); p.loop(); } );
+        d.onChange( function() { palette = setPalette(); p.loop(); } );
         d.onFinishChange(function(){ sortUI(); p.loop(); });
         // Set up new palette button.
         gui.add(data,'randomize').name('New Palette');
         // Set up toggles.
         gui.add(data, 'shuffle').name('Shuffle').onFinishChange( function() {
-            // TODO: shuffle animation. (Change y-axis positions.)
-            if (data.shuffle) { 
-                //targetPos = shuffleY(targetPos);
-                palette = shuffleArray(palette); 
-            }
-            else { 
-                //targetPos = sortY(targetPos);
-                palette = sortColors(palette); 
-            }
+            if (data.shuffle) { targetPos = shuffleY(targetPos); }
+            else { targetPos = sortY(targetPos); }
             p.loop();
         });
         gui.add(data,'tidy').name('Tidy').onFinishChange( function() {
@@ -107,8 +100,6 @@ var sketch = function (p) {
             p.rect(0, 0, config.width, config.height);
             p.pop();
         }
-        p.stroke(0);
-        p.line(p.width/2, 0, p.width/2, p.height);
         if (!tran && !rot) { p.noLoop(); }
     };
 
@@ -124,7 +115,8 @@ var sketch = function (p) {
         }
         targetPos = copy(positions);
         targetRot = rotations.slice();
-        updatePalette();
+        if (data.shuffle) { targetPos = shuffleY(targetPos); }
+        palette = setPalette();
         p.loop();
     };
 
@@ -137,22 +129,30 @@ var sketch = function (p) {
         return result;
     }
 
+    // Updates positions array toward targetPos locations.
     function translate() {
         var loop = false;
         for (var i = 0; i < positions.length; i++) {
             var pos = positions[i];
                 target = targetPos[i]
-                step = 0;
-            if (target.x > pos.x) { step = 1; }
-            if (target.x < pos.x) { step = -1; }
-            step *= config.tranSpeed;
-            if (p5.Vector.dist(target, pos) <= step) { positions[i].x = target.x; }
-            else { positions[i].x += step; loop = true; }
+                stepx = 0,
+                stepy = 0;
+            if (target.x > pos.x) { stepx = 1; }
+            if (target.x < pos.x) { stepx = -1; }
+            stepx *= config.tranSpeed;
+            if (p5.Vector.dist(target, pos) <= stepx) { positions[i].x = target.x; }
+            else { positions[i].x += stepx; loop = true; }
+            if (target.y > pos.y) { stepy = 1; }
+            if (target.y < pos.y) { stepy = -1; }
+            stepy *= 3 * config.tranSpeed;
+            if (p5.Vector.dist(target, pos) <= stepy) { positions[i].y = target.y; }
+            else { positions[i].y += stepy; loop = true; }
         }
         if (!loop) { return false; }
         else { return true; }
     }
 
+    // Updates rotations array toward targetRot angles.
     function rotate() {
         var loop = false;
         for (var i = 0; i < rotations.length; i++) {
@@ -162,7 +162,7 @@ var sketch = function (p) {
             if (target > r) { step = 1; }
             if (target < r) { step = -1; }
             step = p.radians(step);
-            if (Math.abs(r - target) <= step) { rotations[i] = target; }
+            if ( rotations[i].between(target + step, target - step, true) ) { rotations[i] = target; }
             else { rotations[i] += step; loop = true; }
         }
         if (!loop) { return false; }
@@ -188,7 +188,7 @@ var sketch = function (p) {
             home = setPositions();
         for (var i = 0; i < result.length; i++) {
             // Reassign current target y-position to home y-position.
-            result.y = home.y;
+            result[i].y = home[i].y;
         }
         return result;
     }
@@ -199,7 +199,7 @@ var sketch = function (p) {
             home = shuffleArray(setPositions());
         for (var i = 0; i < result.length; i++) {
             // Reassign current target y-position to a random home y-position.
-            result.y = home.y;
+            result[i].y = home[i].y;
         }
         return result;
     }
@@ -241,7 +241,8 @@ var sketch = function (p) {
         for (var i in gui.__controllers) {
             gui.__controllers[i].updateDisplay();
         }
-        updatePalette();
+        palette = setPalette();
+        if (data.shuffle) { targetPos = shuffleY(targetPos); }
         sortUI();
     }
 
@@ -259,22 +260,6 @@ var sketch = function (p) {
         });
         bezInterpolator = chroma.bezier([l[0], l[1], l[2], l[3]])
         return chroma.scale(bezInterpolator).padding(0).correctLightness(true).colors(positions.length);
-    }
-
-    // Returns a sorted copy of input color array.
-    // Caution: Uses a shallow copy of input.
-    function sortColors(array) {
-        var result = array.slice();
-        result.sort(function(a, b) {
-          return chroma(b).get('hcl.l') - chroma(a).get('hcl.l');
-        });
-        return result;
-    }
-
-    // Reassigns palette and shuffles, if needed.
-    function updatePalette() {
-        palette = setPalette();
-        if (data.shuffle) { palette = shuffleArray(palette); }
     }
 
     // Returns a shuffled copy of input array using Fisher-Yates method.
@@ -310,6 +295,12 @@ var sketch = function (p) {
         for (var i = 0; i < itemList.length; i++) {
             ul.insertBefore(itemList[i], button);
         }
+    }
+
+    Number.prototype.between = function(a, b, inclusive) {
+        var min = Math.min(a, b),
+            max = Math.max(a, b);
+        return inclusive ? this >= min && this <= max : this > min && this < max;
     }
 
 }
