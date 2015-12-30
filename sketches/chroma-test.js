@@ -83,19 +83,14 @@ var sketch = function (p) {
             if (data.tidy) { 
                 targetPos = centerPositions(targetPos);
                 targetRot = resetRotations(rotations.length);
-                console.log("target:" + targetRot);
-                console.log("current:" + rotations);
             } else { 
                 targetPos = setPositions();
                 targetRot = setRotations(rotations.length);
-                console.log("target:" + targetRot);
-                console.log("current:" + rotations);
             }
             p.loop();
         });
         // Sort GUI color swatches.
         sortUI();
-        console.log('original:' + positions);
     };
 
     p.draw = function () {
@@ -115,7 +110,22 @@ var sketch = function (p) {
         p.stroke(0);
         p.line(p.width/2, 0, p.width/2, p.height);
         if (!tran && !rot) { p.noLoop(); }
-        console.log(p.frameCount);
+    };
+
+    p.windowResized = function () {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+        config.width = p.max(p.width/3, 200);
+        config.height = p.max(p.height/8, 45);
+        positions = setPositions();
+        rotations = setRotations(positions.length);
+        if (data.tidy) { 
+            positions = centerPositions(positions);
+            rotations = resetRotations(positions.length);
+        }
+        targetPos = copy(positions);
+        targetRot = rotations.slice();
+        updatePalette();
+        p.loop();
     };
 
     // Returns a deep copy of a vector array.
@@ -158,22 +168,6 @@ var sketch = function (p) {
         if (!loop) { return false; }
         else { return true; }
     }
-
-    p.windowResized = function () {
-        p.resizeCanvas(p.windowWidth, p.windowHeight);
-        config.width = p.max(p.width/3, 200);
-        config.height = p.max(p.height/8, 45);
-        positions = setPositions();
-        rotations = setRotations(positions.length);
-        if (data.tidy) { 
-            positions = centerPositions(positions);
-            rotations = resetRotations(positions.length);
-        }
-        targetPos = copy(positions);
-        targetRot = copy(rotations);
-        updatePalette();
-        p.loop();
-    };
 
     // Returns a vector array of positions based on window dimensions.
     function setPositions() {
