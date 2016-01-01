@@ -26,6 +26,7 @@ var sketch = function (p) {
             randomize: function() { randomize(); p.loop(); },
             shuffle: false,
             tidy: false,
+            hex: true
         };
 
     p.setup = function () {
@@ -87,6 +88,9 @@ var sketch = function (p) {
             }
             p.loop();
         });
+        gui.add(data, 'hex').name('Hex Codes').onFinishChange( function() {
+            p.loop();
+        });
         // Sort GUI color swatches.
         sortUI();
     };
@@ -97,15 +101,17 @@ var sketch = function (p) {
             rot = rotate();
         p.background('#DCDCDC');
         for (var i = 0; i < positions.length; i++) {
-            var color = palette[i],
-                textColor = (chroma.contrast('black', color) < 4.5) ? 255: 0;
+            var color = palette[i];
             p.fill(color);
             p.push();
             p.translate(positions[i].x, positions[i].y);
             p.rotate(rotations[i]);
             p.rect(0, 0, config.width, config.height);
-            p.fill(textColor);
-            p.text(palette[i], 0, -config.height/4, config.width, 0);
+            if (data.hex) {
+                var textColor = (chroma.contrast('black', color) < 4.5) ? 255: 0;
+                p.fill(textColor);
+                p.text(palette[i], 0, -config.height/4, config.width, 0);
+            }
             p.pop();
         }
         overwriteTextColor();
