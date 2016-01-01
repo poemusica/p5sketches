@@ -132,6 +132,10 @@ var sketch = function (p) {
         targetRot = rotations.slice();
         if (data.shuffle) { targetPos = shuffleY(targetPos); }
         palette = setPalette();
+        p.textSize(12);
+        p.textFont("Lucida Grande");
+        p.textAlign(p.CENTER);
+        p.textStyle(p.BOLD);
         p.loop();
     };
 
