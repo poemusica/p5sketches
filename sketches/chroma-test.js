@@ -35,6 +35,11 @@ var sketch = function (p) {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.rectMode(p.CENTER);
         p.noLoop();
+        p.noStroke();
+        p.textSize(12);
+        p.textFont("Lucida Grande");
+        p.textAlign(p.CENTER);
+        p.textStyle(p.BOLD);
         // Set up config width and height.
         config.width = p.max(p.width/3, 200);
         config.height = p.max(p.height/8, 45);
@@ -91,15 +96,19 @@ var sketch = function (p) {
             tran = translate(),
             rot = rotate();
         p.background('#DCDCDC');
-        p.noStroke();
         for (var i = 0; i < positions.length; i++) {
-            p.fill(palette[i]);
+            var color = palette[i],
+                textColor = (chroma.contrast('black', color) < 4.5) ? 255: 0;
+            p.fill(color);
             p.push();
             p.translate(positions[i].x, positions[i].y);
             p.rotate(rotations[i]);
             p.rect(0, 0, config.width, config.height);
+            p.fill(textColor);
+            p.text(palette[i], 0, -config.height/4, config.width, 0);
             p.pop();
         }
+        overwriteTextColor();
         if (!tran && !rot) { p.noLoop(); }
     };
 
@@ -276,6 +285,21 @@ var sketch = function (p) {
             result[j] = temp;
         }
         return result;
+    }
+
+    function overwriteTextColor() {
+        var items = document.getElementsByClassName('color'),
+            ul = items[0].parentElement,
+            button = ul.getElementsByClassName('function')[0];
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i],
+                color = item.getElementsByClassName('c')[0].firstChild.value,
+                input = item.getElementsByTagName('input')[0]
+                flip = (chroma.contrast('black', color) < 4.5) ? 255 : 0,
+                _flip = (flip === 0) ? 255 : 0;
+            input.style.color = 'rgb(' + flip + ',' + flip + ',' + flip +')';
+            input.style.textShadow = '0 1px 1px ' + 'rgba(' + _flip + ',' + _flip + ',' + _flip +', .7)';
+        }
     }
 
     // Rearrange swatch list items in DOM according to lightness.
