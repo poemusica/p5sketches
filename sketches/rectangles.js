@@ -56,6 +56,8 @@ var sketch = function (p) {
             stepx = 0.01,
             stepy = 100,
             prevR = p.random(-p.PI/12, p.PI/12);
+        positions = [];
+        rotations = [];
         while (y < p.windowHeight + config.height) {
             var x = 0;
             while(x < p.windowWidth) {
@@ -78,16 +80,16 @@ var sketch = function (p) {
             bezInterpolator = null,
             bez2 = null;
         for (var i = 0; i < 7; i++) {
-            bases.push(chroma('#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6)));
+            bases.push(chroma.random());
         }
         bases.sort(function(a, b) {
           return b.get('hcl.l') - a.get('hcl.l');
         });
-        bezInterpolator = chroma.bezier([bases[0], bases[1], bases[2], bases[3]]);
-        bez2 = chroma.bezier([bases[3], bases[4], bases[5], bases[6]]);
+        bezInterpolator = chroma.bezier([bases[0], bases[2], bases[4], bases[6]]);
+        bez2 = chroma.bezier([bases[0], bases[1], bases[3], bases[5]]);
         var scale1 = chroma.scale(bezInterpolator).padding(0).correctLightness(true).colors(positions.length/2),
-            scale2 = chroma.scale(bez2).padding(0).correctLightness(true).colors(positions.length)
-            result = scale1.concat(scale2);
+            scale2 = chroma.scale(bez2).padding(0).correctLightness(true).colors(positions.length/2)
+            result = scale1.reverse().concat(scale2);
         if (Math.random() > 0.5) { result.reverse(); }
         return result;
     }
