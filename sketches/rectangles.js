@@ -86,8 +86,10 @@ var sketch = function (p) {
         bezInterpolator = chroma.bezier([bases[0], bases[1], bases[2], bases[3]]);
         bez2 = chroma.bezier([bases[3], bases[4], bases[5], bases[6]]);
         var scale1 = chroma.scale(bezInterpolator).padding(0).correctLightness(true).colors(positions.length/2),
-            scale2 = chroma.scale(bez2).padding(0).correctLightness(true).colors(positions.length);
-        return scale1.concat(scale2);
+            scale2 = chroma.scale(bez2).padding(0).correctLightness(true).colors(positions.length)
+            result = scale1.concat(scale2);
+        if (Math.random() > 0.5) { result.reverse(); }
+        return result;
     }
 
 }
