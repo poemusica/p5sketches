@@ -5,7 +5,7 @@ var sketch = function (p) {
         strokes = [],
         config = {
             width: 50,
-            height: 100,
+            height: 50, //100,
             colors: [],
             alpha: 0.5
         };
@@ -18,13 +18,15 @@ var sketch = function (p) {
 
     p.draw = function () {
         var s1 = colors.slice(0, positions.length/2),
-            s2 = colors.slice(positions.length/2, positions.length - 1);
+            s2 = colors.slice(positions.length/2, positions.length - 1)
+            index = 0;
         for (var i = 0; i < positions.length; i++) {
             p.noStroke();
             //p.stroke(colors[i]);
-            if (i % 2) { p.stroke(s1[i % s1.length]); }
-            else { p.stroke(s2[i % s2.length]); }
-            p.fill(colors[i]);
+            //if (i % 2) { p.stroke(s1[i % s1.length]); }
+            //else { p.stroke(s2[i % s2.length]); }
+            index = Math.round(p.map(p.noise(positions[i].x/500, positions[i].y/500, p.frameCount/100), 0, 1, 0, colors.length - 1));
+            p.fill(colors[index]);
             p.push();
             p.translate(positions[i].x + config.width/2, positions[i].y + config.height/2);
             rotations[i] +=  p.radians(5);
@@ -58,18 +60,18 @@ var sketch = function (p) {
             prevR = p.random(-p.PI/12, p.PI/12);
         positions = [];
         rotations = [];
-        while (y < p.windowHeight + config.height) {
+        while (y < p.height + config.height) {
             var x = 0;
-            while(x < p.windowWidth) {
+            while(x < p.width) {
                 var newR = prevR + p.map(p.noise(stepx, stepy), 0, 1, -p.PI/6, p.PI/6);
                 rotations.push(newR);
                 positions.push( new p5.Vector(x, y) );
                 x += config.width * 0.25;
-                stepx += 0.001;
+                stepx += 0.005;
                 prevR = newR;
             }
             y += config.height * 0.25;
-            stepy += 0.001;
+            stepy += 0.005;
         }
     }
 
