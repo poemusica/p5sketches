@@ -8,28 +8,22 @@ var sketch = function (p) {
             height: 100,
             colors: [],
             alpha: 0.5
-        },
-        apiCall,
-        apiSrcColour = 'http://www.colourlovers.com/api/palettes/random?format=json&jsonCallback=sketch.parseColours',
-        body,
-        // color mapping for lerping between complements
-        mapping = {
-            c1: randomRGB(),
-        },
-        white = p.color(255),
-        black = p.color(0);
+        };
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.ellipseMode(p.CORNER);
-        body = document.getElementsByTagName('body')[0];
         init();
     };
 
     p.draw = function () {
+        var s1 = colors.slice(0, positions.length/2),
+            s2 = colors.slice(positions.length/2, positions.length - 1);
         for (var i = 0; i < positions.length; i++) {
             p.noStroke();
-            //p.stroke(strokes[i]);
+            //p.stroke(colors[i]);
+            if (i % 2) { p.stroke(s1[i % s1.length]); }
+            else { p.stroke(s2[i % s2.length]); }
             p.fill(colors[i]);
             p.push();
             p.translate(positions[i].x + config.width/2, positions[i].y + config.height/2);
@@ -53,19 +47,7 @@ var sketch = function (p) {
             stepx = 0.01,
             stepy = 100;
         setPosAndRot();
-        while (y < p.windowHeight + config.height) {
-            var x = 0,
-                referenceColor = colorHarmonizer(referenceAngle);
-            while(x < p.windowWidth) {
-                colors.push( perlinLightness(referenceColor, x, y) );
-                p.colorMode(p.RGB);
-                strokes.push( p.lerpColor(p.color(255), p.color(0), p.noise(x, y)) );
-                x += config.width * 0.25;
-                stepx += 0.001;
-            }
-            y += config.height * 0.25;
-            stepy += 0.001;
-        }
+        colors = setPalette();
     }
 
     // Returns an array of positions based on window dimensions.
@@ -89,87 +71,25 @@ var sketch = function (p) {
         }
     }
 
-    // COLOR 
-
-    // Returns a harmonized HSL color based on reference angle input.
-    // Adapted from http://devmag.org.za/2012/07/29/how-to-choose-colours-procedurally-algorithms/
-    function colorHarmonizer(referenceAngle) {
-        var result,
-            // Analogous: Choose second and third ranges 0.
-            // Complementary: Choose rangeAngle2 = 0, offsetAngle1 = 180.
-            // Split Complementary: Choose offset angles 180 +/- a small angle. The second and third ranges must be smaller than the difference between the two offset angles.
-            // Triad: Choose offset angles 120 and 240.
-            offsetAngle1 = 120, 
-            offsetAngle2 = 240,
-            rangeAngle0 = 15, 
-            rangeAngle1 = 30, 
-            rangeAngle2 = 60,
-            rangeAngleSum = rangeAngle0 + rangeAngle1 + rangeAngle2,
-            saturation = p.random(60, 100), 
-            luminance = p.random(50, 70),
-            randomAngle;
-        p.colorMode(p.HSL, 360, 100, 100);
-        randomAngle = p.random(0, rangeAngleSum);
-        if (randomAngle > rangeAngle0) {
-            if (randomAngle < rangeAngle0 + rangeAngle1) {
-                randomAngle += offsetAngle1;
-            } else { randomAngle += offsetAngle2; }
+    // COLOR
+    // Returns array of hex colors from chroma scale.
+    function setPalette() {
+        var bases = [],
+            bezInterpolator = null,
+            bez2 = null;
+        for (var i = 0; i < 7; i++) {
+            bases.push(chroma('#' + ('00000' + Math.floor(Math.random()*16777216).toString(16)).substr(-6)));
         }
-        return p.color( (referenceAngle + randomAngle) % 360, saturation, luminance);
+        bases.sort(function(a, b) {
+          return b.get('hcl.l') - a.get('hcl.l');
+        });
+        bezInterpolator = chroma.bezier([bases[0], bases[1], bases[2], bases[3]]);
+        bez2 = chroma.bezier([bases[3], bases[4], bases[5], bases[6]]);
+        var scale1 = chroma.scale(bezInterpolator).padding(0).correctLightness(true).colors(positions.length/2),
+            scale2 = chroma.scale(bez2).padding(0).correctLightness(true).colors(positions.length);
+        return scale1.concat(scale2);
     }
 
-    function getColors() {
-        var oldCall = document.getElementById('color-script');
-        if (oldCall) {
-            oldCall.parentNode.removeChild(oldCall);
-        }
-        apiCall = document.createElement('script');
-        apiCall.id = 'color-script';
-        apiCall.src = apiSrcColour + '&' + (new Date().getTime());
-        body.appendChild(apiCall);
-        p.noLoop();
-    }
-
-    // Callback function for colourlovers API call.
-    function parseColours(json) {
-        for (var i = 0; i < json[0].colors.length; i++) {
-            config.colors.push(p.color('#' + json[0].colors[i]));
-        }
-        config.colors.splice(p.floor(config.colors.length/2), 0, p.color(255));
-        console.log('bar');
-        init();
-        p.loop();
-    }
-
-    function perlinLerpComplements(x, y, z) {
-        var amt = p.noise(x, y, z);
-        if (amt < 0.5) {
-            return p.lerpColor(white, mapping.c1, p.map(amt, 0, 0.5, 0, 1));
-        }
-        return p.lerpColor(white, mapping.c2, p.map(amt, 0.5, 1, 0, 1));
-    }
-
-        // Takes a color and two variables. Returns a color based on output of perlin noise.
-    function perlinLightness(c, x, y) {
-        var amt = p.noise(x, y);
-        p.colorMode(p.HSL);
-        return p.color( p.hue(c), p.saturation(c), p.map(amt, 0, 1, -15, 15) + p.lightness(c), config.alpha );
-    }
-
-    function complementHSL(c) {
-        var result;
-        p.colorMode(p.HSL);
-        result = p.color( (p.hue(c)) + 180 % 360, p.saturation(c), 100 - p.lightness(c) );
-        p.colorMode(p.RGB);
-        return p.color( p.red(result), p.green(result), p.blue(result) );
-    }
-
-    function randomRGB() {
-        p.colorMode(p.RGB);
-        return p.color(Math.random() * 255, Math.random() * 255, Math.random() * 255);
-    }
-
-    sketch.parseColours = parseColours;
 }
 
 // Create a new canvas running 'sketch' as a child of the element with id 'p5-sketch'.
