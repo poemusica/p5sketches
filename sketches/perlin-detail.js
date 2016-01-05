@@ -1,5 +1,6 @@
 var sketch = function (p) {
-    var 
+    var
+        dpr,
         gui,
         data = {
             zoom: 100,
@@ -24,6 +25,7 @@ var sketch = function (p) {
         var guiElt;
         p.createCanvas(p.windowWidth, p.windowHeight);
         // Set up GUI in DOM.
+        dpr = p.pixelDensity(),
         gui = new dat.GUI( { autoPlace: false } );
         guiElt = gui.domElement;
         document.getElementById('p5-sketch').appendChild(guiElt);
@@ -53,11 +55,11 @@ var sketch = function (p) {
     p.draw = function () {
         p.background(0);
         p.loadPixels();
-        var d = window.devicePixelRatio;
         for (var x = 0; x < p.width; x++) {
             for (var y = 0; y < p.height; y++) {
-                var c = p.map(p.noise(x/data.zoom, y/data.zoom), 0, 1, 0, 255)
-                setPixColor(x, y, d, c)
+                var c = p.map(p.noise(x/data.zoom, y/data.zoom), 0, 1, 0, 255);
+                setPixColor(x, y, dpr, c);
+                //p.set(x, y, c);
             }
         }
         p.updatePixels();
