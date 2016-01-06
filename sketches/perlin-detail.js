@@ -1,6 +1,7 @@
 var sketch = function (p) {
     var
         dpr,
+        scale,
         gui,
         data = {
             zoom: 100,
@@ -25,7 +26,7 @@ var sketch = function (p) {
         var guiElt;
         p.createCanvas(p.windowWidth, p.windowHeight);
         // Set up GUI in DOM.
-        dpr = p.pixelDensity(),
+        dpr = p.pixelDensity();
         gui = new dat.GUI( { autoPlace: false } );
         guiElt = gui.domElement;
         document.getElementById('p5-sketch').appendChild(guiElt);
@@ -33,10 +34,10 @@ var sketch = function (p) {
         guiElt.style.left = '0px';
         guiElt.style.top = '0px';
         // Add GUI controllers.
-        gui.add(data, 'zoom', 5, 200).name('Zoom').step(5).onChange( function() {
+        gui.add(data, 'zoom', 5, 500).name('Zoom').step(5).onChange( function() {
             p.loop();
         });
-        gui.add(data, 'octaves', 1, 6).name('Octaves').step(1).onChange( function() {
+        gui.add(data, 'octaves', 1, 8).name('Octaves').step(1).onChange( function() {
             p.noiseDetail(data.octaves, data.falloff);
             p.loop();
         });
@@ -50,6 +51,8 @@ var sketch = function (p) {
             p.loop();
         });
         gui.add(data, 'randSeed').name('Re-seed');
+        scale = chroma.scale('Paired');
+        //scale = chroma.cubehelix().scale();
     };
 
     p.draw = function () {
@@ -57,7 +60,9 @@ var sketch = function (p) {
         p.loadPixels();
         for (var x = 0; x < p.width; x++) {
             for (var y = 0; y < p.height; y++) {
-                var c = p.map(p.noise(x/data.zoom, y/data.zoom), 0, 1, 0, 255);
+                var n = p.noise(x/data.zoom, y/data.zoom),
+                    c = scale(n).rgb();
+                    // c = p.map(n, 0, 1, 0, 255);
                 setPixColor(x, y, dpr, c);
                 //p.set(x, y, c);
             }
@@ -77,10 +82,10 @@ var sketch = function (p) {
         for (var i = 0; i < d; i++) {
           for (var j = 0; j < d; j++) {
             var idx = 4 * ((y * d + j) * p.width * d + (x * d + i));
-            p.pixels[idx] = c;      // r
-            p.pixels[idx+1] = c;    // g
-            p.pixels[idx+2] = c;    // b
-            p.pixels[idx+3] = 255;  // a
+            p.pixels[idx] = c[0];      // r
+            p.pixels[idx+1] = c[1];    // g
+            p.pixels[idx+2] = c[2];    // b
+            p.pixels[idx+3] = 255;     // a
           }
         }
     }
