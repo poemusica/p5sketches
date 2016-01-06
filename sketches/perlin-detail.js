@@ -1,5 +1,8 @@
 var sketch = function (p) {
     var
+        config = {
+            rotOffset: null,
+        },
         dpr,
         scale,
         gui,
@@ -12,12 +15,13 @@ var sketch = function (p) {
             // p5.js default. Values > 0.5 can result in output > 1.
             falloff: 0.5,
             // TODO
-            viz: { cloud: 'cloud', other: 'other' },
+            viz: { pixels: 'pixels', vectors: 'vectors' },
             // From setSeed p5.js source code.
             seed: (Math.random() * 4294967296)  >>> 0,
             randSeed: function () {
                     data.seed = (Math.random() * 4294967296)  >>> 0;
                     p.noiseSeed(data.seed);
+                    config.rotOffset = p.random(0, p.TWO_PI);
                     // CAUTION: Verify this index when changing controllers.
                     gui.__controllers[4].updateDisplay();
                     p.loop();
@@ -28,7 +32,8 @@ var sketch = function (p) {
         var guiElt;
         document.getElementsByTagName('body')[0].style.overflow = 'hidden';
         p.createCanvas(document.getElementsByTagName('html')[0].clientWidth, document.getElementsByTagName('html')[0].clientHeight);
-        p.rectMode(p.CENTER);
+        p.ellipseMode(p.CENTER);
+        //p.rectMode(p.CENTER);
         // Set up GUI in DOM.
         dpr = p.pixelDensity();
         gui = new dat.GUI( { autoPlace: false } );
@@ -50,23 +55,29 @@ var sketch = function (p) {
             p.loop();
         });
         gui.add(data, 'viz', data.viz ).name('Visualization').onFinishChange( function(e) {
-            console.log(e);
             mode = e;
             p.loop();
         });
         gui.add(data, 'seed').name('Seed').onFinishChange( function() {
             p.noiseSeed(data.seed);
+            config.rotOffset = p.random(0, p.TWO_PI);
             p.loop();
         });
         gui.add(data, 'randSeed').name('Re-seed');
         // Set up color scale.
         scale = chroma.scale('Paired');
         // Set up default display mode.
-        mode = 'cloud';
+        mode = 'pixels';
+        // Set initial rotation offset for vector field mode.
+        config.rotOffset = p.random(0, p.TWO_PI);
     };
 
     p.draw = function () {
-        display[mode]();
+        display.pixels();
+        if ( mode != 'pixels') {
+            display[mode]();
+        };
+
     };
 
     p.windowResized = function () {
@@ -75,7 +86,7 @@ var sketch = function (p) {
 
     // Define display modes.
     display = {
-        cloud: function() {
+        pixels: function() {
             p.loadPixels();
             for (var x = 0; x < p.width; x++) {
                 for (var y = 0; y < p.height; y++) {
@@ -89,27 +100,63 @@ var sketch = function (p) {
             p.updatePixels();
             p.noLoop();
         },
-        other: function() {
+        vectors: function() {
             var space = 20,
                 size = space - 10,
                 margin = 30,
                 xm = Math.floor((p.width - margin) / space),
                 ym = Math.floor((p.height - margin) / space);
-            p.background(255);
-            p.stroke(0);
-            p.strokeWeight(4);
-            var m = 0;
+            p.background(200, 200);
+            p.colorMode(p.HSB);
+            var m = 0,
+                theta, noise;
             for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
                 var n = 0;
                 for (var x = p.width/2 + space/2; x < p.width - xm/2 - size/2; x += space) {
-                    p.point(x, y);
-                    p.line(x - size/2, y, x + size/2, y);
-                    p.point((p.width/2 - space/2) - space * n, y);
-                    p.line((p.width/2 - space/2) - space * n - size/2, y, (p.width/2 - space/2) - space * n + size/2, y);
-                    p.point(x, (p.height/2 - space/2) - space * m);
-                    p.line(x - size/2, (p.height/2 - space/2) - space * m, x + size/2, (p.height/2 - space/2) - space * m);
-                    p.point((p.width/2 - space/2) - space * n, (p.height/2 - space/2) - space * m);
-                    p.line((p.width/2 - space/2) - space * n - size/2, (p.height/2 - space/2) - space * m, (p.width/2 - space/2) - space * n + size/2, (p.height/2 - space/2) - space * m);
+                    p.push();
+                    p.translate(x, y);
+                    noise = p.noise(x/data.zoom, y/data.zoom);
+                    theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    p.rotate(theta);
+                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.strokeWeight(4);
+                    p.pop();
+
+                    p.push();
+                    p.translate(p.width/2 - space/2 - space * n, y);
+                    noise = p.noise((p.width/2 - space/2 - space * n)/data.zoom, y/data.zoom);
+                    theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    p.rotate(theta);
+                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.strokeWeight(4);
+                    p.pop();
+
+                    p.push();
+                    p.translate(x, p.height/2 - space/2 - space * m);
+                    noise = p.noise(x/data.zoom, (p.height/2 - space/2 - space * m)/data.zoom);
+                    theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    p.rotate(theta);
+                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.strokeWeight(4);
+                    p.pop();
+
+                    p.push();
+                    p.translate(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m);
+                    noise = p.noise((p.width/2 - space/2 - space * n)/data.zoom, (p.height/2 - space/2 - space * m)/data.zoom);
+                    theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    p.rotate(theta);
+                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.strokeWeight(4);
+                    p.pop();
+
                     n++;
                 }
                 m++;
