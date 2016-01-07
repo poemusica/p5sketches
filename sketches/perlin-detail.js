@@ -15,7 +15,7 @@ var sketch = function (p) {
             // p5.js default. Values > 0.5 can result in output > 1.
             falloff: 0.5,
             // TODO
-            viz: { pixels: 'pixels', vectors: 'vectors' },
+            viz: { pixels: 'pixels', vectors: 'vectors', overlay: 'overlay'},
             // From setSeed p5.js source code.
             seed: (Math.random() * 4294967296)  >>> 0,
             randSeed: function () {
@@ -33,7 +33,7 @@ var sketch = function (p) {
         document.getElementsByTagName('body')[0].style.overflow = 'hidden';
         p.createCanvas(document.getElementsByTagName('html')[0].clientWidth, document.getElementsByTagName('html')[0].clientHeight);
         p.ellipseMode(p.CENTER);
-        //p.rectMode(p.CENTER);
+        p.noFill();
         // Set up GUI in DOM.
         dpr = p.pixelDensity();
         gui = new dat.GUI( { autoPlace: false } );
@@ -73,11 +73,7 @@ var sketch = function (p) {
     };
 
     p.draw = function () {
-        display.pixels();
-        if ( mode != 'pixels') {
-            display[mode]();
-        };
-
+        display[mode]();
     };
 
     p.windowResized = function () {
@@ -103,58 +99,75 @@ var sketch = function (p) {
         vectors: function() {
             var space = 20,
                 size = space - 10,
+                arrow = size/2,
                 margin = 30,
                 xm = Math.floor((p.width - margin) / space),
-                ym = Math.floor((p.height - margin) / space);
-            p.background(200, 200);
-            p.colorMode(p.HSB);
-            var m = 0,
-                theta, noise;
+                ym = Math.floor((p.height - margin) / space),
+                chr = 80,
+                lit = 65,
+                m = 0,
+                cos60 = Math.cos(60);
+            if (mode == 'overlay') { p.background(40, 160); }
+            else { p.background(40); }
             for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
                 var n = 0;
                 for (var x = p.width/2 + space/2; x < p.width - xm/2 - size/2; x += space) {
+                    var noise, theta, color;
+
                     p.push();
                     p.translate(x, y);
                     noise = p.noise(x/data.zoom, y/data.zoom);
                     theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
                     p.rotate(theta);
-                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.stroke(color);
                     p.strokeWeight(1);
                     p.line(-size/2, 0, size/2, 0);
-                    p.strokeWeight(4);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
                     p.pop();
 
                     p.push();
                     p.translate(p.width/2 - space/2 - space * n, y);
                     noise = p.noise((p.width/2 - space/2 - space * n)/data.zoom, y/data.zoom);
                     theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
                     p.rotate(theta);
-                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.stroke(color);
                     p.strokeWeight(1);
                     p.line(-size/2, 0, size/2, 0);
-                    p.strokeWeight(4);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
                     p.pop();
 
                     p.push();
                     p.translate(x, p.height/2 - space/2 - space * m);
                     noise = p.noise(x/data.zoom, (p.height/2 - space/2 - space * m)/data.zoom);
                     theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
                     p.rotate(theta);
-                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.stroke(color);
                     p.strokeWeight(1);
                     p.line(-size/2, 0, size/2, 0);
-                    p.strokeWeight(4);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
                     p.pop();
 
                     p.push();
                     p.translate(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m);
                     noise = p.noise((p.width/2 - space/2 - space * n)/data.zoom, (p.height/2 - space/2 - space * m)/data.zoom);
                     theta = p.map(noise, 0, 1, 0, p.TWO_PI) + config.rotOffset;
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
                     p.rotate(theta);
-                    p.stroke(p.degrees(theta) % 360, 100, 100, 1);
+                    p.stroke(color);
                     p.strokeWeight(1);
                     p.line(-size/2, 0, size/2, 0);
-                    p.strokeWeight(4);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
                     p.pop();
 
                     n++;
@@ -163,6 +176,10 @@ var sketch = function (p) {
             }
             p.noLoop();
         },
+        overlay: function() {
+            this.pixels();
+            this.vectors();
+        }
     };
 
     // Directly sets values for pixels in the display.
