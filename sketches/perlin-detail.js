@@ -15,15 +15,22 @@ var sketch = function (p) {
             // p5.js default. Values > 0.5 can result in output > 1.
             falloff: 0.5,
             // Visualization options.
-            viz: { pixels: 'pixels', vectors: 'vectors', overlay: 'overlay', histogram: 'histogram'},
+            viz: {
+                pixels: 'pixels',
+                rotations: 'rotations',
+                gradient: 'gradient',
+                curl: 'curl',
+                histogram: 'histogram'
+            },
             // From setSeed p5.js source code.
+            overlay: true,
             seed: (Math.random() * 4294967296)  >>> 0,
             randSeed: function () {
                     data.seed = (Math.random() * 4294967296)  >>> 0;
                     p.noiseSeed(data.seed);
                     config.rotOffset = p.random(0, p.TWO_PI);
                     // CAUTION: Verify this index when changing controllers.
-                    gui.__controllers[4].updateDisplay();
+                    gui.__controllers[5].updateDisplay();
                     p.loop();
                 }
             }
@@ -55,6 +62,9 @@ var sketch = function (p) {
         });
         gui.add(data, 'viz', data.viz ).name('Visualization').onFinishChange( function(e) {
             mode = e;
+            p.loop();
+        });
+        gui.add(data, 'overlay').name('Overlay').onFinishChange( function() {
             p.loop();
         });
         gui.add(data, 'seed').name('Seed').onFinishChange( function() {
@@ -93,7 +103,7 @@ var sketch = function (p) {
             p.updatePixels();
             p.noLoop();
         },
-        vectors: function() {
+        rotations: function() {
             var space = 20,
                 size = space - 10,
                 arrow = size/2,
@@ -104,7 +114,7 @@ var sketch = function (p) {
                 lit = 65,
                 m = 0,
                 cos60 = Math.cos(60);
-            if (mode == 'overlay') { p.background(40, 160); }
+            if (data.overlay) { display['pixels'](); p.background(40, 160); }
             else { p.background(40); }
             for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
                 var n = 0,
@@ -172,9 +182,163 @@ var sketch = function (p) {
             }
             p.noLoop();
         },
-        overlay: function() {
-            this.pixels();
-            this.vectors();
+        gradient: function() {
+            var space = 20,
+                size = space - 10,
+                arrow = size/2,
+                margin = 30,
+                xm = Math.floor((p.width - margin) / space),
+                ym = Math.floor((p.height - margin) / space),
+                chr = 80,
+                lit = 65,
+                m = 0,
+                cos60 = Math.cos(60);
+            if (data.overlay) { display['pixels'](); p.background(40, 160); }
+            else { p.background(40); }
+            for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
+                var n = 0,
+                    noise, theta, color;
+                for (var x = p.width/2 + space/2; x < p.width - xm/2 - size/2; x += space) {
+                    var v = gradient(x, y, data.zoom);
+                    p.push();
+                    p.translate(x, y);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = gradient(p.width/2 - space/2 - space * n, y, data.zoom);
+                    p.translate(p.width/2 - space/2 - space * n, y);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = gradient(x, p.height/2 - space/2 - space * m, data.zoom);
+                    p.translate(x, p.height/2 - space/2 - space * m);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = gradient(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m, data.zoom);
+                    p.translate(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    n++;
+                }
+                m++;
+            }
+            p.noLoop();
+        },
+        curl: function() {
+            var space = 20,
+                size = space - 10,
+                arrow = size/2,
+                margin = 30,
+                xm = Math.floor((p.width - margin) / space),
+                ym = Math.floor((p.height - margin) / space),
+                chr = 80,
+                lit = 65,
+                m = 0,
+                cos60 = Math.cos(60);
+            if (data.overlay) { display['pixels'](); p.background(40, 160); }
+            else { p.background(40); }
+            for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
+                var n = 0,
+                    noise, theta, color;
+                for (var x = p.width/2 + space/2; x < p.width - xm/2 - size/2; x += space) {
+                    var v = curl(x, y, data.zoom);
+                    p.push();
+                    p.translate(x, y);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = curl(p.width/2 - space/2 - space * n, y, data.zoom);
+                    p.translate(p.width/2 - space/2 - space * n, y);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = curl(x, p.height/2 - space/2 - space * m, data.zoom);
+                    p.translate(x, p.height/2 - space/2 - space * m);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    p.push();
+                    v = curl(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m, data.zoom);
+                    p.translate(p.width/2 - space/2 - space * n, p.height/2 - space/2 - space * m);
+                    theta = v.heading();
+                    color = chroma.hcl(p.degrees(theta) % 360, chr, lit).hex();
+                    p.rotate(theta);
+                    p.stroke(color);
+                    p.strokeWeight(1);
+                    p.line(-size/2, 0, size/2, 0);
+                    p.translate(-size/2, 0);
+                    p.fill(color);
+                    p.triangle( (cos60 * arrow)/2, 0, -(cos60 * arrow)/2, arrow/2, (-cos60 * arrow)/2, -arrow/2);
+                    p.pop();
+
+                    n++;
+                }
+                m++;
+            }
+            p.noLoop();
         },
         histogram: function() {
             var buckets = {},
@@ -219,6 +383,36 @@ var sketch = function (p) {
             p.pixels[idx+3] = 255;     // a
           }
         }
+    }
+
+    // Computes the gradient at the sampled point in perlin space. Returns a vector.
+    function gradient(x, y, zoom) {
+        var eps = 1,
+            n1, n2, a, b;
+        n1 = p.noise(x/zoom, (y + eps)/zoom);
+        n2 = p.noise(x/zoom, (y - eps)/zoom);
+        // change in field wrt y.
+        a = (n1 - n2)/2 * eps;
+        n1 = p.noise((x + eps)/zoom, y/zoom);
+        n2 = p.noise((x - eps)/zoom, y/zoom);
+        // change in field wrt x.
+        b = (n1 - n2)/2 * eps;
+        return p.createVector(b, a);
+    }
+
+    // Computes the curl at a sampled point in perlin space. Returns a vector.
+    function curl(x, y, zoom) {
+        var eps = 1,
+            n1, n2, a, b;
+        n1 = p.noise(x/zoom, (y + eps)/zoom);
+        n2 = p.noise(x/zoom, (y - eps)/zoom);
+        // change in field wrt y.
+        a = (n1 - n2)/2 * eps;
+        n1 = p.noise((x + eps)/zoom, y/zoom);
+        n2 = p.noise((x - eps)/zoom, y/zoom);
+        // change in field wrt x.
+        b = (n1 - n2)/2 * eps;
+        return p.createVector(a, -b);
     }
 }
 
