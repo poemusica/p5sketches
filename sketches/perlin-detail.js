@@ -181,10 +181,9 @@ var sketch = function (p) {
                 colors = {},
                 num = 999,
                 sampling = 4,
-                xw = p.max(p.width/num, 1);
-            p.background(0);
+                max = 0;
+            p.background('#DCDCDC');
             p.strokeWeight(1);
-            var max = 0;
             for (var i = 0; i < p.width; i += sampling) {
                 for (var j = 0; j < p.height; j += sampling) {
                     var n = p.noise(i/data.zoom, j/data.zoom),
