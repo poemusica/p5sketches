@@ -14,8 +14,8 @@ var sketch = function (p) {
             octaves: 4,
             // p5.js default. Values > 0.5 can result in output > 1.
             falloff: 0.5,
-            // TODO
-            viz: { pixels: 'pixels', vectors: 'vectors', overlay: 'overlay'},
+            // Visualization options.
+            viz: { pixels: 'pixels', vectors: 'vectors', overlay: 'overlay', histogram: 'histogram'},
             // From setSeed p5.js source code.
             seed: (Math.random() * 4294967296)  >>> 0,
             randSeed: function () {
@@ -32,7 +32,6 @@ var sketch = function (p) {
         var guiElt;
         document.getElementsByTagName('body')[0].style.overflow = 'hidden';
         p.createCanvas(document.getElementsByTagName('html')[0].clientWidth, document.getElementsByTagName('html')[0].clientHeight);
-        p.ellipseMode(p.CENTER);
         p.noFill();
         // Set up GUI in DOM.
         dpr = p.pixelDensity();
@@ -66,7 +65,7 @@ var sketch = function (p) {
         gui.add(data, 'randSeed').name('Re-seed');
         // Set up color scale.
         scale = chroma.scale('Paired');
-        // Set up default display mode.
+        // Set default display mode.
         mode = 'pixels';
         // Set initial rotation offset for vector field mode.
         config.rotOffset = p.random(0, p.TWO_PI);
@@ -88,9 +87,7 @@ var sketch = function (p) {
                 for (var y = 0; y < p.height; y++) {
                     var n = p.noise(x/data.zoom, y/data.zoom),
                         c = scale(n).rgb();
-                        // c = p.map(n, 0, 1, 0, 255);
                     setPixColor(x, y, dpr, c);
-                    //p.set(x, y, c);
                 }
             }
             p.updatePixels();
@@ -110,10 +107,9 @@ var sketch = function (p) {
             if (mode == 'overlay') { p.background(40, 160); }
             else { p.background(40); }
             for (var y = p.height/2 + space/2; y < p.height - ym/2 - size/2; y += space) {
-                var n = 0;
+                var n = 0,
+                    noise, theta, color;
                 for (var x = p.width/2 + space/2; x < p.width - xm/2 - size/2; x += space) {
-                    var noise, theta, color;
-
                     p.push();
                     p.translate(x, y);
                     noise = p.noise(x/data.zoom, y/data.zoom);
@@ -179,7 +175,36 @@ var sketch = function (p) {
         overlay: function() {
             this.pixels();
             this.vectors();
-        }
+        },
+        histogram: function() {
+            var buckets = {},
+                colors = {},
+                num = 999,
+                sampling = 4,
+                xw = p.max(p.width/num, 1);
+            p.background(0);
+            p.strokeWeight(1);
+            var max = 0;
+            for (var i = 0; i < p.width; i += sampling) {
+                for (var j = 0; j < p.height; j += sampling) {
+                    var n = p.noise(i/data.zoom, j/data.zoom),
+                        c = scale(n).rgb();
+                        key = Math.round(p.map(n, 0, 1, 0, num));
+                    colors[key] ? chroma.mix(colors[key], c) : colors[key] = c;
+                    buckets[key] ? buckets[key] += 1 : buckets[key] = 1;
+                    if (buckets[key] > max) { max = buckets[key]; }
+                }
+            }
+            for (var key = 0; key <= num; key++) {
+                var v = buckets[key] ? buckets[key] : 0,
+                    c = colors[key],
+                    x = p.map(key, 0, num, 0, p.width),
+                    h = p.map(v, 0, max, p.height, 20);
+                c ? p.stroke(c) : p.stroke(0, 0);
+                p.line(x, p.height, x, h);
+            }
+            p.noLoop();
+        },
     };
 
     // Directly sets values for pixels in the display.
