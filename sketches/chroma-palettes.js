@@ -1,5 +1,5 @@
 var sketch = function (p) {
-    var 
+    var
         // Render arrays
         positions,
         rotations,
@@ -79,10 +79,10 @@ var sketch = function (p) {
             p.loop();
         });
         gui.add(data,'tidy').name('Tidy').onFinishChange( function() {
-            if (data.tidy) { 
+            if (data.tidy) {
                 targetPos = centerPositions(targetPos);
                 targetRot = resetRotations(rotations.length);
-            } else { 
+            } else {
                 targetPos = setPositions();
                 targetRot = setRotations(rotations.length);
             }
@@ -110,7 +110,7 @@ var sketch = function (p) {
             if (data.hex) {
                 var textColor = (chroma.contrast('black', color) < 4.5) ? 255: 0;
                 p.fill(textColor);
-                p.text(palette[i], 0, -config.height/4, config.width, 0);
+                p.text(palette[i], 0, 0);//0, -config.height/4, config.width, 0);
             }
             p.pop();
         }
@@ -124,7 +124,7 @@ var sketch = function (p) {
         config.height = p.max(p.height/8, 45);
         positions = setPositions();
         rotations = setRotations(positions.length);
-        if (data.tidy) { 
+        if (data.tidy) {
             positions = centerPositions(positions);
             rotations = resetRotations(positions.length);
         }
@@ -285,7 +285,7 @@ var sketch = function (p) {
     // Caution: Uses a shallow copy of input.
     function shuffleArray (array) {
         var result = array.slice(),
-            i = 0, 
+            i = 0,
             j = 0,
             temp = null;
         for (var i = result.length - 1; i > 0; i -= 1) {
@@ -319,7 +319,7 @@ var sketch = function (p) {
             button = ul.getElementsByClassName('function')[0],
             itemList = [];
         for (var i = 0; i < items.length; i++) {
-            itemList.push(items[i]); 
+            itemList.push(items[i]);
         }
         itemList.sort( function(a, b) {
             var chromaA = chroma(a.getElementsByClassName('c')[0].firstChild.value),
