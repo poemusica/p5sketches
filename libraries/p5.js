@@ -1,4 +1,4 @@
-/*! p5.js v0.4.9 August 31, 2015 */
+/*! p5.js v0.4.19 November 11, 2015 */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.p5 = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 
 },{}],2:[function(_dereq_,module,exports){
@@ -1350,7 +1350,7 @@ exports.Parser = Parser;
 
 'use strict';
 
-// A bÃ©zier path containing a set of path commands similar to a SVG path.
+// A bézier path containing a set of path commands similar to a SVG path.
 // Paths can be drawn on a context using `draw`.
 function Path() {
     this.commands = [];
@@ -2530,7 +2530,7 @@ function glyphToOps(glyph) {
         var dy;
         var cmd = path.commands[i];
         if (cmd.type === 'Q') {
-            // CFF only supports bÃ©zier curves, so convert the quad to a bÃ©zier.
+            // CFF only supports bézier curves, so convert the quad to a bézier.
             var _13 = 1 / 3;
             var _23 = 2 / 3;
 
@@ -5520,50 +5520,52 @@ exports.sizeOf = sizeOf;
 });
 
 },{}],28:[function(_dereq_,module,exports){
+/**
+ * @module Shape
+ * @submodule 3D Primitives
+ * @for p5
+ * @requires core
+ * @requires p5.Geometry3D
+ */
+
 'use strict';
 
 var p5 = _dereq_('../core/core');
 _dereq_('./p5.Geometry3D');
 
 /**
- * draw a plane with given a width and height
- * @param  {Number} width             the width of the plane
- * @param  {Number} height            the height of the plane
- * @param  {Number} detailX(optional) number of vertices on horizontal surface
- * @param  {Number} detailY(optional) number of vertices on horizontal surface
- * example
- * <div class="norender">
+ * Draw a plane with given a width and height
+ * @method plane
+ * @param  {Number} width      width of the plane
+ * @param  {Number} height     height of the plane
+ * @return {p5}                the p5 object
+ * @example
+ * <div>
  * <code>
+ * //draw a plane with width 200 and height 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   plane(100, 100);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   plane(200, 200);
+ * }
  * </code>
  * </div>
  */
-p5.prototype.plane = function(width, height, detailX, detailY){
+p5.prototype.plane = function(width, height){
 
-  width = width || 1;
-  height = height || 1;
+  width = width || 50;
+  height = height || 50;
 
-  detailX = detailX || 1;
-  detailY = detailY || 1;
+  //details for plane are highly optional
+  var detailX = typeof arguments[2] === Number ? arguments[2] : 1;
+  var detailY = typeof arguments[3] === Number ? arguments[3] : 1;
 
   var gId = 'plane|'+width+'|'+height+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5578,51 +5580,47 @@ p5.prototype.plane = function(width, height, detailX, detailY){
 
     var obj = geometry3d.generateObj();
 
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
 
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
 };
 
 /**
- * draw a sphere with given raduis
- * @param  {Number} radius            radius of the sphere
- * @param  {Number} detailX(optional) number of vertices on horizontal surface
- * @param  {Number} detailY(optional) number of vertices on vertical surface
- * example
- * <div class="norender">
+ * Draw a sphere with given raduis
+ * @method sphere
+ * @param  {Number} radius            radius of circle
+ * @param  {Number} [detail]          optional: number of segments,
+ *                                    the more segments the smoother geometry
+ *                                    default is 24
+ * @return {p5}                       the p5 object
+ * @example
+ * <div>
  * <code>
+ * // draw a sphere with radius 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   sphere(100);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   sphere(200);
+ * }
  * </code>
  * </div>
  */
-p5.prototype.sphere = function(radius, detailX, detailY){
+p5.prototype.sphere = function(radius, detail){
 
   radius = radius || 50;
 
-  detailX = detailX || 12;
-  detailY = detailY || 8;
+  var detailX = detail || 24;
+  var detailY = detail || 16;
 
   var gId = 'sphere|'+radius+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5637,55 +5635,53 @@ p5.prototype.sphere = function(radius, detailX, detailY){
 
     geometry3d.parametricGeometry(createSphere, detailX, detailY);
 
-    var obj = geometry3d.generateObj();
+    var obj = geometry3d.generateObj(true, true);
 
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
   return this;
 };
 
 /**
- * draw a cylinder with given radius and height
+ * Draw a cylinder with given radius and height
+ * @method  cylinder
  * @param  {Number} radius            radius of the surface
  * @param  {Number} height            height of the cylinder
- * @param  {Number} detailX(optional) number of vertices on horizontal surface
- * @param  {Number} detailY(optional) number of vertices on vertical surface
- * example
- * <div class="norender">
+ * @param  {Number} [detail]          optional: number of segments,
+ *                                    the more segments the smoother geometry
+ *                                    default is 24
+ * @return {p5}                       the p5 object
+ * @example
+ * <div>
  * <code>
+ * //draw a spining sylinder with radius 200 and height 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   cylinder(100, 200);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateZ(frameCount * 0.01);
+ *   cylinder(200, 200);
+ * }
  * </code>
  * </div>
  */
-p5.prototype.cylinder = function(radius, height, detailX, detailY){
+p5.prototype.cylinder = function(radius, height, detail){
 
   radius = radius || 50;
   height = height || 50;
 
-  detailX = detailX || 12;
-  detailY = detailY || 8;
+  var detailX = detail || 24;
+  var detailY = detail || 16;
 
   var gId = 'cylinder|'+radius+'|'+height+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5698,7 +5694,7 @@ p5.prototype.cylinder = function(radius, height, detailX, detailY){
     };
 
     geometry3d.parametricGeometry(createCylinder, detailX, detailY);
-    geometry3d.mergeVertices();
+    var obj = geometry3d.generateObj(true);
 
     var createTop = function(u, v){
       var theta = 2 * Math.PI * u;
@@ -5713,8 +5709,10 @@ p5.prototype.cylinder = function(radius, height, detailX, detailY){
       }
     };
 
-    geometry3d.parametricGeometry(
-      createTop, detailX, 1, geometry3d.vertices.length);
+    var geometry3d1 = new p5.Geometry3D();
+    geometry3d1.parametricGeometry(
+      createTop, detailX, 1);
+    var obj1 = geometry3d1.generateObj();
 
     var createBottom = function(u, v){
       var theta = 2 * Math.PI * u;
@@ -5728,59 +5726,58 @@ p5.prototype.cylinder = function(radius, height, detailX, detailY){
       }
     };
 
-    geometry3d.parametricGeometry(
-      createBottom, detailX, 1, geometry3d.vertices.length);
+    var geometry3d2 = new p5.Geometry3D();
+    geometry3d2.parametricGeometry(
+      createBottom, detailX, 1);
+    var obj2 = geometry3d2.generateObj();
 
-    var obj = geometry3d.generateObj(true);
 
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj, obj1, obj2]);
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
   return this;
 };
 
 
 /**
- * draw a cone with given radius and height
+ * Draw a cone with given radius and height
+ * @method cone
  * @param  {Number} radius            radius of the bottom surface
  * @param  {Number} height            height of the cone
- * @param  {Number} detailX(optional) number of vertices on horizontal surface
- * @param  {Number} detailY(optional) number of vertices on vertical surface
- * example
- * <div class="norender">
+ * @param  {Number} [detail]          optional: number of segments,
+ *                                    the more segments the smoother geometry
+ *                                    default is 24
+ * @return {p5}                       the p5 object
+ * @example
+ * <div>
  * <code>
+ * //draw a spining cone with radius 200 and height 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   cone(100, 200);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateZ(frameCount * 0.01);
+ *   cone(200, 200);
+ * }
  * </code>
  * </div>
  */
-p5.prototype.cone = function(radius, height, detailX, detailY){
+p5.prototype.cone = function(radius, height, detail){
 
   radius = radius || 50;
   height = height || 50;
 
-  detailX = detailX || 12;
-  detailY = detailY || 8;
+  var detailX = detail || 24;
+  var detailY = detail || 16;
 
   var gId = 'cone|'+radius+'|'+height+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5793,8 +5790,9 @@ p5.prototype.cone = function(radius, height, detailX, detailY){
     };
 
     geometry3d.parametricGeometry(createCone, detailX, detailY);
-    geometry3d.mergeVertices();
+    var obj = geometry3d.generateObj(true);
 
+    var geometry3d1 = new p5.Geometry3D();
     var createBottom = function(u, v){
       var theta = 2 * Math.PI * u;
       var x = radius * (1 - v) * Math.sin(-theta);
@@ -5803,59 +5801,56 @@ p5.prototype.cone = function(radius, height, detailX, detailY){
       return new p5.Vector(x, y, z);
     };
 
-    geometry3d.parametricGeometry(
-      createBottom, detailX, 1, geometry3d.vertices.length);
+    geometry3d1.parametricGeometry(
+      createBottom, detailX, 1);
+    var obj1 = geometry3d1.generateObj();
 
-    var obj = geometry3d.generateObj(true);
-
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj, obj1]);
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
   return this;
 };
 
 
 /**
- * draw a torus with given radius and tube radius
+ * Draw a torus with given radius and tube radius
+ * @method torus
  * @param  {Number} radius            radius of the whole ring
  * @param  {Number} tubeRadius        radius of the tube
- * @param  {Number} detailX(optional) number of vertices on horizontal surface
- * @param  {Number} detailY(optional) number of vertices on vertical surface
- * example
- * <div class="norender">
+ * @param  {Number} [detail]          optional: number of segments,
+ *                                    the more segments the smoother geometry
+ *                                    default is 24
+ * @return {p5}                       the p5 object
+ * @example
+ * <div>
  * <code>
+ * //draw a spining torus with radius 200 and tube radius 60
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   torus(100, 20);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateY(frameCount * 0.01);
+ *   torus(200, 60);
+ * }
  * </code>
  * </div>
  */
-p5.prototype.torus = function(radius, tubeRadius, detailX, detailY){
+p5.prototype.torus = function(radius, tubeRadius, detail){
 
   radius = radius || 50;
-  tubeRadius = tubeRadius || 20;
+  tubeRadius = tubeRadius || 10;
 
-  detailX = detailX || 12;
-  detailY = detailY || 8;
+  var detailX = detail || 24;
+  var detailY = detail || 16;
 
   var gId = 'torus|'+radius+'|'+tubeRadius+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5870,56 +5865,53 @@ p5.prototype.torus = function(radius, tubeRadius, detailX, detailY){
 
     geometry3d.parametricGeometry(createTorus, detailX, detailY);
 
-    var obj = geometry3d.generateObj();
+    var obj = geometry3d.generateObj(true);
 
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
   return this;
 };
 
 /**
- * draw a box with given widht, height and depth
+ * Draw a box with given width, height and depth
+ * @method  box
  * @param  {Number} width  width of the box
  * @param  {Number} height height of the box
  * @param  {Number} depth  depth of the box
- * example
- * <div class="norender">
+ * @return {p5}            the p5 object
+ * @example
+ * <div>
  * <code>
+ * //draw a spining box with width, height and depth 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
- * var theta = 0;
- *
  * function draw(){
- *   background(255, 255, 255, 255);
- *   translate(0, 0, -100);
- *   push();
- *   rotateZ(theta);
- *   rotateX(theta);
- *   rotateY(theta);
- *   box(100, 100, 100);
- *   pop();
- *   theta += 0.05;
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateY(frameCount * 0.01);
+ *   box(200, 200, 200);
+ * }
  * </code>
  * </div>
  */
 p5.prototype.box = function(width, height, depth){
 
-  width = width || 10;
+  width = width || 50;
   height = height || width;
   depth = depth || width;
 
-  //detail for box as optional
+  //details for box are highly optional
   var detailX = typeof arguments[3] === Number ? arguments[3] : 1;
   var detailY = typeof arguments[4] === Number ? arguments[4] : 1;
 
   var gId = 'cube|'+width+'|'+height+'|'+depth+'|'+detailX+'|'+detailY;
 
-  if(!this._graphics.geometryInHash(gId)){
+  if(!this._renderer.geometryInHash(gId)){
 
     var geometry3d = new p5.Geometry3D();
 
@@ -5973,20 +5965,169 @@ p5.prototype.box = function(width, height, depth){
     geometry3d.parametricGeometry(
       createPlane6, detailX, detailY, geometry3d.vertices.length);
 
-    var obj = geometry3d.generateObj(true);
+    var obj = geometry3d.generateObj();
 
-    this._graphics.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
-  this._graphics.drawBuffer(gId);
+  this._renderer.drawBuffer(gId);
 
   return this;
 
 };
 
 module.exports = p5;
+},{"../core/core":48,"./p5.Geometry3D":34}],29:[function(_dereq_,module,exports){
+/**
+ * @module Lights, Camera
+ * @submodule Camera
+ * @for p5
+ * @requires core
+ */
 
-},{"../core/core":47,"./p5.Geometry3D":33}],29:[function(_dereq_,module,exports){
+'use strict';
+
+var p5 = _dereq_('../core/core');
+
+/**
+ * Sets camera position
+ * @method camera
+ * @param  {Number} x  camera postion value on x axis
+ * @param  {Number} y  camera postion value on y axis
+ * @param  {Number} z  camera postion value on z axis
+ * @return {p5}        the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *  //move the camera away from the plane by a sin wave
+ *  camera(0, 0, sin(frameCount * 0.01) * 100);
+ *  plane(120, 120);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.camera = function(x, y, z){
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  this._validateParameters(
+    'camera',
+    args,
+    ['Number', 'Number', 'Number']
+  );
+  //what it manipulates is the model view matrix
+  this._renderer.translate(-x, -y, -z);
+};
+
+/**
+ * Sets perspective camera
+ * @method  perspective
+ * @param  {Number} fovy   camera frustum vertical field of view,
+ *                         from bottom to top of view, in degrees
+ * @param  {Number} aspect camera frustum aspect ratio
+ * @param  {Number} near   frustum near plane length
+ * @param  {Number} far    frustum far plane length
+ * @return {p5}            the p5 object
+ * @example
+ * <div>
+ * <code>
+ * //drag mouse to toggle the world!
+ * //you will see there's a vanish point
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ *   perspective(60 / 180 * PI, width/height, 0.1, 100);
+ * }
+ * function draw(){
+ *  background(200);
+ *  orbitControl();
+ *  for(var i = -1; i < 2; i++){
+ *     for(var j = -2; j < 3; j++){
+ *       push();
+ *       translate(i*160, 0, j*160);
+ *       box(40, 40, 40);
+ *       pop();
+ *     }
+ *   }
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.perspective = function(fovy,aspect,near,far) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  this._validateParameters(
+    'perspective',
+    args,
+    ['Number', 'Number', 'Number', 'Number']
+  );
+  this._renderer.uPMatrix = p5.Matrix.identity();
+  this._renderer.uPMatrix.perspective(fovy,aspect,near,far);
+  this._renderer._setCamera = true;
+};
+
+/**
+ * Setup ortho camera
+ * @method  ortho
+ * @param  {Number} left   camera frustum left plane
+ * @param  {Number} right  camera frustum right plane
+ * @param  {Number} bottom camera frustum bottom plane
+ * @param  {Number} top    camera frustum top plane
+ * @param  {Number} near   camera frustum near plane
+ * @param  {Number} far    camera frustum far plane
+ * @return {p5}            the p5 object
+ * @example
+ * <div>
+ * <code>
+ * //drag mouse to toggle the world!
+ * //there's no vanish point
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ *   ortho(-width/2, width/2, height/2, -height/2, 0.1, 100);
+ * }
+ * function draw(){
+ *  background(200);
+ *  orbitControl();
+ *  for(var i = -1; i < 2; i++){
+ *     for(var j = -2; j < 3; j++){
+ *       push();
+ *       translate(i*160, 0, j*160);
+ *       box(40, 40, 40);
+ *       pop();
+ *     }
+ *   }
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.ortho = function(left,right,bottom,top,near,far) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  this._validateParameters(
+    'ortho',
+    args,
+      ['Number', 'Number', 'Number', 'Number', 'Number', 'Number']
+  );
+  left /= this.width;
+  right /= this.width;
+  top /= this.height;
+  bottom /= this.height;
+  this._renderer.uPMatrix = p5.Matrix.identity();
+  this._renderer.uPMatrix.ortho(left,right,bottom,top,near,far);
+  this._renderer._setCamera = true;
+};
+
+module.exports = p5;
+
+},{"../core/core":48}],30:[function(_dereq_,module,exports){
 //@TODO: documentation of immediate mode
 
 'use strict';
@@ -5994,13 +6135,13 @@ module.exports = p5;
 var p5 = _dereq_('../core/core');
 
 //////////////////////////////////////////////
-// Primitives2D in 3D space
+// _primitives2D in 3D space
 //////////////////////////////////////////////
 
-p5.Renderer3D.prototype.primitives2D = function(arr){
-
+p5.Renderer3D.prototype._primitives2D = function(arr){
+  this._setDefaultCamera();
   var gl = this.GL;
-  var shaderProgram = this.getColorVertexShader();
+  var shaderProgram = this._getColorVertexShader();
 
   //create vertice buffer
   var vertexPositionBuffer = this.verticeBuffer;
@@ -6014,7 +6155,7 @@ p5.Renderer3D.prototype.primitives2D = function(arr){
   //create vertexcolor buffer
   var vertexColorBuffer = this.colorBuffer;
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
-  var color = this.getCurColor();
+  var color = this._getCurColor();
   var colors = [];
   for(var i = 0; i < arr.length / 3; i++){
     colors = colors.concat(color);
@@ -6029,17 +6170,16 @@ p5.Renderer3D.prototype.primitives2D = function(arr){
   this.setMatrixUniforms(mId);
 };
 
-//@TODO: point does not show up, gotta fix it.
 p5.Renderer3D.prototype.point = function(x, y, z){
   var gl = this.GL;
-  this.primitives2D([x, y, z]);
+  this._primitives2D([x, y, z]);
   gl.drawArrays(gl.POINTS, 0, 1);
   return this;
 };
 
 p5.Renderer3D.prototype.line = function(x1, y1, z1, x2, y2, z2){
   var gl = this.GL;
-  this.primitives2D([x1, y1, z1, x2, y2, z2]);
+  this._primitives2D([x1, y1, z1, x2, y2, z2]);
   gl.drawArrays(gl.LINES, 0, 2);
   return this;
 };
@@ -6047,7 +6187,7 @@ p5.Renderer3D.prototype.line = function(x1, y1, z1, x2, y2, z2){
 p5.Renderer3D.prototype.triangle = function
 (x1, y1, z1, x2, y2, z2, x3, y3, z3){
   var gl = this.GL;
-  this.primitives2D([x1, y1, z1, x2, y2, z2, x3, y3, z3]);
+  this._primitives2D([x1, y1, z1, x2, y2, z2, x3, y3, z3]);
   this._strokeCheck();
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   return this;
@@ -6057,7 +6197,7 @@ p5.Renderer3D.prototype.triangle = function
 p5.Renderer3D.prototype.quad = function
 (x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4){
   var gl = this.GL;
-  this.primitives2D(
+  this._primitives2D(
     [x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4]);
   this._strokeCheck();
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -6065,7 +6205,7 @@ p5.Renderer3D.prototype.quad = function
 };
 
 p5.Renderer3D.prototype.beginShape = function(mode){
-  this.modeStack.push(mode);
+  this.shapeMode = mode;
   this.verticeStack = [];
   return this;
 };
@@ -6077,11 +6217,10 @@ p5.Renderer3D.prototype.vertex = function(x, y, z){
 
 p5.Renderer3D.prototype.endShape = function(){
   var gl = this.GL;
-  this.primitives2D(this.verticeStack);
+  this._primitives2D(this.verticeStack);
   this.verticeStack = [];
-  var mode = this.modeStack.pop();
 
-  switch(mode){
+  switch(this.shapeMode){
     case 'POINTS':
       gl.drawArrays(gl.POINTS, 0, 1);
       break;
@@ -6106,12 +6245,16 @@ p5.Renderer3D.prototype.endShape = function(){
 
 //@TODO: figure out how to actually do stroke on shapes in 3D
 p5.Renderer3D.prototype._strokeCheck = function(){
-  var drawMode = this.drawModeStack[this.drawModeStack.length-1];
-  if(drawMode === 'stroke'){
+  if(this.drawMode === 'stroke'){
     throw new Error(
       'stroke for shapes in 3D not yet implemented, use fill for now :('
     );
   }
+};
+
+//@TODO
+p5.Renderer3D.prototype.strokeWeight = function() {
+  throw new Error('strokeWeight for 3d not yet implemented');
 };
 
 //////////////////////////////////////////////
@@ -6120,31 +6263,29 @@ p5.Renderer3D.prototype._strokeCheck = function(){
 
 p5.Renderer3D.prototype.fill = function(r, g, b, a) {
   var color = this._pInst.color.apply(this._pInst, arguments);
-  var colorNormalized = _normalizeColor(color.rgba);
-  if( colorNormalized !== this.getCurColor()){
-    this.colorStack.push(colorNormalized);
-  }
-  this.drawModeStack.push('fill');
+  var colorNormalized = color._array;
+  this.curColor = colorNormalized;
+  this.drawMode = 'fill';
   return this;
 };
 
 p5.Renderer3D.prototype.stroke = function(r, g, b, a) {
   var color = this._pInst.color.apply(this._pInst, arguments);
-  var colorNormalized = _normalizeColor(color.rgba);
-  if( colorNormalized !== this.getCurColor()){
-    this.colorStack.push(colorNormalized);
-  }
-  this.drawModeStack.push('stroke');
+  var colorNormalized = color._array;
+  this.curColor = colorNormalized;
+  this.drawMode = 'stroke';
   return this;
 };
 
-p5.Renderer3D.prototype.getColorVertexShader = function(){
+p5.Renderer3D.prototype._getColorVertexShader = function(){
   var gl = this.GL;
   var mId = 'vertexColorVert|vertexColorFrag';
   var shaderProgram;
+
   if(!this.materialInHash(mId)){
     shaderProgram =
       this.initShaders('vertexColorVert', 'vertexColorFrag', true);
+    this.mHash[mId] = shaderProgram;
     shaderProgram.vertexColorAttribute =
     gl.getAttribLocation(shaderProgram, 'aVertexColor');
     gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
@@ -6154,50 +6295,74 @@ p5.Renderer3D.prototype.getColorVertexShader = function(){
   return shaderProgram;
 };
 
-function _normalizeColor(_arr){
-  var arr = [];
-  _arr.forEach(function(val){
-    arr.push(val/255);
-  });
-  return arr;
-}
-
 module.exports = p5.Renderer3D;
-},{"../core/core":47}],30:[function(_dereq_,module,exports){
+
+},{"../core/core":48}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var p5 = _dereq_('../core/core');
 
-//@TODO: fix this fake orbitControl
+//@TODO: implement full orbit controls including
+//pan, zoom, quaternion rotation, etc.
 p5.prototype.orbitControl = function(){
   if(this.mouseIsPressed){
-    this.rotateX((this.mouseX - this.width / 2) / (this.width / 2));
-    this.rotateY((this.mouseY - this.height / 2) / (this.width / 2));
+    this.rotateY((this.mouseX - this.width / 2) / (this.width / 2));
+    this.rotateX((this.mouseY - this.height / 2) / (this.width / 2));
   }
   return this;
 };
 
 module.exports = p5;
-},{"../core/core":47}],31:[function(_dereq_,module,exports){
-'use strict';
+},{"../core/core":48}],32:[function(_dereq_,module,exports){
 /**
- * @todo WIP
+ * @module Lights, Camera
+ * @submodule Lights
+ * @for p5
+ * @requires core
  */
+
+'use strict';
+
 var p5 = _dereq_('../core/core');
 
-p5.prototype.ambientLight = function(r, g, b, a){
-
-  var gl = this._graphics.GL;
-  var shaderProgram = this._graphics.getShader(
-    'directionalLightVert', 'lightFrag');
+/**
+ * Creates an ambient light with a color
+ * @method  ambientLight
+ * @param  {Number|Array|String|p5.Color} v1  gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}            [v2] optional: green or saturation value
+ * @param  {Number}            [v3] optional: blue or brightness value
+ * @param  {Number}            [a]  optional: opacity
+ * @return {p5}                the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *   background(0);
+ *   ambientLight(150);
+ *   ambientMaterial(250);
+ *   sphere(200);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.ambientLight = function(v1, v2, v3, a){
+  var gl = this._renderer.GL;
+  var shaderProgram = this._renderer._getShader(
+    'lightVert', 'lightTextureFrag');
 
   gl.useProgram(shaderProgram);
   shaderProgram.uAmbientColor = gl.getUniformLocation(
-    shaderProgram, 'uAmbientColor' );
+    shaderProgram,
+    'uAmbientColor[' + this._renderer.ambientLightCount + ']');
 
-  var color = this._graphics._pInst.color.apply(
-    this._graphics._pInst, arguments);
-  var colors = _normalizeColor(color.rgba);
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, arguments);
+  var colors = color._array;
 
   gl.uniform3f( shaderProgram.uAmbientColor,
     colors[0], colors[1], colors[2]);
@@ -6207,152 +6372,452 @@ p5.prototype.ambientLight = function(r, g, b, a){
     shaderProgram, 'uMaterialColor' );
   gl.uniform4f( shaderProgram.uMaterialColor, 1, 1, 1, 1);
 
+  this._renderer.ambientLightCount ++;
+  shaderProgram.uAmbientLightCount =
+    gl.getUniformLocation(shaderProgram, 'uAmbientLightCount');
+  gl.uniform1i(shaderProgram.uAmbientLightCount,
+    this._renderer.ambientLightCount);
+
   return this;
 };
 
-p5.prototype.directionalLight = function(r, g, b, a, x, y, z) {
+/**
+ * Creates a directional light with a color and a direction
+ * @method  directionalLight
+ * @param  {Number|Array|String|p5.Color} v1   gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}          [v2] optional: green or saturation value
+ * @param  {Number}          [v3] optional: blue or brightness value
+ * @param  {Number}          [a]  optional: opacity
+ * @param  {Number|p5.Vector} x   x axis direction or a p5.Vector
+ * @param  {Number}          [y]  optional: y axis direction
+ * @param  {Number}          [z]  optional: z axis direction
+ * @return {p5}              the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *   background(0);
+ *   //move your mouse to change light direction
+ *   var dirX = (mouseX / width - 0.5) *2;
+ *   var dirY = (mouseY / height - 0.5) *(-2);
+ *   directionalLight(250, 250, 250, dirX, dirY, 0.25);
+ *   ambientMaterial(250);
+ *   sphere(200, 128);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.directionalLight = function(v1, v2, v3, a, x, y, z) {
+  // TODO(jgessner): Find an example using this and profile it.
+  // var args = new Array(arguments.length);
+  // for (var i = 0; i < args.length; ++i) {
+  //   args[i] = arguments[i];
+  // }
+  // this._validateParameters(
+  //   'directionalLight',
+  //   args,
+  //   [
+  //     //rgbaxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //rgbxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //caxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //cxyz
+  //     ['Number', 'Number', 'Number', 'Number'],
+  //     ['String', 'Number', 'Number', 'Number'],
+  //     ['Array', 'Number', 'Number', 'Number'],
+  //     ['Object', 'Number', 'Number', 'Number'],
+  //     //rgbavector
+  //     ['Number', 'Number', 'Number', 'Number', 'Object'],
+  //     //rgbvector
+  //     ['Number', 'Number', 'Number', 'Object'],
+  //     //cavector
+  //     ['Number', 'Number', 'Object'],
+  //     //cvector
+  //     ['Number', 'Object'],
+  //     ['String', 'Object'],
+  //     ['Array', 'Object'],
+  //     ['Object', 'Object']
+  //   ]
+  // );
 
-  var gl = this._graphics.GL;
-  var shaderProgram = this._graphics.getShader(
-    'directionalLightVert', 'lightFrag');
+  var gl = this._renderer.GL;
+  var shaderProgram = this._renderer._getShader(
+    'lightVert', 'lightTextureFrag');
 
   gl.useProgram(shaderProgram);
   shaderProgram.uDirectionalColor = gl.getUniformLocation(
-    shaderProgram, 'uDirectionalColor' );
+    shaderProgram,
+    'uDirectionalColor[' + this._renderer.directionalLightCount + ']');
 
-  var color = this._graphics._pInst.color.apply(
-    this._graphics._pInst, [r, g, b]);
-  var colors = _normalizeColor(color.rgba);
+  //@TODO: check parameters number
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, [v1, v2, v3]);
+  var colors = color._array;
 
   gl.uniform3f( shaderProgram.uDirectionalColor,
     colors[0], colors[1], colors[2]);
 
+  var _x, _y, _z;
+
+  if(typeof arguments[arguments.length-1] === 'number'){
+    _x = arguments[arguments.length-3];
+    _y = arguments[arguments.length-2];
+    _z = arguments[arguments.length-1];
+
+  }else{
+    try{
+      _x = arguments[arguments.length-1].x;
+      _y = arguments[arguments.length-1].y;
+      _z = arguments[arguments.length-1].z;
+    }
+    catch(error){
+      throw error;
+    }
+  }
+
   shaderProgram.uLightingDirection = gl.getUniformLocation(
-    shaderProgram, 'uLightingDirection' );
-  gl.uniform3f( shaderProgram.uLightingDirection,
-    arguments[arguments.length-3],
-    arguments[arguments.length-2],
-    arguments[arguments.length-1]);
+    shaderProgram,
+    'uLightingDirection[' + this._renderer.directionalLightCount + ']');
+  gl.uniform3f( shaderProgram.uLightingDirection, _x, _y, _z);
 
   //in case there's no material color for the geometry
   shaderProgram.uMaterialColor = gl.getUniformLocation(
     shaderProgram, 'uMaterialColor' );
   gl.uniform4f( shaderProgram.uMaterialColor, 1, 1, 1, 1);
 
+  this._renderer.directionalLightCount ++;
+  shaderProgram.uDirectionalLightCount =
+    gl.getUniformLocation(shaderProgram, 'uDirectionalLightCount');
+  gl.uniform1i(shaderProgram.uDirectionalLightCount,
+    this._renderer.directionalLightCount);
+
   return this;
 };
 
-p5.prototype.pointLight = function() {
-  // body...
-};
+/**
+ * Creates a point light with a color and a light position
+ * @method  pointLight
+ * @param  {Number|Array|String|p5.Color} v1   gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}          [v2] optional: green or saturation value
+ * @param  {Number}          [v3] optional: blue or brightness value
+ * @param  {Number}          [a]  optional: opacity
+ * @param  {Number|p5.Vector} x   x axis position or a p5.Vector
+ * @param  {Number}          [y]  optional: y axis position
+ * @param  {Number}          [z]  optional: z axis position
+ * @return {p5}              the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *   background(0);
+ *   //move your mouse to change light position
+ *   var locY = (mouseY / height - 0.5) *(-2);
+ *   var locX = (mouseX / width - 0.5) *2;
+ *   //to set the light position,
+ *   //think of the world's coordinate as:
+ *   // -1,1 -------- 1,1
+ *   //   |            |
+ *   //   |            |
+ *   //   |            |
+ *   // -1,-1---------1,-1
+ *   pointLight(250, 250, 250, locX, locY, 0);
+ *   ambientMaterial(250);
+ *   sphere(200, 128);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.pointLight = function(v1, v2, v3, a, x, y, z) {
+  // TODO(jgessner): Find an example using this and profile it.
+  // var args = new Array(arguments.length);
+  // for (var i = 0; i < args.length; ++i) {
+  //   args[i] = arguments[i];
+  // }
+  // this._validateParameters(
+  //   'pointLight',
+  //   arguments,
+  //   [
+  //     //rgbaxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //rgbxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //caxyz
+  //     ['Number', 'Number', 'Number', 'Number', 'Number'],
+  //     //cxyz
+  //     ['Number', 'Number', 'Number', 'Number'],
+  //     ['String', 'Number', 'Number', 'Number'],
+  //     ['Array', 'Number', 'Number', 'Number'],
+  //     ['Object', 'Number', 'Number', 'Number'],
+  //     //rgbavector
+  //     ['Number', 'Number', 'Number', 'Number', 'Object'],
+  //     //rgbvector
+  //     ['Number', 'Number', 'Number', 'Object'],
+  //     //cavector
+  //     ['Number', 'Number', 'Object'],
+  //     //cvector
+  //     ['Number', 'Object'],
+  //     ['String', 'Object'],
+  //     ['Array', 'Object'],
+  //     ['Object', 'Object']
+  //   ]
+  // );
 
-function _normalizeColor(_arr){
-  var arr = [];
-  _arr.forEach(function(val){
-    arr.push(val/255);
-  });
-  return arr;
-}
+  var gl = this._renderer.GL;
+  var shaderProgram = this._renderer._getShader(
+    'lightVert', 'lightTextureFrag');
+
+  gl.useProgram(shaderProgram);
+  shaderProgram.uPointLightColor = gl.getUniformLocation(
+    shaderProgram,
+    'uPointLightColor[' + this._renderer.pointLightCount + ']');
+
+  //@TODO: check parameters number
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, [v1, v2, v3]);
+  var colors = color._array;
+
+  gl.uniform3f( shaderProgram.uPointLightColor,
+    colors[0], colors[1], colors[2]);
+
+  var _x, _y, _z;
+
+  if(typeof arguments[arguments.length-1] === 'number'){
+    _x = arguments[arguments.length-3];
+    _y = arguments[arguments.length-2];
+    _z = arguments[arguments.length-1];
+
+  }else{
+    try{
+      _x = arguments[arguments.length-1].x;
+      _y = arguments[arguments.length-1].y;
+      _z = arguments[arguments.length-1].z;
+    }
+    catch(error){
+      throw error;
+    }
+  }
+
+  shaderProgram.uPointLightLocation = gl.getUniformLocation(
+    shaderProgram,
+    'uPointLightLocation[' + this._renderer.pointLightCount + ']');
+  gl.uniform3f( shaderProgram.uPointLightLocation, _x, _y, _z);
+
+  //in case there's no material color for the geometry
+  shaderProgram.uMaterialColor = gl.getUniformLocation(
+    shaderProgram, 'uMaterialColor' );
+  gl.uniform4f( shaderProgram.uMaterialColor, 1, 1, 1, 1);
+
+  this._renderer.pointLightCount ++;
+  shaderProgram.uPointLightCount =
+    gl.getUniformLocation(shaderProgram, 'uPointLightCount');
+  gl.uniform1i(shaderProgram.uPointLightCount,
+    this._renderer.pointLightCount);
+
+  return this;
+};
 
 module.exports = p5;
 
-},{"../core/core":47}],32:[function(_dereq_,module,exports){
+},{"../core/core":48}],33:[function(_dereq_,module,exports){
+/**
+ * @module Lights, Camera
+ * @submodule Material
+ * @for p5
+ * @requires core
+ */
+
 'use strict';
 
 var p5 = _dereq_('../core/core');
+//require('./p5.Texture');
 
 /**
-* [normal description]
-* @return {[type]} [description]
-*/
+ * Normal material for geometry
+ * @method normalMaterial
+ * @return {p5}                the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ *
+ * function draw(){
+ *  background(0);
+ *  normalMaterial();
+ *  sphere(200);
+ * }
+ * </code>
+ * </div>
+ */
 p5.prototype.normalMaterial = function(){
-  this._graphics.getShader('normalVert', 'normalFrag');
+  this._renderer._getShader('normalVert', 'normalFrag');
   return this;
 };
 
 /**
- * [textureMaterial description]
- * @return {[type]} [description]
+ * Texture for geometry
+ * @method texture
+ * @return {p5}                the p5 object
  * @example
  * <div>
  * <code>
  * var img;
- * var theta = 0;
- * img = loadImage("assets/cat.jpg");
- * background(255, 255, 255, 255);
- * translate(0, 0, -200);
- * push();
- * rotateZ(theta * mouseX * 0.001);
- * rotateX(theta * mouseX * 0.001);
- * rotateY(theta * mouseX * 0.001);
- * // pass image as texture
- * texture(img);
- * box(40);
- * pop();
- * theta += 0.05;
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ *   img = loadImage("assets/cat.jpg");
+ * }
+ *
+ * function draw(){
+ *   background(0);
+ *   rotateZ(frameCount * 0.01);
+ *   rotateX(frameCount * 0.01);
+ *   rotateY(frameCount * 0.01);
+ *   //pass image as texture
+ *   texture(img);
+ *   box(200, 200, 200);
+ * }
  * </code>
  * </div>
  */
 p5.prototype.texture = function(image){
-  var gl = this._graphics.GL;
-  var shaderProgram = this._graphics.getShader('normalVert',
-    'textureFrag');
+  var gl = this._renderer.GL;
+  var shaderProgram = this._renderer._getShader('lightVert',
+    'lightTextureFrag');
   gl.useProgram(shaderProgram);
-  //create a texture on the graphics card
-  var tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-
   if (image instanceof p5.Image) {
+    //check if image is already used as texture
+    if(!image.isTexture){
+      //createTexture and set isTexture to true
+      var tex = gl.createTexture();
+      image.createTexture(tex);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+      image._setProperty('isTexture', true);
+    }
+    //otherwise we're good to bind texture without creating
+    //a new one on the gl
+    else {
+      //TODO
+    }
     image.loadPixels();
     var data = new Uint8Array(image.pixels);
     gl.texImage2D(gl.TEXTURE_2D, 0,
       gl.RGBA, image.width, image.height,
       0, gl.RGBA, gl.UNSIGNED_BYTE, data);
   }
+  //if param is a video
+  else if (image instanceof p5.MediaElement){
+    if(!image.loadedmetadata) {return;}
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+    gl.UNSIGNED_BYTE, image.elt);
+  }
   else {
     //@TODO handle following cases:
     //- 2D canvas (p5 inst)
-    //- video and pass into fbo
   }
   if (_isPowerOf2(image.width) && _isPowerOf2(image.height)) {
     gl.generateMipmap(gl.TEXTURE_2D);
   } else {
-    gl.texParameteri(gl.TETXURE_2D,
-      gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TETXURE_2D,
-      gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TETXURE_2D,
-      gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    //@TODO this is problematic
+    //image.width = _nextHighestPOT(image.width);
+    //image.height = _nextHighestPOT(image.height);
+    gl.texParameteri(gl.TEXTURE_2D,
+    gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,
+    gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,
+    gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,
+    gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   }
-  gl.bindTexture(gl.TEXTURE_2D, tex);
+  //this is where we'd activate multi textures
+  //eg. gl.activeTexture(gl.TEXTURE0 + (unit || 0));
+  //but for now we just have a single texture.
+  //@TODO need to extend this functionality
+  //gl.activeTexture(gl.TEXTURE0 + 0);
+  //gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'isTexture'), true);
   return this;
 };
 
 /**
- * Helper function; Checks whether val is a pot
+ * Helper functions; Checks whether val is a pot
  * more info on power of 2 here:
  * https://www.opengl.org/wiki/NPOT_Texture
  * @param  {Number}  value
  * @return {Boolean}
  */
-function _isPowerOf2 (value) {
+function _isPowerOf2 (value){
   return (value & (value - 1)) === 0;
 }
 
-p5.prototype.basicMaterial = function(){
+/**
+ * returns the next highest power of 2 value
+ * @param  {Number} value [description]
+ * @return {Number}       [description]
+ */
+// function _nextHighestPOT (value){
+//   --value;
+//   for (var i = 1; i < 32; i <<= 1) {
+//     value = value | value >> i;
+//   }
+//   return value + 1;
+// }
 
-  var gl = this._graphics.GL;
+/**
+ * Basic material for geometry with a given color
+ * @method  basicMaterial
+ * @param  {Number|Array|String|p5.Color} v1  gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}            [v2] optional: green or saturation value
+ * @param  {Number}            [v3] optional: blue or brightness value
+ * @param  {Number}            [a]  optional: opacity
+ * @return {p5}                the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ *
+ * function draw(){
+ *  background(0);
+ *  basicMaterial(250, 0, 0);
+ *  rotateX(frameCount * 0.01);
+ *  rotateY(frameCount * 0.01);
+ *  rotateZ(frameCount * 0.01);
+ *  box(200, 200, 200);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.basicMaterial = function(v1, v2, v3, a){
+  var gl = this._renderer.GL;
 
-  var shaderProgram = this._graphics.getShader('normalVert', 'basicFrag');
+  var shaderProgram = this._renderer._getShader('normalVert', 'basicFrag');
 
   gl.useProgram(shaderProgram);
   shaderProgram.uMaterialColor = gl.getUniformLocation(
     shaderProgram, 'uMaterialColor' );
 
-  var color = this._graphics._pInst.color.apply(
-    this._graphics._pInst, arguments);
-  var colors = _normalizeColor(color.rgba);
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, arguments);
+  var colors = color._array;
 
   gl.uniform4f( shaderProgram.uMaterialColor,
     colors[0], colors[1], colors[2], colors[3]);
@@ -6361,42 +6826,113 @@ p5.prototype.basicMaterial = function(){
 
 };
 
-p5.prototype.ambientMaterial = function() {
-
-  var gl = this._graphics.GL;
-  var mId = this._graphics.getCurShaderId();
-  var shaderProgram = this._graphics.mHash[mId];
+/**
+ * Ambient material for geometry with a given color
+ * @method  ambientMaterial
+ * @param  {Number|Array|String|p5.Color} v1  gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}            [v2] optional: green or saturation value
+ * @param  {Number}            [v3] optional: blue or brightness value
+ * @param  {Number}            [a]  optional: opacity
+* @return {p5}                 the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *  background(0);
+ *  ambientLight(100);
+ *  pointLight(250, 250, 250, 100, 100, 0);
+ *  ambientMaterial(250);
+ *  sphere(200, 128);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.ambientMaterial = function(v1, v2, v3, a) {
+  var gl = this._renderer.GL;
+  var shaderProgram =
+    this._renderer._getShader('lightVert', 'lightTextureFrag');
 
   gl.useProgram(shaderProgram);
   shaderProgram.uMaterialColor = gl.getUniformLocation(
     shaderProgram, 'uMaterialColor' );
 
-  var color = this._graphics._pInst.color.apply(
-    this._graphics._pInst, arguments);
-  var colors = _normalizeColor(color.rgba);
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, arguments);
+  var colors = color._array;
 
-  gl.uniform4f( shaderProgram.uMaterialColor,
+  gl.uniform4f(shaderProgram.uMaterialColor,
     colors[0], colors[1], colors[2], colors[3]);
 
+  shaderProgram.uSpecular = gl.getUniformLocation(
+    shaderProgram, 'uSpecular' );
+  gl.uniform1i(shaderProgram.uSpecular, false);
+
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'isTexture'), false);
+
   return this;
 };
 
-p5.prototype.specularMaterial = function() {
+/**
+ * Specular material for geometry with a given color
+ * @method specularMaterial
+ * @param  {Number|Array|String|p5.Color} v1  gray value,
+ * red or hue value (depending on the current color mode),
+ * or color Array, or CSS color string
+ * @param  {Number}            [v2] optional: green or saturation value
+ * @param  {Number}            [v3] optional: blue or brightness value
+ * @param  {Number}            [a]  optional: opacity
+ * @return {p5}                the p5 object
+ * @example
+ * <div>
+ * <code>
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ * function draw(){
+ *  background(0);
+ *  ambientLight(100);
+ *  pointLight(250, 250, 250, 100, 100, 0);
+ *  specularMaterial(250);
+ *  sphere(200, 128);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.specularMaterial = function(v1, v2, v3, a) {
+  var gl = this._renderer.GL;
+  var shaderProgram =
+    this._renderer._getShader('lightVert', 'lightTextureFrag');
+
+  gl.useProgram(shaderProgram);
+  shaderProgram.uMaterialColor = gl.getUniformLocation(
+    shaderProgram, 'uMaterialColor' );
+
+  var color = this._renderer._pInst.color.apply(
+    this._renderer._pInst, arguments);
+  var colors = color._array;
+
+  gl.uniform4f(shaderProgram.uMaterialColor,
+    colors[0], colors[1], colors[2], colors[3]);
+
+  shaderProgram.uSpecular = gl.getUniformLocation(
+    shaderProgram, 'uSpecular' );
+  gl.uniform1i(shaderProgram.uSpecular, true);
+
+  gl.uniform1i(gl.getUniformLocation(shaderProgram, 'isTexture'), false);
 
   return this;
 };
-
-
-function _normalizeColor(_arr){
-  var arr = [];
-  _arr.forEach(function(val){
-    arr.push(val/255);
-  });
-  return arr;
-}
 
 module.exports = p5;
-},{"../core/core":47}],33:[function(_dereq_,module,exports){
+
+},{"../core/core":48}],34:[function(_dereq_,module,exports){
+//some of the functions are adjusted from Three.js(http://threejs.org)
+
 'use strict';
 
 var p5 = _dereq_('../core/core');
@@ -6437,6 +6973,8 @@ p5.Geometry3D.prototype.parametricGeometry = function
   var i, j, p;
   var u, v;
   offset = offset || 0;
+  this.detailX = detailX;
+  this.detailY = detailY;
 
   var sliceCount = detailX + 1;
   for (i = 0; i <= detailY; i++){
@@ -6470,75 +7008,6 @@ p5.Geometry3D.prototype.parametricGeometry = function
       this.uvs.push([uvb, uvc, uvd]);
     }
   }
-};
-
-/**
- * merge duplicated vertices
- */
-p5.Geometry3D.prototype.mergeVertices= function () {
-
-  var verticesMap = {};
-  var unique = [], changes = [];
-
-  var v, key;
-  var precisionPoints = 4;
-  var precision = Math.pow(10, precisionPoints);
-  var i, face;
-  var indices;
-
-  for (i = 0; i < this.vertices.length; i ++) {
-
-    v = this.vertices[i];
-    key = Math.round(v.x * precision) + '_' +
-    Math.round(v.y * precision) + '_' +
-    Math.round(v.z * precision);
-
-    if (verticesMap[key] === undefined) {
-      verticesMap[key] = i;
-      unique.push(this.vertices[i]);
-      changes[i] = unique.length - 1;
-    } else {
-      changes[i] = changes[verticesMap[key]];
-    }
-
-  }
-  // if faces are completely degenerate after merging vertices, we
-  // have to remove them from the geometry.
-  var faceIndicesToRemove = [];
-
-  for (i = 0; i < this.faces.length; i ++) {
-
-    face = this.faces[i];
-
-    face[0] = changes[face[0]];
-    face[1] = changes[face[1]];
-    face[2] = changes[face[2]];
-
-    indices = [face[0], face[1], face[2]];
-
-    var dupIndex = - 1;
-
-    // if any duplicate vertices are found in a Face
-    // we have to remove the face as nothing can be saved
-    for (var n = 0; n < 3; n ++) {
-      if (indices[n] === indices[(n + 1) % 3]) {
-        dupIndex = n;
-        faceIndicesToRemove.push(i);
-        break;
-      }
-    }
-  }
-
-  for (i = faceIndicesToRemove.length - 1; i >= 0; i --) {
-    var idx = faceIndicesToRemove[i];
-    this.faces.splice(idx, 1);
-  }
-
-  // Use unique set of vertices
-  var diff = this.vertices.length - unique.length;
-  this.vertices = unique;
-  return diff;
-
 };
 
 /**
@@ -6610,11 +7079,50 @@ p5.Geometry3D.prototype.computeVertexNormals = function (){
 
 };
 
+p5.Geometry3D.prototype.averageNormals = function() {
+
+  for(var i = 0; i <= this.detailY; i++){
+    var offset = this.detailX + 1;
+    var temp = p5.Vector
+      .add(this.vertexNormals[i*offset],
+        this.vertexNormals[i*offset + this.detailX]);
+    temp = p5.Vector.div(temp, 2);
+    this.vertexNormals[i*offset] = temp;
+    this.vertexNormals[i*offset + this.detailX] = temp;
+  }
+};
+
+p5.Geometry3D.prototype.averagePoleNormals = function() {
+
+  //average the north pole
+  var sum = new p5.Vector(0, 0, 0);
+  for(var i = 0; i < this.detailX; i++){
+    sum.add(this.vertexNormals[i]);
+  }
+  sum = p5.Vector.div(sum, this.detailX);
+
+  for(i = 0; i < this.detailX; i++){
+    this.vertexNormals[i] = sum;
+  }
+
+  //average the south pole
+  sum = new p5.Vector(0, 0, 0);
+  for(i = this.vertices.length - 1;
+    i > this.vertices.length - 1 - this.detailX; i--){
+    sum.add(this.vertexNormals[i]);
+  }
+  sum = p5.Vector.div(sum, this.detailX);
+
+  for(i = this.vertices.length - 1;
+    i > this.vertices.length - 1 - this.detailX; i--){
+    this.vertexNormals[i] = sum;
+  }
+};
+
 /**
  * [generateUV description]
- * @param  {[type]} faces [description]
- * @param  {[type]} uvs   [description]
- * @return {[type]}       [description]
+ * @param  {Array} faces [description]
+ * @param  {Array} uvs   [description]
  */
 p5.Geometry3D.prototype.generateUV = function(faces, uvs){
 
@@ -6631,12 +7139,18 @@ p5.Geometry3D.prototype.generateUV = function(faces, uvs){
 /**
  * generate an object containing information needed to create buffer
  */
-p5.Geometry3D.prototype.generateObj = function(noMerge){
-  if(!noMerge){
-    this.mergeVertices();
-  }
+p5.Geometry3D.prototype.generateObj = function(average, sphere){
+
   this.computeFaceNormals();
   this.computeVertexNormals();
+
+  if(average){
+    this.averageNormals();
+  }
+
+  if(sphere){
+    this.averagePoleNormals();
+  }
 
   var obj = {
     vertices: turnVectorArrayIntoNumberArray(this.vertices),
@@ -6674,10 +7188,14 @@ function turnVectorArrayIntoNumberArray(arr){
 }
 
 module.exports = p5.Geometry3D;
-},{"../core/core":47}],34:[function(_dereq_,module,exports){
+},{"../core/core":48}],35:[function(_dereq_,module,exports){
 /**
 * @requires constants
 * @todo see methods below needing further implementation.
+* future consideration: implement SIMD optimizations
+* when browser compatibility becomes available
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/
+*   Reference/Global_Objects/SIMD
 */
 
 'use strict';
@@ -6692,7 +7210,7 @@ var GLMAT_ARRAY_TYPE = (
 /**
  * A class to describe a 4x4 matrix
  * for model and view matrix manipulation in the p5js webgl renderer.
- * @class p5.Matrix
+ * class p5.Matrix
  * @constructor
  * @param {Array} [mat4] array literal of our 4x4 matrix
  */
@@ -7007,52 +7525,46 @@ p5.Matrix.prototype.mult = function(multMatrix){
 
 /**
  * scales a p5.Matrix by scalars or a vector
- * @param  {p5.Vector | Array | Numbers}
+ * @param  {p5.Vector | Array }
  *                      vector to scale by
  * @return {p5.Matrix}  this
  */
 p5.Matrix.prototype.scale = function() {
   var x,y,z;
+  var args = new Array(arguments.length);
+  for(var i = 0; i < args.length; i++) {
+    args[i] = arguments[i];
+  }
   //if our 1st arg is a type p5.Vector
-  if (arguments[0] instanceof p5.Vector){
-    x = arguments[0].x;
-    y = arguments[0].y;
-    z = arguments[0].z;
+  if (args[0] instanceof p5.Vector){
+    x = args[0].x;
+    y = args[0].y;
+    z = args[0].z;
   }
   //otherwise if it's an array
-  else if (arguments[0] instanceof Array){
-    x = arguments[0][0];
-    y = arguments[0][1];
-    z = arguments[0][2];
+  else if (args[0] instanceof Array){
+    x = args[0][0];
+    y = args[0][1];
+    z = args[0][2];
   }
-  //otherwise it's probably some numbers
-  else {
-    //short circuit eval to make sure we maintain
-    //component size
-    x = arguments[0] || 1;
-    y = arguments[1] || 1;
-    z = arguments[2] || 1;
-  }
-
   var _dest = new GLMAT_ARRAY_TYPE(16);
+  _dest[0] = this.mat4[0] * x;
+  _dest[1] = this.mat4[1] * x;
+  _dest[2] = this.mat4[2] * x;
+  _dest[3] = this.mat4[3] * x;
+  _dest[4] = this.mat4[4] * y;
+  _dest[5] = this.mat4[5] * y;
+  _dest[6] = this.mat4[6] * y;
+  _dest[7] = this.mat4[7] * y;
+  _dest[8] = this.mat4[8] * z;
+  _dest[9] = this.mat4[9] * z;
+  _dest[10] = this.mat4[10] * z;
+  _dest[11] = this.mat4[11] * z;
+  _dest[12] = this.mat4[12];
+  _dest[13] = this.mat4[13];
+  _dest[14] = this.mat4[14];
+  _dest[15] = this.mat4[15];
 
-  for (var i = 0; i < this.mat4.length; i++) {
-    var row = i % 4;
-    switch(row){
-    case 0:
-      _dest[i] = this.mat4[i]*x;
-      break;
-    case 1:
-      _dest[i] = this.mat4[i]*y;
-      break;
-    case 2:
-      _dest[i] = this.mat4[i]*z;
-      break;
-    case 3:
-      _dest[i] = this.mat4[i];
-      break;
-    }
-  }
   this.mat4 = _dest;
   return this;
 };
@@ -7282,7 +7794,7 @@ p5.Matrix.prototype.ortho = function(left,right,bottom,top,near,far){
 //];
 
 module.exports = p5.Matrix;
-},{"../core/constants":46,"../core/core":47,"../math/polargeometry":76}],35:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"../math/polargeometry":77}],36:[function(_dereq_,module,exports){
 'use strict';
 
 var p5 = _dereq_('../core/core');
@@ -7290,12 +7802,11 @@ var shader = _dereq_('./shader');
 _dereq_('../core/p5.Renderer');
 _dereq_('./p5.Matrix');
 var uMVMatrixStack = [];
-var shaderStack = [];
 var RESOLUTION = 1000;
 
 //@TODO should probably implement an override for these attributes
 var attributes = {
-  alpha: false,
+  alpha: true,
   depth: true,
   stencil: true,
   antialias: false,
@@ -7332,34 +7843,50 @@ p5.Renderer3D = function(elt, pInst, isMainCanvas) {
   gl.depthFunc(gl.LEQUAL);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-  //create our default matrices
-  this.initMatrix();
-  this.initHash();
-  this.resetStack();
-  //for immedidate mode
-  this.verticeBuffer = gl.createBuffer();
-  this.colorBuffer = gl.createBuffer();
+  this._init();
   return this;
 };
 
-/**
- * [prototype description]
- * @type {[type]}
- */
 p5.Renderer3D.prototype = Object.create(p5.Renderer.prototype);
 
-/**
- * [_applyDefaults description]
- * @return {[type]} [description]
- */
 p5.Renderer3D.prototype._applyDefaults = function() {
   return this;
+};
+
+//////////////////////////////////////////////
+// Setting
+//////////////////////////////////////////////
+
+p5.Renderer3D.prototype._init = function(first_argument) {
+  var gl = this.GL;
+  //for our default matrices
+  this.initMatrix();
+  this.initHash();
+  //for immedidate mode
+  this.verticeStack = [];
+  this.verticeBuffer = gl.createBuffer();
+  this.colorBuffer = gl.createBuffer();
+  //for camera
+  this._setCamera = false;
+  //for counting lights
+  this.ambientLightCount = 0;
+  this.directionalLightCount = 0;
+  this.pointLightCount = 0;
+};
+
+p5.Renderer3D.prototype._update = function() {
+  this.resetMatrix();
+  this.translate(0, 0, -800);
+  this.ambientLightCount = 0;
+  this.directionalLightCount = 0;
+  this.pointLightCount = 0;
+  this.verticeStack = [];
 };
 
 /**
  * [resize description]
  * @param  {[type]} w [description]
- * @param  {  } h [description]
+ * @param  {[tyoe]} h [description]
  * @return {[type]}   [description]
  */
 p5.Renderer3D.prototype.resize = function(w,h) {
@@ -7367,10 +7894,6 @@ p5.Renderer3D.prototype.resize = function(w,h) {
   p5.Renderer.prototype.resize.call(this, w, h);
   gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 };
-
-//////////////////////////////////////////////
-// BACKGROUND | Setting
-//////////////////////////////////////////////
 
 /**
  * [background description]
@@ -7380,14 +7903,12 @@ p5.Renderer3D.prototype.background = function() {
   var gl = this.GL;
   var _col = this._pInst.color.apply(this._pInst, arguments);
   // gl.clearColor(0.0,0.0,0.0,1.0);
-  var _r = (_col.rgba[0]) / 255;
-  var _g = (_col.rgba[1]) / 255;
-  var _b = (_col.rgba[2]) / 255;
-  var _a = (_col.rgba[3]) / 255;
+  var _r = (_col.levels[0]) / 255;
+  var _g = (_col.levels[1]) / 255;
+  var _b = (_col.levels[2]) / 255;
+  var _a = (_col.levels[3]) / 255;
   gl.clearColor(_r, _g, _b, _a);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  this.resetMatrix();
-  this.resetStack();
 };
 
 //@TODO implement this
@@ -7440,11 +7961,16 @@ p5.Renderer3D.prototype.initShaders = function(vertId, fragId, immediateMode) {
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
     alert('Snap! Error linking shader program');
   }
-  gl.useProgram(shaderProgram);
   //END SHADERS SETUP
 
-  // @TODO replace 4th argument with far plane once we implement
-  // a view frustrum
+  this._getLocation(shaderProgram, immediateMode);
+
+  return shaderProgram;
+};
+
+p5.Renderer3D.prototype._getLocation = function(shaderProgram, immediateMode) {
+  var gl = this.GL;
+  gl.useProgram(shaderProgram);
   shaderProgram.uResolution =
     gl.getUniformLocation(shaderProgram, 'uResolution');
   gl.uniform1f(shaderProgram.uResolution, RESOLUTION);
@@ -7453,6 +7979,13 @@ p5.Renderer3D.prototype.initShaders = function(vertId, fragId, immediateMode) {
   shaderProgram.vertexPositionAttribute =
     gl.getAttribLocation(shaderProgram, 'aPosition');
   gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+  //projection Matrix uniform
+  shaderProgram.uPMatrixUniform =
+    gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
+  //model view Matrix uniform
+  shaderProgram.uMVMatrixUniform =
+    gl.getUniformLocation(shaderProgram, 'uModelViewMatrix');
 
   //@TODO: figure out a better way instead of if statement
   if(immediateMode === undefined){
@@ -7473,37 +8006,8 @@ p5.Renderer3D.prototype.initShaders = function(vertId, fragId, immediateMode) {
     shaderProgram.samplerUniform =
     gl.getUniformLocation(shaderProgram, 'uSampler');
   }
-
-  //projection Matrix uniform
-  shaderProgram.uPMatrixUniform =
-    gl.getUniformLocation(shaderProgram, 'uTransformMatrix');
-  //model view Matrix uniform
-  shaderProgram.uMVMatrixUniform =
-    gl.getUniformLocation(shaderProgram, 'uModelviewMatrix');
-
-  this.mHash[vertId + '|' + fragId] = shaderProgram;
-
-  return shaderProgram;
 };
 
-p5.Renderer3D.prototype.getShader = function(vertId, fragId) {
-  var mId = vertId+ '|' + fragId;
-
-  if(!this.materialInHash(mId)){
-    this.initShaders(vertId, fragId);
-  }
-
-  if(mId !== this.getCurShaderId()){
-    this.saveShaders(mId);
-  }
-
-  return this.mHash[mId];
-};
-
-/**
- * Sets the Matrix Uniforms inside our default shader.
- * @param {String} shaderKey key of current shader
- */
 p5.Renderer3D.prototype.setMatrixUniforms = function(shaderKey) {
   var gl = this.GL;
   var shaderProgram = this.mHash[shaderKey];
@@ -7526,78 +8030,55 @@ p5.Renderer3D.prototype.setMatrixUniforms = function(shaderKey) {
     shaderProgram.uNMatrixUniform,
     false, this.uNMatrix.mat4);
 };
-
 //////////////////////////////////////////////
-// STACK | for shader, vertex, color and mode
+// GET CURRENT | for shader and color
 //////////////////////////////////////////////
-
-p5.Renderer3D.prototype.saveShaders = function(mId){
-  shaderStack.push(mId);
-};
-
-p5.Renderer3D.prototype.getCurColor = function() {
-  return this.colorStack[this.colorStack.length-1] || [0.5, 0.5, 0.5, 1.0];
-};
-
-p5.Renderer3D.prototype.getCurShaderId = function(){
-  var mId = shaderStack[shaderStack.length - 1];
-  if(mId === undefined){
-    //default shader: basicMaterial
-    mId = 'normalVert|basicFrag';
-    var gl = this.GL;
-    var shaderProgram =
-     this.initShaders('normalVert', 'basicFrag');
-    shaderProgram.uMaterialColor = gl.getUniformLocation(
-      shaderProgram, 'uMaterialColor' );
-    var colors = this.getCurColor();
-    gl.uniform4f( shaderProgram.uMaterialColor,
-    colors[0], colors[1], colors[2], colors[3]);
-    this.saveShaders(mId);
+p5.Renderer3D.prototype._getShader = function(vertId, fragId, immediateMode) {
+  var mId = vertId+ '|' + fragId;
+  //create it and put it into hashTable
+  if(!this.materialInHash(mId)){
+    var shaderProgram = this.initShaders(vertId, fragId, immediateMode);
+    this.mHash[mId] = shaderProgram;
   }
-  return mId;
+  this.curShaderId = mId;
+
+  return this.mHash[this.curShaderId];
 };
 
-p5.Renderer3D.prototype.resetStack = function(){
-  shaderStack = [];
-  //holding colors declaration, like [0, 120, 0]
-  this.colorStack = [];
-  //holding mode, like TIANGLE or 'LINES'
-  this.modeStack = [];
-  //holding 'fill' or 'stroke'
-  this.drawModeStack = [];
-  //holding an array of vertex position
-  this.verticeStack = [];
-  //holding lights
-  this.lightStack = [];
+p5.Renderer3D.prototype._getCurShaderId = function(){
+  //if it's not defined yet
+  if(this.curShaderId === undefined){
+    //default shader: normalMaterial()
+    var mId = 'normalVert|normalFrag';
+    var shaderProgram = this.initShaders('normalVert', 'normalFrag');
+    this.mHash[mId] = shaderProgram;
+    this.curShaderId = mId;
+  }
+
+  return this.curShaderId;
+};
+
+p5.Renderer3D.prototype._getCurColor = function() {
+  //default color: gray
+  if(this.curColor === undefined) {
+    this.curColor = [0.5, 0.5, 0.5, 1.0];
+  }
+  return this.curColor;
 };
 
 //////////////////////////////////////////////
 // HASH | for material and geometry
 //////////////////////////////////////////////
 
-/**
- * [initBuffer description]
- * @return {[type]} [description]
- */
 p5.Renderer3D.prototype.initHash = function(){
   this.gHash = {};
   this.mHash = {};
 };
 
-/**
- * [geometryInHash description]
- * @param  {[type]} gId [description]
- * @return {[type]}     [description]
- */
 p5.Renderer3D.prototype.geometryInHash = function(gId){
   return this.gHash[gId] !== undefined;
 };
 
-/**
- * [materialInHash description]
- * @param  {[type]} mId [description]
- * @return {[type]}     [description]
- */
 p5.Renderer3D.prototype.materialInHash = function(mId){
   return this.mHash[mId] !== undefined;
 };
@@ -7606,26 +8087,27 @@ p5.Renderer3D.prototype.materialInHash = function(mId){
 // MATRIX
 //////////////////////////////////////////////
 
-/**
- * [initMatrix description]
- * @return {[type]} [description]
- */
 p5.Renderer3D.prototype.initMatrix = function(){
   this.uMVMatrix = new p5.Matrix();
   this.uPMatrix  = new p5.Matrix();
   this.uNMatrix = new p5.Matrix();
-  var _w = this.width;
-  var _h = this.height;
-  this.uPMatrix.perspective(60 / 180 * Math.PI, _w / _h, 0.1, 100);
 };
 
-/**
- * resets the model view matrix to a mat4 identity
- * matrix.
- * @return {void}
- */
 p5.Renderer3D.prototype.resetMatrix = function() {
   this.uMVMatrix = p5.Matrix.identity();
+  //this.uPMatrix = p5.Matrix.identity();
+};
+
+//detect if user didn't set the camera
+//then call this function below
+p5.Renderer3D.prototype._setDefaultCamera = function(){
+  if(!this._setCamera){
+    var _w = this.width;
+    var _h = this.height;
+    this.uPMatrix = p5.Matrix.identity();
+    this.uPMatrix.perspective(60 / 180 * Math.PI, _w / _h, 0.1, 100);
+    this._setCamera = true;
+  }
 };
 
 /**
@@ -7647,19 +8129,30 @@ p5.Renderer3D.prototype.translate = function(x, y, z) {
 
 /**
  * Scales the Model View Matrix by a vector
- * @param  {Number} x [description]
- * @param  {Number} y [description]
- * @param  {Number} z [description]
+ * @param  {Number | p5.Vector | Array} x [description]
+ * @param  {Number} [y] y-axis scalar
+ * @param  {Number} [z] z-axis scalar
  * @return {this}   [description]
  */
-p5.Renderer3D.prototype.scale = function(x, y, z) {
+p5.Renderer3D.prototype.scale = function(x,y,z) {
   this.uMVMatrix.scale([x,y,z]);
   return this;
 };
 
 /**
+ * [rotate description]
+ * @param  {Number} rad  angle in radians
+ * @param  {p5.Vector | Array} axis axis to rotate around
+ * @return {p5.Renderer3D}      [description]
+ */
+p5.Renderer3D.prototype.rotate = function(rad, axis){
+  this.uMVMatrix.rotate(rad, axis);
+  return this;
+};
+
+/**
  * [rotateX description]
- * @param  {[type]} rad [description]
+ * @param  {Number} rad radians to rotate
  * @return {[type]}     [description]
  */
 p5.Renderer3D.prototype.rotateX = function(rad) {
@@ -7669,7 +8162,7 @@ p5.Renderer3D.prototype.rotateX = function(rad) {
 
 /**
  * [rotateY description]
- * @param  {[type]} rad [description]
+ * @param  {Number} rad rad radians to rotate
  * @return {[type]}     [description]
  */
 p5.Renderer3D.prototype.rotateY = function(rad) {
@@ -7679,7 +8172,7 @@ p5.Renderer3D.prototype.rotateY = function(rad) {
 
 /**
  * [rotateZ description]
- * @param  {[type]} rad [description]
+ * @param  {Number} rad rad radians to rotate
  * @return {[type]}     [description]
  */
 p5.Renderer3D.prototype.rotateZ = function(rad) {
@@ -7703,125 +8196,149 @@ p5.Renderer3D.prototype.push = function() {
  */
 p5.Renderer3D.prototype.pop = function() {
   if (uMVMatrixStack.length === 0) {
-    throw 'Invalid popMatrix!';
+    throw new Error('Invalid popMatrix!');
   }
   this.uMVMatrix = uMVMatrixStack.pop();
 };
 
 module.exports = p5.Renderer3D;
-},{"../core/core":47,"../core/p5.Renderer":53,"./p5.Matrix":34,"./shader":37}],36:[function(_dereq_,module,exports){
+
+},{"../core/core":48,"../core/p5.Renderer":54,"./p5.Matrix":35,"./shader":38}],37:[function(_dereq_,module,exports){
 //retained mode is used by rendering 3d_primitives
 
 'use strict';
 
 var p5 = _dereq_('../core/core');
+var hashCount = 0;
 
 /**
- * [createBuffer description]
- * @param  {[type]} gId [description]
- * @param  {[type]} obj [description]
- * @return {[type]}     [description]
+ * createBuffer
+ * @param  {String} gId  key of the geometry object
+ * @param  {Array}  arr  array holding bject containing geometry information
  */
-p5.Renderer3D.prototype.createBuffer = function(gId, obj) {
+p5.Renderer3D.prototype.createBuffer = function(gId, arr) {
+
+  hashCount ++;
+  if(hashCount > 1000){
+    var key = Object.keys(this.gHash)[0];
+    delete this.gHash[key];
+    hashCount --;
+  }
+
   var gl = this.GL;
   this.gHash[gId] = {};
-  this.gHash[gId].len = obj.len;
-  this.gHash[gId].vertexBuffer = gl.createBuffer();
-  this.gHash[gId].normalBuffer = gl.createBuffer();
-  this.gHash[gId].uvBuffer = gl.createBuffer();
-  this.gHash[gId].indexBuffer = gl.createBuffer();
+  this.gHash[gId].len = [];
+  this.gHash[gId].vertexBuffer = [];
+  this.gHash[gId].normalBuffer = [];
+  this.gHash[gId].uvBuffer = [];
+  this.gHash[gId].indexBuffer =[];
+
+  arr.forEach(function(obj){
+    this.gHash[gId].len.push(obj.len);
+    this.gHash[gId].vertexBuffer.push(gl.createBuffer());
+    this.gHash[gId].normalBuffer.push(gl.createBuffer());
+    this.gHash[gId].uvBuffer.push(gl.createBuffer());
+    this.gHash[gId].indexBuffer.push(gl.createBuffer());
+  }.bind(this));
 };
 
 /**
- * [initBuffer description]
+ * initBuffer description
  * @param  {String} gId    key of the geometry object
- * @param  {Object} obj    an object containing geometry information
+ * @param  {Array}  arr    array holding bject containing geometry information
  */
-p5.Renderer3D.prototype.initBuffer = function(gId, obj) {
+p5.Renderer3D.prototype.initBuffer = function(gId, arr) {
+  this._setDefaultCamera();
   var gl = this.GL;
-  this.createBuffer(gId, obj);
+  this.createBuffer(gId, arr);
 
-  var shaderProgram = this.mHash[this.getCurShaderId()];
+  var shaderProgram = this.mHash[this._getCurShaderId()];
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].vertexBuffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER, new Float32Array(obj.vertices), gl.STATIC_DRAW);
-  gl.vertexAttribPointer(
-    shaderProgram.vertexPositionAttribute,
-    3, gl.FLOAT, false, 0, 0);
+  arr.forEach(function(obj, i){
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].vertexBuffer[i]);
+    gl.bufferData(
+      gl.ARRAY_BUFFER, new Float32Array(obj.vertices), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(
+      shaderProgram.vertexPositionAttribute,
+      3, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].normalBuffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER, new Float32Array(obj.vertexNormals), gl.STATIC_DRAW);
-  gl.vertexAttribPointer(
-    shaderProgram.vertexNormalAttribute,
-    3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].normalBuffer[i]);
+    gl.bufferData(
+      gl.ARRAY_BUFFER, new Float32Array(obj.vertexNormals), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(
+      shaderProgram.vertexNormalAttribute,
+      3, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].uvBuffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER, new Float32Array(obj.uvs), gl.STATIC_DRAW);
-  gl.vertexAttribPointer(
-    shaderProgram.textureCoordAttribute,
-    2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].uvBuffer[i]);
+    gl.bufferData(
+      gl.ARRAY_BUFFER, new Float32Array(obj.uvs), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(
+      shaderProgram.textureCoordAttribute,
+      2, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.gHash[gId].indexBuffer);
-  gl.bufferData
-   (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(obj.faces), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.gHash[gId].indexBuffer[i]);
+    gl.bufferData
+     (gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(obj.faces), gl.STATIC_DRAW);
+  }.bind(this));
 };
 
 /**
- * [drawBuffer description]
+ * drawBuffer
  * @param  {String} gId     key of the geometery object
  */
 p5.Renderer3D.prototype.drawBuffer = function(gId) {
+  this._setDefaultCamera();
   var gl = this.GL;
-  var shaderKey = this.getCurShaderId();
+  var shaderKey = this._getCurShaderId();
   var shaderProgram = this.mHash[shaderKey];
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].vertexBuffer);
-  gl.vertexAttribPointer(
-    shaderProgram.vertexPositionAttribute,
-    3, gl.FLOAT, false, 0, 0);
+  this.gHash[gId].len.forEach(function(d, i){
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].vertexBuffer[i]);
+    gl.vertexAttribPointer(
+      shaderProgram.vertexPositionAttribute,
+      3, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].normalBuffer);
-  gl.vertexAttribPointer(
-    shaderProgram.vertexNormalAttribute,
-    3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].normalBuffer[i]);
+    gl.vertexAttribPointer(
+      shaderProgram.vertexNormalAttribute,
+      3, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].uvBuffer);
-  gl.vertexAttribPointer(
-    shaderProgram.textureCoordAttribute,
-    2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.gHash[gId].uvBuffer[i]);
+    gl.vertexAttribPointer(
+      shaderProgram.textureCoordAttribute,
+      2, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.gHash[gId].indexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.gHash[gId].indexBuffer[i]);
 
-  this.setMatrixUniforms(shaderKey);
+    this.setMatrixUniforms(shaderKey);
 
-  gl.drawElements(
-    gl.TRIANGLES, this.gHash[gId].len,
-     gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(
+      gl.TRIANGLES, this.gHash[gId].len[i],
+       gl.UNSIGNED_SHORT, 0);
+  }.bind(this));
 };
 
 module.exports = p5.Renderer3D;
-},{"../core/core":47}],37:[function(_dereq_,module,exports){
+},{"../core/core":48}],38:[function(_dereq_,module,exports){
 
 
 module.exports = {
   vertexColorVert:
-    "attribute vec3 aPosition;\nattribute vec4 aVertexColor;\n\nuniform mat4 uModelviewMatrix;\nuniform mat4 uTransformMatrix;\n\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec3 zeroToOne = aPosition / 1000.0;\n  vec4 positionVec4 = vec4(zeroToOne * vec3(1., -1., 1.), 1.);\n  gl_Position = uTransformMatrix * uModelviewMatrix * positionVec4;\n  vColor = aVertexColor;\n}",
+    "attribute vec3 aPosition;\nattribute vec4 aVertexColor;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform float uResolution;\n\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec4 positionVec4 = vec4(aPosition / uResolution * vec3(1.0, -1.0, 1.0), 1.0);\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vColor = aVertexColor;\n}",
   vertexColorFrag:
     "precision mediump float;\nvarying vec4 vColor;\nvoid main(void) {\n  gl_FragColor = vColor;\n}",
-  normalVert: "attribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nuniform mat4 uModelviewMatrix;\nuniform mat4 uTransformMatrix;\nuniform mat4 uNormalMatrix;\nuniform float uResolution;\n\nvarying vec3 vVertexNormal;\nvarying highp vec2 vVertTexCoord;\n\nvoid main(void) {\n  vec3 zeroToOne = aPosition / uResolution;\n  vec4 positionVec4 = vec4(zeroToOne, 1.);\n  gl_Position = uTransformMatrix * uModelviewMatrix * positionVec4;\n  vVertexNormal = vec3( uNormalMatrix * vec4( aNormal, 1.0 ) );\n  vVertTexCoord = aTexCoord;\n}",
-  normalFrag: "precision mediump float;\nvarying vec3 vVertexNormal;\nvoid main(void) {\n  gl_FragColor = vec4(vVertexNormal, 1.0);\n}",
-  basicFrag: "precision mediump float;\nvarying vec3 vVertexNormal;\nuniform vec4 uMaterialColor;\nvoid main(void) {\n  gl_FragColor = uMaterialColor;\n}",
-  textureFrag: "precision mediump float;\nvarying highp vec2 vVertTexCoord;\nuniform sampler2D uSampler;\nvoid main(void) {\n  gl_FragColor = texture2D(uSampler, vec2(vVertTexCoord.s,vVertTexCoord.t));\n}",
-  lightFrag: "precision mediump float;\n//varying vec2 vTextureCoord;\nvarying vec3 vLightWeighting;\n//uniform sampler2D uSampler;\nuniform vec4 uMaterialColor;\nvoid main(void) {\n  //vec4 textureColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));\n  gl_FragColor = vec4(vec3(uMaterialColor.rgb * vLightWeighting), uMaterialColor.a);\n}",
-  directionalLightVert:
-    "attribute vec3 position;\nattribute vec3 normal;\nattribute vec2 texCoord;\n\nuniform mat4 modelviewMatrix;\nuniform mat4 transformMatrix;\nuniform mat4 normalMatrix;\nuniform float uResolution;\n\nuniform vec3 uAmbientColor;\nuniform vec3 uLightingDirection;\nuniform vec3 uDirectionalColor;\n\nvarying vec2 vertTexCoord;\nvarying vec3 vLightWeighting;\n\nvoid main(void) {\n  vec3 zeroToOne = position / uResolution;\n  vec4 positionVec4 = vec4(zeroToOne, 1.);\n  gl_Position = transformMatrix * modelviewMatrix * positionVec4;\n  vec3 vertexNormal = vec3( normalMatrix * vec4( normal, 1.0 ) );\n  vertTexCoord = texCoord;\n\n  float directionalLightWeighting = max(dot(vertexNormal, uLightingDirection), 0.0);\n  vLightWeighting = uAmbientColor + uDirectionalColor * directionalLightWeighting;\n}",
-  spotLightVert:
-    "attribute vec3 position;\nattribute vec3 normal;\nattribute vec2 texCoord;\n\nuniform mat4 modelviewMatrix;\nuniform mat4 transformMatrix;\nuniform mat4 normalMatrix;\nuniform float uResolution;\n\nuniform vec4 uAmbientColor;\nuniform vec3 uPointLightingLocation;\nuniform vec4 uPointLightingColor;\n\nvarying vec3 vertexNormal;\nvarying vec2 vertTexCoord;\nvarying vec4 vLightWeighting;\n\nvoid main(void) {\n  vec3 zeroToOne = position / uResolution;\n  vec4 positionVec4 = vec4(zeroToOne, 1.);\n  gl_Position = transformMatrix * modelviewMatrix * positionVec4;\n  vertTexCoord = texCoord;\n\n  vec3 lightDirection = normalize(uPointLightingLocation - mvPosition.xyz);\n  vec3 transformedNormal = normalMatrix * vertexNormal;\n  float directionalLightWeighting = max(dot(transformedNormal, lightDirection), 0.0);\n  vLightWeighting = uAmbientColor + uPointLightingColor * directionalLightWeighting;\n}"
+  normalVert:
+    "attribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat4 uNormalMatrix;\nuniform float uResolution;\n\nvarying vec3 vVertexNormal;\nvarying highp vec2 vVertTexCoord;\n\nvoid main(void) {\n  vec4 positionVec4 = vec4(aPosition / uResolution, 1.0);\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vVertexNormal = vec3( uNormalMatrix * vec4( aNormal, 1.0 ) );\n  vVertTexCoord = aTexCoord;\n}",
+  normalFrag:
+    "precision mediump float;\nvarying vec3 vVertexNormal;\nvoid main(void) {\n  gl_FragColor = vec4(vVertexNormal, 1.0);\n}",
+  basicFrag:
+    "precision mediump float;\nvarying vec3 vVertexNormal;\nuniform vec4 uMaterialColor;\nvoid main(void) {\n  gl_FragColor = uMaterialColor;\n}",
+  lightVert:
+    "attribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat4 uNormalMatrix;\nuniform float uResolution;\nuniform int uAmbientLightCount;\nuniform int uDirectionalLightCount;\nuniform int uPointLightCount;\n\nuniform vec3 uAmbientColor[8];\nuniform vec3 uLightingDirection[8];\nuniform vec3 uDirectionalColor[8];\nuniform vec3 uPointLightLocation[8];\nuniform vec3 uPointLightColor[8];\nuniform bool uSpecular;\n\nvarying vec3 vVertexNormal;\nvarying vec2 vVertTexCoord;\nvarying vec3 vLightWeighting;\n\nvec3 ambientLightFactor = vec3(0.0, 0.0, 0.0);\nvec3 directionalLightFactor = vec3(0.0, 0.0, 0.0);\nvec3 pointLightFactor = vec3(0.0, 0.0, 0.0);\nvec3 pointLightFactor2 = vec3(0.0, 0.0, 0.0);\n\nvoid main(void){\n\n  vec4 positionVec4 = vec4(aPosition / uResolution, 1.0);\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n\n  vec3 vertexNormal = vec3( uNormalMatrix * vec4( aNormal, 1.0 ) );\n  vVertexNormal = vertexNormal;\n  vVertTexCoord = aTexCoord;\n\n  vec4 mvPosition = uModelViewMatrix * vec4(aPosition / uResolution, 1.0);\n  vec3 eyeDirection = normalize(-mvPosition.xyz);\n\n  float shininess = 32.0;\n  float specularFactor = 2.0;\n  float diffuseFactor = 0.3;\n\n  for(int i = 0; i < 8; i++){\n    if(uAmbientLightCount == i) break;\n    ambientLightFactor += uAmbientColor[i];\n  }\n\n  for(int j = 0; j < 8; j++){\n    if(uDirectionalLightCount == j) break;\n    vec3 dir = uLightingDirection[j];\n    float directionalLightWeighting = max(dot(vertexNormal, dir), 0.0);\n    directionalLightFactor += uDirectionalColor[j] * directionalLightWeighting;\n  }\n\n  for(int k = 0; k < 8; k++){\n    if(uPointLightCount == k) break;\n    vec3 loc = uPointLightLocation[k];\n    //loc = loc / uResolution;\n    vec3 lightDirection = normalize(loc - mvPosition.xyz);\n\n    float directionalLightWeighting = max(dot(vertexNormal, lightDirection), 0.0);\n    pointLightFactor += uPointLightColor[k] * directionalLightWeighting;\n\n    //factor2 for specular\n    vec3 reflectionDirection = reflect(-lightDirection, vertexNormal);\n    float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), shininess);\n\n    pointLightFactor2 += uPointLightColor[k] * (specularFactor * specularLightWeighting\n      +  directionalLightWeighting * diffuseFactor);\n  }\n  \n  if(!uSpecular){\n    vLightWeighting =  ambientLightFactor + directionalLightFactor + pointLightFactor;\n  }else{\n    vLightWeighting = ambientLightFactor + directionalLightFactor + pointLightFactor2;\n  }\n\n}",
+  lightTextureFrag:
+    "precision mediump float;\n\nuniform vec4 uMaterialColor;\nuniform sampler2D uSampler;\nuniform bool isTexture;\n\nvarying vec3 vLightWeighting;\nvarying highp vec2 vVertTexCoord;\n\nvoid main(void) {\n  if(!isTexture){\n    gl_FragColor = vec4(vec3(uMaterialColor.rgb * vLightWeighting), uMaterialColor.a);\n  }else{\n    vec4 textureColor = texture2D(uSampler, vVertTexCoord);\n    if(vLightWeighting == vec3(0., 0., 0.)){\n      gl_FragColor = textureColor;\n    }else{\n      gl_FragColor = vec4(vec3(textureColor.rgb * vLightWeighting), textureColor.a); \n    }\n  }\n}"
 };
-},{}],38:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 
 'use strict';
 
@@ -7878,6 +8395,7 @@ _dereq_('./3d/p5.Matrix');
 _dereq_('./3d/material');
 _dereq_('./3d/light');
 _dereq_('./3d/shader');
+_dereq_('./3d/camera');
 _dereq_('./3d/interaction');
 
 /**
@@ -7910,299 +8428,268 @@ if (document.readyState === 'complete') {
 }
 
 module.exports = p5;
-},{"./3d/3d_primitives":28,"./3d/immediateMode3D":29,"./3d/interaction":30,"./3d/light":31,"./3d/material":32,"./3d/p5.Geometry3D":33,"./3d/p5.Matrix":34,"./3d/p5.Renderer3D":35,"./3d/retainedMode3D":36,"./3d/shader":37,"./color/creating_reading":40,"./color/p5.Color":41,"./color/setting":42,"./core/2d_primitives":43,"./core/attributes":44,"./core/constants":46,"./core/core":47,"./core/curves":48,"./core/environment":49,"./core/p5.Element":51,"./core/p5.Graphics":52,"./core/p5.Renderer2D":54,"./core/rendering":55,"./core/structure":57,"./core/transform":58,"./core/vertex":59,"./events/acceleration":60,"./events/keyboard":61,"./events/mouse":62,"./events/touch":63,"./image/image":65,"./image/loading_displaying":66,"./image/p5.Image":67,"./image/pixels":68,"./io/files":69,"./io/p5.Table":70,"./io/p5.TableRow":71,"./math/calculation":72,"./math/math":73,"./math/noise":74,"./math/p5.Vector":75,"./math/random":77,"./math/trigonometry":78,"./typography/attributes":79,"./typography/loading_displaying":80,"./typography/p5.Font":81,"./utilities/array_functions":82,"./utilities/conversion":83,"./utilities/string_functions":84,"./utilities/time_date":85}],39:[function(_dereq_,module,exports){
+},{"./3d/3d_primitives":28,"./3d/camera":29,"./3d/immediateMode3D":30,"./3d/interaction":31,"./3d/light":32,"./3d/material":33,"./3d/p5.Geometry3D":34,"./3d/p5.Matrix":35,"./3d/p5.Renderer3D":36,"./3d/retainedMode3D":37,"./3d/shader":38,"./color/creating_reading":41,"./color/p5.Color":42,"./color/setting":43,"./core/2d_primitives":44,"./core/attributes":45,"./core/constants":47,"./core/core":48,"./core/curves":49,"./core/environment":50,"./core/p5.Element":52,"./core/p5.Graphics":53,"./core/p5.Renderer2D":55,"./core/rendering":56,"./core/structure":58,"./core/transform":59,"./core/vertex":60,"./events/acceleration":61,"./events/keyboard":62,"./events/mouse":63,"./events/touch":64,"./image/image":66,"./image/loading_displaying":67,"./image/p5.Image":68,"./image/pixels":69,"./io/files":70,"./io/p5.Table":71,"./io/p5.TableRow":72,"./math/calculation":73,"./math/math":74,"./math/noise":75,"./math/p5.Vector":76,"./math/random":78,"./math/trigonometry":79,"./typography/attributes":80,"./typography/loading_displaying":81,"./typography/p5.Font":82,"./utilities/array_functions":83,"./utilities/conversion":84,"./utilities/string_functions":85,"./utilities/time_date":86}],40:[function(_dereq_,module,exports){
 /**
- * module Utils
- * submodule Color Utils
+ * module Conversion
+ * submodule Color Conversion
  * @for p5
+ * @requires core
+ */
+
+'use strict';
+
+/**
+ * Conversions adapted from <http://www.easyrgb.com/math.html>.
+ *
+ * In these functions, hue is always in the range [0,1); all other components
+ * are in the range [0,1]. 'Brightness' and 'value' are used interchangeably.
  */
 
 var p5 = _dereq_('../core/core');
+var RGBA = [];  // We will reuse this array whenever we convert to RGBA.
 
-p5.ColorUtils = {};
+p5.ColorConversion = {};
 
 /**
- * For a color expressed as an HSBA array, return the corresponding RGBA value
- * @param {Array} hsba An 'array' object that represents a list of HSB colors
- * @return {Array} an array of RGBA values, on a scale of 0-1
+ * Convert an HSBA array to HSLA.
  */
-p5.ColorUtils.hsbaToRGBA = function(hsba) {
-  var h = hsba[0];
-  var s = hsba[1];
-  var v = hsba[2];
-  var a = hsba[3] || 1;
-  // Adapted from http://www.easyrgb.com/math.html
-  // hsv values = 0 - 1, rgb values = 0 - 255
-  var RGBA = [];
-  if(s===0){
-    RGBA = [v, v, v, a];
-  } else {
-    // h must be < 1
-    var var_h = h * 6;
-    if (var_h===6) {
-      var_h = 0;
+p5.ColorConversion._hsbaToHSLA = function(hsba) {
+  var hue = hsba[0];
+  var sat = hsba[1];
+  var val = hsba[2];
+
+  // Calculate lightness.
+  var li = (2 - sat) * val / 2;
+
+  // Convert saturation.
+  if (li !== 0) {
+    if (li === 1) {
+      sat = 0;
+    } else if (li < 0.5) {
+      sat = sat / (2 - sat);
+    } else {
+      sat = sat * val / (2 - li * 2);
     }
-    //Or ... var_i = floor( var_h )
-    var var_i = Math.floor( var_h );
-    var var_1 = v*(1-s);
-    var var_2 = v*(1-s*(var_h-var_i));
-    var var_3 = v*(1-s*(1-(var_h-var_i)));
-    var r;
-    var g;
-    var b;
-    if(var_i===0){
-      r = v;
-      g = var_3;
-      b = var_1;
-    }else if(var_i===1){
-      r = var_2;
-      g = v;
-      b = var_1;
-    }else if(var_i===2){
-      r = var_1;
-      g = v;
-      b = var_3;
-    }else if(var_i===3){
-      r = var_1;
-      g = var_2;
-      b = v;
-    }else if (var_i===4){
-      r = var_3;
-      g = var_1;
-      b = v;
-    }else{
-      r = v;
-      g = var_1;
-      b = var_2;
-    }
-    RGBA = [r, g, b, a];
   }
+
+  // Hue and alpha stay the same.
+  return [hue, sat, li, hsba[3]];
+};
+
+/**
+ * Convert an HSBA array to RGBA.
+ */
+p5.ColorConversion._hsbaToRGBA = function(hsba) {
+  var hue = hsba[0] * 6;  // We will split hue into 6 sectors.
+  var sat = hsba[1];
+  var val = hsba[2];
+
+  RGBA.length = 0;  // Clear persistent RGBA array.
+
+  if (sat === 0) {
+    RGBA = [val, val, val, hsba[3]];  // Return early if grayscale.
+  } else {
+    var sector = Math.floor(hue);
+    var tint1 = val * (1 - sat);
+    var tint2 = val * (1 - sat * (hue - sector));
+    var tint3 = val * (1 - sat * (1 + sector - hue));
+    var red, green, blue;
+    if (sector === 0) {  // Red to yellow.
+      red = val;
+      green = tint3;
+      blue = tint1;
+    } else if (sector === 1) {  // Yellow to green.
+      red = tint2;
+      green = val;
+      blue = tint1;
+    } else if (sector === 2) {  // Green to cyan.
+      red = tint1;
+      green = val;
+      blue = tint3;
+    } else if (sector === 3) {  // Cyan to blue.
+      red = tint1;
+      green = tint2;
+      blue = val;
+    } else if (sector === 4) {  // Blue to magenta.
+      red = tint3;
+      green = tint1;
+      blue = val;
+    } else {  // Magenta to red.
+      red = val;
+      green = tint1;
+      blue = tint2;
+    }
+    RGBA = [red, green, blue, hsba[3]];
+  }
+
   return RGBA;
 };
 
 /**
- * For a color expressed as an RGBA array, return the corresponding HSBA value
- *
- * @param {Array} rgba An 'array' object that represents a list of RGB colors
- * @return {Array} an array of HSB values
+ * Convert an HSLA array to HSBA.
  */
-p5.ColorUtils.rgbaToHSBA = function(rgba) {
-  var r = rgba[0];
-  var g = rgba[1];
-  var b = rgba[2];
-  var a = rgba[3] || 1;
+p5.ColorConversion._hslaToHSBA = function(hsla) {
+  var hue = hsla[0];
+  var sat = hsla[1];
+  var li = hsla[2];
 
-  var min = Math.min(r, g, b); //Min. value of RGB
-  var max = Math.max(r, g, b); //Max. value of RGB
-  var delta_max = max - min;             //Delta RGB value
-
-  var h;
-  var s;
-  var v = max;
-
-  if (delta_max === 0) { //This is a gray, no chroma...
-    h = 0; //HSV results from 0 to 1
-    s = 0;
+  // Calculate brightness.
+  var val;
+  if (li < 0.5) {
+    val = (1 + sat) * li;
+  } else {
+    val = li + sat - li * sat;
   }
-  else { //Chromatic data...
-    s = delta_max/max;
 
-    var delta_r = ( ( ( max - r ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
-    var delta_g = ( ( ( max - g ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
-    var delta_b = ( ( ( max - b ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
+  // Convert saturation.
+  sat = 2 * (val - li) / val;
 
-    if (r === max) {
-      h = delta_b - delta_g;
-    } else if (g === max) {
-      h = 1/3 + delta_r - delta_b;
-    } else if (b === max) {
-      h = 2/3 + delta_g - delta_r;
-    }
-
-    if (h < 0) {
-      h += 1;
-    }
-    if (h > 1) {
-      h -= 1;
-    }
-  }
-  return [h, s, v, a];
+  // Hue and alpha stay the same.
+  return [hue, sat, val, hsla[3]];
 };
 
 /**
- * For a color expressed as an HSLA array, return the corresponding RGBA value
+ * Convert an HSLA array to RGBA.
  *
- * @param  {Array} hsla An 'array' object that represents a list of HSL colors
- * @return {Array} an array of RGBA values, on a scale of 0-1
+ * We need to change basis from HSLA to something that can be more easily be
+ * projected onto RGBA. We will choose hue and brightness as our first two
+ * components, and pick a convenient third one ('zest') so that we don't need
+ * to calculate formal HSBA saturation.
  */
-p5.ColorUtils.hslaToRGBA = function(hsla){
-  var h = hsla[0];
-  var s = hsla[1];
-  var l = hsla[2];
-  var a = hsla[3] || 1;
+p5.ColorConversion._hslaToRGBA = function(hsla){
+  var hue = hsla[0] * 6;  // We will split hue into 6 sectors.
+  var sat = hsla[1];
+  var li = hsla[2];
 
-  // Adapted from http://www.easyrgb.com/math.html
-  // hsl values = 0 - 1, rgb values = 0 - 1
-  var rgba = [];
-  if(s === 0){
-    rgba = [l, l, l, a];
+  RGBA.length = 0;  // Clear persistent RGBA array.
+
+  if (sat === 0) {
+    RGBA = [li, li, li, hsla[3]]; // Return early if grayscale.
   } else {
-    var m, n, r, g, b;
 
-    n = l < 0.5 ? l * (1 + s) : (l + s) - (s * l);
-    m = 2 * l - n;
+    // Calculate brightness.
+    var val;
+    if (li < 0.5) {
+      val = (1 + sat) * li;
+    } else {
+      val = li + sat - li * sat;
+    }
 
-    var convert = function(x, y, hue){
-      if (hue < 0) {
-        hue += 1;
-      } else if (hue > 1) {
-        hue -= 1;
+    // Define zest.
+    var zest = 2 * li - val;
+
+    // Implement projection (project onto green by default).
+    var hzvToRGB = function(hue, zest, val) {
+      if (hue < 0) {  // Hue must wrap to allow projection onto red and blue.
+        hue += 6;
+      } else if (hue >= 6) {
+        hue -= 6;
       }
-
-      if ( ( 6 * hue ) < 1 ) {
-        return ( x + ( y - x ) * 6 * hue );
-      } else if ( ( 2 * hue ) < 1 ) {
-        return ( y );
-      } else if ( ( 3 * hue ) < 2 ) {
-        return ( x + ( y - x ) * ( ( 2 / 3 ) - hue ) * 6 );
-      } else {
-        return x;
+      if (hue < 1) {  // Red to yellow (increasing green).
+        return (zest + (val - zest) * hue);
+      } else if (hue < 3) {  // Yellow to cyan (greatest green).
+        return val;
+      } else if (hue < 4) {  // Cyan to blue (decreasing green).
+        return (zest + (val - zest) * (4 - hue));
+      } else {  // Blue to red (least green).
+        return zest;
       }
     };
 
-    r = convert( m, n, h + ( 1 / 3 ) );
-    g = convert( m, n, h );
-    b = convert( m, n, h - ( 1 / 3 ) );
-
-    rgba = [r, g, b, a];
+    // Perform projections, offsetting hue as necessary.
+    RGBA = [hzvToRGB(hue + 2, zest, val),
+            hzvToRGB(hue    , zest, val),
+            hzvToRGB(hue - 2, zest, val),
+            hsla[3]];
   }
 
-  return rgba;
+  return RGBA;
 };
 
 /**
- * For a color expressed as an RGBA array, return the corresponding HSBA value
- *
- * @param {Array} rgba An 'array' object that represents a list of RGB colors
- * @return {Array} an array of HSL values
+ * Convert an RGBA array to HSBA.
  */
-p5.ColorUtils.rgbaToHSLA = function(rgba) {
-  var r = rgba[0];
-  var g = rgba[1];
-  var b = rgba[2];
-  var a = rgba[3] || 1;
+p5.ColorConversion._rgbaToHSBA = function(rgba) {
+  var red = rgba[0];
+  var green = rgba[1];
+  var blue = rgba[2];
 
-  var min = Math.min(r, g, b); //Min. value of RGB
-  var max = Math.max(r, g, b); //Max. value of RGB
-  var delta_max = max - min;             //Delta RGB value
+  var val = Math.max(red, green, blue);
+  var chroma = val - Math.min(red, green, blue);
 
-  var h;
-  var s;
-  var l = (max + min) / 2;
-
-  var delta_r;
-  var delta_g;
-  var delta_b;
-
-  if (delta_max === 0) { // This is a gray, no chroma...
-    h = 0;             // HSL results from 0 to 1
-    s = 0;
-  } else {              // Chromatic data...
-
-    delta_r = ( ( ( max - r ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
-    delta_g = ( ( ( max - g ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
-    delta_b = ( ( ( max - b ) / 6 ) + ( delta_max / 2 ) ) / delta_max;
-
-    if ( r === max ){
-      h = delta_b - delta_g;
-    } else if ( g === max ){
-      h = ( 1 / 3 ) + delta_r - delta_b;
-    } else if ( b === max ) {
-      h = ( 2 / 3 ) + delta_g - delta_r;
+  var hue, sat;
+  if (chroma === 0) {  // Return early if grayscale.
+    hue = 0;
+    sat = 0;
+  }
+  else {
+    sat = chroma / val;
+    if (red === val) {  // Magenta to yellow.
+      hue = (green - blue) / chroma;
+    } else if (green === val) { // Yellow to cyan.
+      hue = 2 + (blue - red) / chroma;
+    } else if (blue === val) {  // Cyan to magenta.
+      hue = 4 + (red - green) / chroma;
     }
-
-    if ( h < 0 ) {
-      h += 1;
+    if (hue < 0) {  // Confine hue to the interval [0, 1).
+      hue += 6;
+    } else if (hue >= 6) {
+      hue -= 6;
     }
+  }
 
-    if ( h > 1 ) {
-      h -= 1;
-    }
+  return [hue / 6, sat, val, rgba[3]];
+};
 
-    if ( l < 0.5 ){
-      s = delta_max / ( max + min );
+/**
+ * Convert an RGBA array to HSLA.
+ */
+p5.ColorConversion._rgbaToHSLA = function(rgba) {
+  var red = rgba[0];
+  var green = rgba[1];
+  var blue = rgba[2];
+
+  var val = Math.max(red, green, blue);
+  var min = Math.min(red, green, blue);
+  var li = val + min;  // We will halve this later.
+  var chroma = val - min;
+
+  var hue, sat;
+  if (chroma === 0) {  // Return early if grayscale.
+    hue = 0;
+    sat = 0;
+  } else {
+    if (li < 1) {
+      sat = chroma / li;
     } else {
-      s = delta_max / ( 2 - max - min );
+      sat = chroma / (2 - chroma);
     }
-
-  }
-  return [h, s, l, a];
-};
-
-/**
- * For a color expressed as an hsla array, return the corresponding HSBA value
- *
- * @param {Array} hsla An 'array' object that represents a list of HSLA colors
- * @return {Array} an array of HSBA values
- */
-p5.ColorUtils.hslaToHSBA = function(hsla) {
-  var h = hsla[0];
-  var s = hsla[1];
-  var l = hsla[2];
-  var a = hsla[3] || 1;
-
-  var v;
-
-  //Hue and Alpha stay the same
-  s *= l < 0.5 ? l : 1 - l;
-  v = l + s;
-  s = 2 * s / (l + s);
-
-  return[ h, s, v, a];
-};
-
-/**
- * For a color expressed as an hsba array, return the corresponding HSLA value
- *
- * @param {Array} hsba An 'array' object that represents a list of HSBA colors
- * @return {Array} an array of HSLA values
- */
-p5.ColorUtils.hsbaToHSLA = function(hsba) {
-  var h = hsba[0];
-  var s = hsba[1];
-  var v = hsba[2];
-  var a = hsba[3] || 1;
-
-  //Hue and Alpha stay the same
-  //Lightness is (2 - s) * v / 2
-  var l = (2 - s) * v / 2;
-
-  //Saturation is very different between the two color spaces
-  //If l < 0.5 set it to s / (2 - s)
-  //Otherwise s * v / (2 - (2 - s) * v)
-  if( l !== 0 ){
-    if( l === 1 ){
-      s = 0;
+    if (red === val) {  // Magenta to yellow.
+      hue = (green - blue) / chroma;
+    } else if (green === val) {  // Yellow to cyan.
+      hue = 2 + (blue - red) / chroma;
+    } else if (blue === val) {  // Cyan to magenta.
+      hue = 4 + (red - green) / chroma;
     }
-    else if( l < 0.5 ){
-      s = s / (2 - s);
-    }
-    else{
-      s = s * v / (2 - l * 2);
+    if (hue < 0) {  // Confine hue to the interval [0, 1).
+      hue += 6;
+    } else if (hue >= 6) {
+      hue -= 6;
     }
   }
 
-  return [ h, s, l, a];
+  return [hue / 6, sat, li / 2, rgba[3]];
 };
 
-module.exports = p5.ColorUtils;
+module.exports = p5.ColorConversion;
 
-},{"../core/core":47}],40:[function(_dereq_,module,exports){
+},{"../core/core":48}],41:[function(_dereq_,module,exports){
 /**
  * @module Color
  * @submodule Creating & Reading
  * @for p5
  * @requires core
+ * @requires constants
  */
 
 'use strict';
@@ -8231,14 +8718,14 @@ _dereq_('./p5.Color');
  */
 p5.prototype.alpha = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getAlpha();
+    return this.color(c)._getAlpha();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
 };
 
 /**
- * Extracts the blue value from a color or a pixel array.
+ * Extracts the blue value from a color or pixel array.
  *
  * @method blue
  * @param {Object} obj p5.Color object or pixel array
@@ -8258,17 +8745,17 @@ p5.prototype.alpha = function(c) {
  */
 p5.prototype.blue = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getBlue();
+    return this.color(c)._getBlue();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
 };
 
 /**
- * Extracts the brightness value from a color.
+ * Extracts the HSB brightness value from a color or pixel array.
  *
  * @method brightness
- * @param {Object} color p5.Color object
+ * @param {Object} color p5.Color object or pixel array
  * @example
  * <div>
  * <code>
@@ -8285,7 +8772,7 @@ p5.prototype.blue = function(c) {
  */
 p5.prototype.brightness = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getBrightness();
+    return this.color(c)._getBrightness();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
@@ -8443,19 +8930,19 @@ p5.prototype.brightness = function(c) {
  */
 p5.prototype.color = function() {
   if (arguments[0] instanceof p5.Color) {
-    return arguments[0];
+    return arguments[0];  // Do nothing if argument is already a color object.
   } else if (arguments[0] instanceof Array) {
     return new p5.Color(this, arguments[0]);
   } else {
-    var args = Array.prototype.slice.call(arguments);
-    return new p5.Color(this, args);
+    return new p5.Color(this, arguments);
   }
 };
+
 /**
  * Extracts the green value from a color or pixel array.
  *
  * @method green
- * @param {Object} color p5.Color object
+ * @param {Object} color p5.Color object or pixel array
  * @example
  * <div>
  * <code>
@@ -8472,17 +8959,23 @@ p5.prototype.color = function() {
  */
 p5.prototype.green = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getGreen();
+    return this.color(c)._getGreen();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
 };
 
 /**
- * Extracts the hue value from a color.
+ * Extracts the hue value from a color or pixel array.
+ *
+ * Hue exists in both HSB and HSL. This function will return the
+ * HSB-normalized hue when supplied with an HSB color object (or when supplied
+ * with a pixel array while the color mode is HSB), but will default to the
+ * HSL-normalized hue otherwise. (The values will only be different if the
+ * maximum hue setting for each system is different.)
  *
  * @method hue
- * @param {Object} color p5.Color object
+ * @param {Object} color p5.Color object or pixel array
  * @example
  * <div>
  * <code>
@@ -8498,27 +8991,23 @@ p5.prototype.green = function(c) {
  * </div>
  */
 p5.prototype.hue = function(c) {
-  if (!(c instanceof p5.Color)) {
-    throw new Error('Needs p5.Color as argument.');
+  if (c instanceof p5.Color || c instanceof Array) {
+    return this.color(c)._getHue();
+  } else {
+    throw new Error('Needs p5.Color or pixel array as argument.');
   }
-  return c.getHue();
 };
 
 /**
- * Calculates a color or colors between two color at a specific increment,
- * using gamma correction to blend colors in the linear RGB space.
- * The amt parameter is the amount to interpolate between the two values
- * where 0.0 equal to the first point, 0.1 is very near the first point,
- * 0.5 is halfway in between, etc. An amount below 0 will be treated as 0.
- * Likewise, amounts above 1 will be capped at 1. This is different from
- * the behavior of lerp(), but necessary because otherwise numbers outside
- * the range will produce strange and unexpected colors.
+ * Blends two colors to find a third color somewhere between them. The amt
+ * parameter is the amount to interpolate between the two values where 0.0
+ * equal to the first color, 0.1 is very near the first color, 0.5 is halfway
+ * in between, etc. An amount below 0 will be treated as 0. Likewise, amounts
+ * above 1 will be capped at 1. This is different from the behavior of lerp(),
+ * but necessary because otherwise numbers outside the range will produce
+ * strange and unexpected colors.
  *
- * The regular RGB color representation stores the square root of the
- * displayed color, not the value itself. Your monitor behaves as if it
- * squares the color values before displaying it. lerpColor first transforms
- * colors into the linear color space before blending, to correctly mix the
- * colors as two rays of light.
+ * The way that colours are interpolated depends on the current color mode.
  *
  * @method lerpColor
  * @param  {Array/Number} c1  interpolate from this color
@@ -8528,10 +9017,12 @@ p5.prototype.hue = function(c) {
  * @example
  * <div>
  * <code>
+ * colorMode(RGB);
  * stroke(255);
  * background(51);
- * from = color(204, 102, 0);
- * to = color(0, 102, 153);
+ * from = color(218, 165, 32);
+ * to = color(72, 61, 139);
+ * colorMode(RGB);  // Try changing to HSB.
  * interA = lerpColor(from, to, .33);
  * interB = lerpColor(from, to, .66);
  * fill(from);
@@ -8546,36 +9037,55 @@ p5.prototype.hue = function(c) {
  * </div>
  */
 p5.prototype.lerpColor = function(c1, c2, amt) {
-  var l1, l2, l3, l4;
-  var fromColor, toColor;
+  var mode = this._renderer._colorMode;
+  var maxes = this._renderer._colorMaxes;
+  var l0, l1, l2, l3;
+  var fromArray, toArray;
 
-  if(this._colorMode === constants.RGB) {
-    fromColor = this.color(c1).rgba;
-    toColor = this.color(c2).rgba;
+  if (mode === constants.RGB) {
+    fromArray = c1.levels.map(function(level) {
+      return level / 255;
+    });
+    toArray = c2.levels.map(function(level) {
+      return level / 255;
+    });
+  } else if (mode === constants.HSB) {
+    c1._getBrightness();  // Cache hsba so it definitely exists.
+    c2._getBrightness();
+    fromArray = c1.hsba;
+    toArray = c2.hsba;
+  } else if (mode === constants.HSL) {
+    c1._getLightness();  // Cache hsla so it definitely exists.
+    c2._getLightness();
+    fromArray = c1.hsla;
+    toArray = c2.hsla;
+  } else {
+    throw new Error (mode + 'cannot be used for interpolation.');
   }
-  else if (this._colorMode === constants.HSB) {
-    fromColor = this.color(c1).hsba;
-    toColor = this.color(c2).hsba;
-  }
-  else if(this._colorMode === constants.HSL) {
-    fromColor = this.color(c1).hsla;
-    toColor = this.color(c2).hsla;
-  }
-  else {
-    return;
-  }
-  l1 = this.lerp(fromColor[0], toColor[0], amt);
-  l2 = this.lerp(fromColor[1], toColor[1], amt);
-  l3 = this.lerp(fromColor[2], toColor[2], amt);
-  l4 = this.lerp(fromColor[3], toColor[3], amt);
-  return this.color(l1, l2, l3, l4);
+
+  // Prevent extrapolation.
+  amt = Math.max(Math.min(amt, 1), 0);
+
+  // Perform interpolation.
+  l0 = this.lerp(fromArray[0], toArray[0], amt);
+  l1 = this.lerp(fromArray[1], toArray[1], amt);
+  l2 = this.lerp(fromArray[2], toArray[2], amt);
+  l3 = this.lerp(fromArray[3], toArray[3], amt);
+
+  // Scale components.
+  l0 *= maxes[mode][0];
+  l1 *= maxes[mode][1];
+  l2 *= maxes[mode][2];
+  l3 *= maxes[mode][3];
+
+  return this.color(l0, l1, l2, l3);
 };
 
 /**
- * Extracts the lightness value from a color.
+ * Extracts the HSL lightness value from a color or pixel array.
  *
  * @method lightness
- * @param {Object} color p5.Color object
+ * @param {Object} color p5.Color object or pixel array
  * @example
  * <div>
  * <code>
@@ -8590,10 +9100,9 @@ p5.prototype.lerpColor = function(c1, c2, amt) {
  * </code>
  * </div>
  */
-
 p5.prototype.lightness = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getLightness();
+    return this.color(c)._getLightness();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
@@ -8630,17 +9139,22 @@ p5.prototype.lightness = function(c) {
  */
 p5.prototype.red = function(c) {
   if (c instanceof p5.Color || c instanceof Array) {
-    return this.color(c).getRed();
+    return this.color(c)._getRed();
   } else {
     throw new Error('Needs p5.Color or pixel array as argument.');
   }
 };
 
 /**
- * Extracts the saturation value from a color.
+ * Extracts the saturation value from a color or pixel array.
+ *
+ * Saturation is scaled differently in HSB and HSL. This function will return
+ * the HSB saturation when supplied with an HSB color object (or when supplied
+ * with a pixel array while the color mode is HSB), but will default to the
+ * HSL saturation otherwise.
  *
  * @method saturation
- * @param {Object} color p5.Color object
+ * @param {Object} color p5.Color object or pixel array
  * @example
  * <div>
  * <code>
@@ -8656,315 +9170,322 @@ p5.prototype.red = function(c) {
  * </div>
  */
 p5.prototype.saturation = function(c) {
-  if (!(c instanceof p5.Color)) {
-    throw new Error('Needs p5.Color as argument.');
+  if (c instanceof p5.Color || c instanceof Array) {
+    return this.color(c)._getSaturation();
+  } else {
+    throw new Error('Needs p5.Color or pixel array as argument.');
   }
-  return c.getSaturation();
 };
-
-
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47,"./p5.Color":41}],41:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"./p5.Color":42}],42:[function(_dereq_,module,exports){
 /**
  * @module Color
  * @submodule Creating & Reading
  * @for p5
+ * @requires core
+ * @requires constants
+ * @requires color_conversion
  */
 
 var p5 = _dereq_('../core/core');
-var color_utils = _dereq_('./color_utils');
 var constants = _dereq_('../core/constants');
+var color_conversion = _dereq_('./color_conversion');
 
 /**
+ * We define colors to be immutable objects. Each color stores the color mode
+ * and level maxes that applied at the time of its construction. These are
+ * used to interpret the input arguments and to format the output e.g. when
+ * saturation() is requested.
+ *
+ * Internally we store an array representing the ideal RGBA values in floating
+ * point form, normalized from 0 to 1. From this we calculate the closest
+ * screen color (RGBA levels from 0 to 255) and expose this to the renderer.
+ *
+ * We also cache normalized, floating point components of the color in various
+ * representations as they are calculated. This is done to prevent repeating a
+ * conversion that has already been performed.
  *
  * @class p5.Color
  * @constructor
- * rgba, hsla, hsba are normalized rgba arrays
- * (1, 1, 1, 1)
  */
-p5.Color = function (pInst, vals) {
-  this.mode = pInst._colorMode;
-  this.maxes = pInst._colorMaxes;
-  var isHSB = this.mode === constants.HSB,
-      isRGB = this.mode === constants.RGB,
-      isHSL = this.mode === constants.HSL;
+p5.Color = function(pInst, vals) {
 
-  if (isRGB) {
-    this._array = p5.Color._getFormattedColor.apply(pInst, vals);
-  } else if (isHSB) {
-    this.hsba = p5.Color._getFormattedColor.apply(pInst, vals);
-    this._array = color_utils.hsbaToRGBA(this.hsba);
-  } else if (isHSL){
-    this.hsla = p5.Color._getFormattedColor.apply(pInst, vals);
-    this._array = color_utils.hslaToRGBA(this.hsla);
+  // Record color mode and maxes at time of construction.
+  this.mode = pInst._renderer._colorMode;
+  this.maxes = pInst._renderer._colorMaxes;
+
+  // Calculate normalized RGBA values.
+  if (this.mode !== constants.RGB &&
+      this.mode !== constants.HSL &&
+      this.mode !== constants.HSB) {
+    throw new Error(this.mode + ' is an invalid colorMode.');
   } else {
-    throw new Error(pInst._colorMode + ' is an invalid colorMode.');
+    this._array = p5.Color._parseInputs.apply(pInst, vals);
   }
 
-  this.rgba = [ Math.round(this._array[0] * 255),
-                Math.round(this._array[1] * 255),
-                Math.round(this._array[2] * 255),
-                Math.round(this._array[3] * 255)];
+  // Expose closest screen color.
+  this.levels = this._array.map(function(level) {
+    return Math.round(level * 255);
+  });
+
   return this;
 };
 
-p5.Color.prototype.getHue = function() {
-  // Hue is consistent in both HSL & HSB
-  if (this.hsla) {
-    return this.hsla[0] * this.maxes[constants.HSL][0];
-  } else if (this.hsba) {
+p5.Color.prototype.toString = function() {
+  var a = this.levels;
+  a[3] = this._array[3];  // String representation uses normalized alpha.
+  return 'rgba('+a[0]+','+a[1]+','+a[2]+','+ a[3] +')';
+};
+
+p5.Color.prototype._getAlpha = function() {
+  return this._array[3] * this.maxes[this.mode][3];
+};
+
+p5.Color.prototype._getBlue = function() {
+  return this._array[2] * this.maxes[constants.RGB][2];
+};
+
+p5.Color.prototype._getBrightness = function() {
+  if (!this.hsba) {
+    this.hsba = color_conversion._rgbaToHSBA(this._array);
+  }
+  return this.hsba[2] * this.maxes[constants.HSB][2];
+};
+
+p5.Color.prototype._getGreen = function() {
+  return this._array[1] * this.maxes[constants.RGB][1];
+};
+
+/**
+ * Hue is the same in HSB and HSL, but the maximum value may be different.
+ * This function will return the HSB-normalized saturation when supplied with
+ * an HSB color object, but will default to the HSL-normalized saturation
+ * otherwise.
+ */
+p5.Color.prototype._getHue = function() {
+  if (this.mode === constants.HSB) {
+    if (!this.hsba) {
+      this.hsba = color_conversion._rgbaToHSBA(this._array);
+    }
     return this.hsba[0] * this.maxes[constants.HSB][0];
   } else {
-    this.hsla = color_utils.rgbaToHSLA(this._array);
+    if (!this.hsla) {
+      this.hsla = color_conversion._rgbaToHSLA(this._array);
+    }
     return this.hsla[0] * this.maxes[constants.HSL][0];
   }
 };
 
-p5.Color.prototype.getSaturation = function() {
-  // Saturation exists in both HSB and HSL, but returns different values
-  // We are preferring HSL here (because it is a web color space)
-  // until the global flag issue can be resolved
-  if (this.hsba && this.mode === constants.HSB) {
+p5.Color.prototype._getLightness = function() {
+  if (!this.hsla) {
+    this.hsla = color_conversion._rgbaToHSLA(this._array);
+  }
+  return this.hsla[2] * this.maxes[constants.HSL][2];
+};
+
+p5.Color.prototype._getRed = function() {
+  return this._array[0] * this.maxes[constants.RGB][0];
+};
+
+/**
+ * Saturation is scaled differently in HSB and HSL. This function will return
+ * the HSB saturation when supplied with an HSB color object, but will default
+ * to the HSL saturation otherwise.
+ */
+p5.Color.prototype._getSaturation = function() {
+  if (this.mode === constants.HSB) {
+    if (!this.hsba) {
+      this.hsba = color_conversion._rgbaToHSBA(this._array);
+    }
     return this.hsba[1] * this.maxes[constants.HSB][1];
   } else {
-    if( !this.hsla ) {
-      this.hsla = color_utils.rgbaToHSLA(this._array);
+    if (!this.hsla) {
+      this.hsla = color_conversion._rgbaToHSLA(this._array);
     }
     return this.hsla[1] * this.maxes[constants.HSL][1];
   }
 };
 
-// Brightness only exists as an HSB value
-p5.Color.prototype.getBrightness = function() {
-  if (this.hsba) {
-    return this.hsba[2] * this.maxes[constants.HSB][2];
-  } else {
-    this.hsba = color_utils.rgbaToHSBA(this._array);
-    return this.hsba[2] * this.maxes[constants.HSB][2];
-  }
-};
-
-// Lightness only exists as an HSL value
-p5.Color.prototype.getLightness = function() {
-  if (this.hsla) {
-    return this.hsla[2] * this.maxes[constants.HSL][2];
-  } else {
-    this.hsla = color_utils.rgbaToHSLA(this._array);
-    return this.hsla[2] * this.maxes[constants.HSL][2];
-  }
-};
-
-p5.Color.prototype.getRed = function() {
-  return this._array[0] * this.maxes[constants.RGB][0];
-};
-
-p5.Color.prototype.getGreen = function() {
-  return this._array[1] * this.maxes[constants.RGB][1];
-};
-
-p5.Color.prototype.getBlue = function() {
-  return this._array[2] * this.maxes[constants.RGB][2];
-};
-
-p5.Color.prototype.getAlpha = function() {
-  return this._array[3] * this.maxes[this.mode][3];
-};
-
-p5.Color.prototype.toString = function() {
-  var a = this.rgba;
-  a[3] = this._array[3];
-  return 'rgba('+a[0]+','+a[1]+','+a[2]+','+ a[3] +')';
+/**
+ * CSS named colors.
+ */
+var namedColors = {
+  aliceblue:             '#f0f8ff',
+  antiquewhite:          '#faebd7',
+  aqua:                  '#00ffff',
+  aquamarine:            '#7fffd4',
+  azure:                 '#f0ffff',
+  beige:                 '#f5f5dc',
+  bisque:                '#ffe4c4',
+  black:                 '#000000',
+  blanchedalmond:        '#ffebcd',
+  blue:                  '#0000ff',
+  blueviolet:            '#8a2be2',
+  brown:                 '#a52a2a',
+  burlywood:             '#deb887',
+  cadetblue:             '#5f9ea0',
+  chartreuse:            '#7fff00',
+  chocolate:             '#d2691e',
+  coral:                 '#ff7f50',
+  cornflowerblue:        '#6495ed',
+  cornsilk:              '#fff8dc',
+  crimson:               '#dc143c',
+  cyan:                  '#00ffff',
+  darkblue:              '#00008b',
+  darkcyan:              '#008b8b',
+  darkgoldenrod:         '#b8860b',
+  darkgray:              '#a9a9a9',
+  darkgreen:             '#006400',
+  darkgrey:              '#a9a9a9',
+  darkkhaki:             '#bdb76b',
+  darkmagenta:           '#8b008b',
+  darkolivegreen:        '#556b2f',
+  darkorange:            '#ff8c00',
+  darkorchid:            '#9932cc',
+  darkred:               '#8b0000',
+  darksalmon:            '#e9967a',
+  darkseagreen:          '#8fbc8f',
+  darkslateblue:         '#483d8b',
+  darkslategray:         '#2f4f4f',
+  darkslategrey:         '#2f4f4f',
+  darkturquoise:         '#00ced1',
+  darkviolet:            '#9400d3',
+  deeppink:              '#ff1493',
+  deepskyblue:           '#00bfff',
+  dimgray:               '#696969',
+  dimgrey:               '#696969',
+  dodgerblue:            '#1e90ff',
+  firebrick:             '#b22222',
+  floralwhite:           '#fffaf0',
+  forestgreen:           '#228b22',
+  fuchsia:               '#ff00ff',
+  gainsboro:             '#dcdcdc',
+  ghostwhite:            '#f8f8ff',
+  gold:                  '#ffd700',
+  goldenrod:             '#daa520',
+  gray:                  '#808080',
+  green:                 '#008000',
+  greenyellow:           '#adff2f',
+  grey:                  '#808080',
+  honeydew:              '#f0fff0',
+  hotpink:               '#ff69b4',
+  indianred:             '#cd5c5c',
+  indigo:                '#4b0082',
+  ivory:                 '#fffff0',
+  khaki:                 '#f0e68c',
+  lavender:              '#e6e6fa',
+  lavenderblush:         '#fff0f5',
+  lawngreen:             '#7cfc00',
+  lemonchiffon:          '#fffacd',
+  lightblue:             '#add8e6',
+  lightcoral:            '#f08080',
+  lightcyan:             '#e0ffff',
+  lightgoldenrodyellow:  '#fafad2',
+  lightgray:             '#d3d3d3',
+  lightgreen:            '#90ee90',
+  lightgrey:             '#d3d3d3',
+  lightpink:             '#ffb6c1',
+  lightsalmon:           '#ffa07a',
+  lightseagreen:         '#20b2aa',
+  lightskyblue:          '#87cefa',
+  lightslategray:        '#778899',
+  lightslategrey:        '#778899',
+  lightsteelblue:        '#b0c4de',
+  lightyellow:           '#ffffe0',
+  lime:                  '#00ff00',
+  limegreen:             '#32cd32',
+  linen:                 '#faf0e6',
+  magenta:               '#ff00ff',
+  maroon:                '#800000',
+  mediumaquamarine:      '#66cdaa',
+  mediumblue:            '#0000cd',
+  mediumorchid:          '#ba55d3',
+  mediumpurple:          '#9370db',
+  mediumseagreen:        '#3cb371',
+  mediumslateblue:       '#7b68ee',
+  mediumspringgreen:     '#00fa9a',
+  mediumturquoise:       '#48d1cc',
+  mediumvioletred:       '#c71585',
+  midnightblue:          '#191970',
+  mintcream:             '#f5fffa',
+  mistyrose:             '#ffe4e1',
+  moccasin:              '#ffe4b5',
+  navajowhite:           '#ffdead',
+  navy:                  '#000080',
+  oldlace:               '#fdf5e6',
+  olive:                 '#808000',
+  olivedrab:             '#6b8e23',
+  orange:                '#ffa500',
+  orangered:             '#ff4500',
+  orchid:                '#da70d6',
+  palegoldenrod:         '#eee8aa',
+  palegreen:             '#98fb98',
+  paleturquoise:         '#afeeee',
+  palevioletred:         '#db7093',
+  papayawhip:            '#ffefd5',
+  peachpuff:             '#ffdab9',
+  peru:                  '#cd853f',
+  pink:                  '#ffc0cb',
+  plum:                  '#dda0dd',
+  powderblue:            '#b0e0e6',
+  purple:                '#800080',
+  red:                   '#ff0000',
+  rosybrown:             '#bc8f8f',
+  royalblue:             '#4169e1',
+  saddlebrown:           '#8b4513',
+  salmon:                '#fa8072',
+  sandybrown:            '#f4a460',
+  seagreen:              '#2e8b57',
+  seashell:              '#fff5ee',
+  sienna:                '#a0522d',
+  silver:                '#c0c0c0',
+  skyblue:               '#87ceeb',
+  slateblue:             '#6a5acd',
+  slategray:             '#708090',
+  slategrey:             '#708090',
+  snow:                  '#fffafa',
+  springgreen:           '#00ff7f',
+  steelblue:             '#4682b4',
+  tan:                   '#d2b48c',
+  teal:                  '#008080',
+  thistle:               '#d8bfd8',
+  tomato:                '#ff6347',
+  turquoise:             '#40e0d0',
+  violet:                '#ee82ee',
+  wheat:                 '#f5deb3',
+  white:                 '#ffffff',
+  whitesmoke:            '#f5f5f5',
+  yellow:                '#ffff00',
+  yellowgreen:           '#9acd32'
 };
 
 /**
- * These Regular Expressions are used to build up the patterns for matching
- * viable CSS color strings: fragmenting the regexes in this way increases
- * the legibility and comprehensibility of the code
+ * These regular expressions are used to build up the patterns for matching
+ * viable CSS color strings: fragmenting the regexes in this way increases the
+ * legibility and comprehensibility of the code.
+ *
+ * Note that RGB values of .9 are not parsed by IE, but are supported here for
+ * color string consistency.
  */
-// Match any number of whitespace characters (including no whitespace)
-var WHITESPACE = /\s*/;
-// Match whole-number values, e.g `255` or `79`
-var INTEGER = /(\d{1,3})/;
-// Match decimal values, e.g `129.6`, `79`, or `.9`
-// Note: R, G or B values of `.9` are not parsed by IE: however, they are
-// supported here to provide more consistent color string parsing
-var DECIMAL = /((?:\d+(?:\.\d+)?)|(?:\.\d+))/;
-// Match decimal values followed by a percent sign
-var PERCENT = new RegExp(DECIMAL.source + '%');
+var WHITESPACE = /\s*/;  // Match zero or more whitespace characters.
+var INTEGER = /(\d{1,3})/;  // Match integers: 79, 255, etc.
+var DECIMAL = /((?:\d+(?:\.\d+)?)|(?:\.\d+))/;  // Match 129.6, 79, .9, etc.
+var PERCENT = new RegExp(DECIMAL.source + '%');  // Match 12.9%, 79%, .9%, etc.
 
-var namedColors = {
-  aliceblue: '#f0f8ff',
-  antiquewhite: '#faebd7',
-  aqua: '#00ffff',
-  aquamarine: '#7fffd4',
-  azure: '#f0ffff',
-  beige: '#f5f5dc',
-  bisque: '#ffe4c4',
-  black: '#000000',
-  blanchedalmond: '#ffebcd',
-  blue: '#0000ff',
-  blueviolet: '#8a2be2',
-  brown: '#a52a2a',
-  burlywood: '#deb887',
-  cadetblue: '#5f9ea0',
-  chartreuse: '#7fff00',
-  chocolate: '#d2691e',
-  coral: '#ff7f50',
-  cornflowerblue: '#6495ed',
-  cornsilk: '#fff8dc',
-  crimson: '#dc143c',
-  cyan: '#00ffff',
-  darkblue: '#00008b',
-  darkcyan: '#008b8b',
-  darkgoldenrod: '#b8860b',
-  darkgray: '#a9a9a9',
-  darkgreen: '#006400',
-  darkgrey: '#a9a9a9',
-  darkkhaki: '#bdb76b',
-  darkmagenta: '#8b008b',
-  darkolivegreen: '#556b2f',
-  darkorange: '#ff8c00',
-  darkorchid: '#9932cc',
-  darkred: '#8b0000',
-  darksalmon: '#e9967a',
-  darkseagreen: '#8fbc8f',
-  darkslateblue: '#483d8b',
-  darkslategray: '#2f4f4f',
-  darkslategrey: '#2f4f4f',
-  darkturquoise: '#00ced1',
-  darkviolet: '#9400d3',
-  deeppink: '#ff1493',
-  deepskyblue: '#00bfff',
-  dimgray: '#696969',
-  dimgrey: '#696969',
-  dodgerblue: '#1e90ff',
-  firebrick: '#b22222',
-  floralwhite: '#fffaf0',
-  forestgreen: '#228b22',
-  fuchsia: '#ff00ff',
-  gainsboro: '#dcdcdc',
-  ghostwhite: '#f8f8ff',
-  gold: '#ffd700',
-  goldenrod: '#daa520',
-  gray: '#808080',
-  green: '#008000',
-  greenyellow: '#adff2f',
-  grey: '#808080',
-  honeydew: '#f0fff0',
-  hotpink: '#ff69b4',
-  indianred: '#cd5c5c',
-  indigo: '#4b0082',
-  ivory: '#fffff0',
-  khaki: '#f0e68c',
-  lavender: '#e6e6fa',
-  lavenderblush: '#fff0f5',
-  lawngreen: '#7cfc00',
-  lemonchiffon: '#fffacd',
-  lightblue: '#add8e6',
-  lightcoral: '#f08080',
-  lightcyan: '#e0ffff',
-  lightgoldenrodyellow: '#fafad2',
-  lightgray: '#d3d3d3',
-  lightgreen: '#90ee90',
-  lightgrey: '#d3d3d3',
-  lightpink: '#ffb6c1',
-  lightsalmon: '#ffa07a',
-  lightseagreen: '#20b2aa',
-  lightskyblue: '#87cefa',
-  lightslategray: '#778899',
-  lightslategrey: '#778899',
-  lightsteelblue: '#b0c4de',
-  lightyellow: '#ffffe0',
-  lime: '#00ff00',
-  limegreen: '#32cd32',
-  linen: '#faf0e6',
-  magenta: '#ff00ff',
-  maroon: '#800000',
-  mediumaquamarine: '#66cdaa',
-  mediumblue: '#0000cd',
-  mediumorchid: '#ba55d3',
-  mediumpurple: '#9370db',
-  mediumseagreen: '#3cb371',
-  mediumslateblue: '#7b68ee',
-  mediumspringgreen: '#00fa9a',
-  mediumturquoise: '#48d1cc',
-  mediumvioletred: '#c71585',
-  midnightblue: '#191970',
-  mintcream: '#f5fffa',
-  mistyrose: '#ffe4e1',
-  moccasin: '#ffe4b5',
-  navajowhite: '#ffdead',
-  navy: '#000080',
-  oldlace: '#fdf5e6',
-  olive: '#808000',
-  olivedrab: '#6b8e23',
-  orange: '#ffa500',
-  orangered: '#ff4500',
-  orchid: '#da70d6',
-  palegoldenrod: '#eee8aa',
-  palegreen: '#98fb98',
-  paleturquoise: '#afeeee',
-  palevioletred: '#db7093',
-  papayawhip: '#ffefd5',
-  peachpuff: '#ffdab9',
-  peru: '#cd853f',
-  pink: '#ffc0cb',
-  plum: '#dda0dd',
-  powderblue: '#b0e0e6',
-  purple: '#800080',
-  red: '#ff0000',
-  rosybrown: '#bc8f8f',
-  royalblue: '#4169e1',
-  saddlebrown: '#8b4513',
-  salmon: '#fa8072',
-  sandybrown: '#f4a460',
-  seagreen: '#2e8b57',
-  seashell: '#fff5ee',
-  sienna: '#a0522d',
-  silver: '#c0c0c0',
-  skyblue: '#87ceeb',
-  slateblue: '#6a5acd',
-  slategray: '#708090',
-  slategrey: '#708090',
-  snow: '#fffafa',
-  springgreen: '#00ff7f',
-  steelblue: '#4682b4',
-  tan: '#d2b48c',
-  teal: '#008080',
-  thistle: '#d8bfd8',
-  tomato: '#ff6347',
-  turquoise: '#40e0d0',
-  violet: '#ee82ee',
-  wheat: '#f5deb3',
-  white: '#ffffff',
-  whitesmoke: '#f5f5f5',
-  yellow: '#ffff00',
-  yellowgreen: '#9acd32'
-};
-
-// Regular Expressions for use identifying color pattern strings
+/**
+ * Full color string patterns. The capture groups are necessary.
+ */
 var colorPatterns = {
-  /**
-   * Regular expression for matching colors in format #XXX,
-   * e.g. #416
-   */
+  // Match colors in format #XXX, e.g. #416.
   HEX3: /^#([a-f0-9])([a-f0-9])([a-f0-9])$/i,
 
-  /**
-   * Regular expression for matching colors in format #XXXXXX,
-   * e.g. #b4d455
-   */
+  // Match colors in format #XXXXXX, e.g. #b4d455.
   HEX6: /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i,
 
-  /**
-   * Regular expression for matching colors in format rgb(R, G, B),
-   * e.g. rgb(255, 0, 128)
-   */
+  // Match colors in format rgb(R, G, B), e.g. rgb(255, 0, 128).
   RGB: new RegExp([
-    // Defining RegExp this way makes it more obvious where whitespace
-    // (`\s*`) is permitted between tokens
     '^rgb\\(',
     INTEGER.source,
     ',',
@@ -8974,14 +9495,8 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-
-  /**
-   * Regular expression for matching colors in format rgb(R%, G%, B%),
-   * e.g. rgb(100%, 0%, 28.9%)
-   */
+  // Match colors in format rgb(R%, G%, B%), e.g. rgb(100%, 0%, 28.9%).
   RGB_PERCENT: new RegExp([
-    // Defining RegExp this way makes it more obvious where whitespace
-    // (`\s*`) is permitted between tokens
     '^rgb\\(',
     PERCENT.source,
     ',',
@@ -8991,10 +9506,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format rgb(R, G, B, A),
-   * e.g. rgb(255, 0, 128, 0.25)
-   */
+  // Match colors in format rgb(R, G, B, A), e.g. rgb(255, 0, 128, 0.25).
   RGBA: new RegExp([
     '^rgba\\(',
     INTEGER.source,
@@ -9007,10 +9519,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format rgb(R%, G%, B%, A),
-   * e.g. rgb(100%, 0%, 28.9%. 0.5)
-   */
+  // Match colors in format rgb(R%, G%, B%, A), e.g. rgb(100%, 0%, 28.9%, 0.5).
   RGBA_PERCENT: new RegExp([
     '^rgba\\(',
     PERCENT.source,
@@ -9023,10 +9532,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format hsla(H, S%, L%),
-   * e.g. hsl(100, 40%, 28.9%)
-   */
+  // Match colors in format hsla(H, S%, L%), e.g. hsl(100, 40%, 28.9%).
   HSL: new RegExp([
     '^hsl\\(',
     INTEGER.source,
@@ -9037,10 +9543,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format hsla(H, S%, L%, A),
-   * e.g. hsla(100, 40%, 28.9%, 0.5)
-   */
+  // Match colors in format hsla(H, S%, L%, A), e.g. hsla(100, 40%, 28.9%, 0.5).
   HSLA: new RegExp([
     '^hsla\\(',
     INTEGER.source,
@@ -9053,10 +9556,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format hsb(H, S%, B%),
-   * e.g. hsb(100, 40%, 28.9%)
-   */
+  // Match colors in format hsb(H, S%, B%), e.g. hsb(100, 40%, 28.9%).
   HSB: new RegExp([
     '^hsb\\(',
     INTEGER.source,
@@ -9067,10 +9567,7 @@ var colorPatterns = {
     '\\)$'
   ].join(WHITESPACE.source), 'i'),
 
-  /**
-   * Regular expression for matching colors in format hsba(H, S%, B%, A),
-   * e.g. hsba(100, 40%, 28.9%, 0.5)
-   */
+  // Match colors in format hsba(H, S%, B%, A), e.g. hsba(100, 40%, 28.9%, 0.5).
   HSBA: new RegExp([
     '^hsba\\(',
     INTEGER.source,
@@ -9085,8 +9582,8 @@ var colorPatterns = {
 };
 
 /**
- * For a number of different inputs, returns a color formatted as
- * normalized [r, g, b, a], maxes [255, 255, 255, 255]
+ * For a number of different inputs, returns a color formatted as [r, g, b, a]
+ * arrays, with each component normalized between 0 and 1.
  *
  * @param {Array-like} args An 'array-like' object that represents a list of
  *                          arguments
@@ -9108,52 +9605,75 @@ var colorPatterns = {
  * </code>
  * </div>
  */
-p5.Color._getFormattedColor = function () {
+p5.Color._parseInputs = function() {
   var numArgs = arguments.length;
-  var mode    = this._colorMode;
-  var maxArr  = this._colorMaxes[this._colorMode];
+  var mode = this._renderer._colorMode;
+  var maxes = this._renderer._colorMaxes;
   var results = [];
 
-  // Handle [r,g,b,a] or [h,s,l,a] color values
-  if (numArgs >= 3) {
-    results[0] = arguments[0] / maxArr[0];
-    results[1] = arguments[1] / maxArr[1];
-    results[2] = arguments[2] / maxArr[2];
-    results[3] = typeof arguments[3] === 'number' ?
-              arguments[3] / maxArr[3] : 1;
-  // Handle strings: named colors, hex values, css strings
-  } else if (numArgs === 1 && typeof arguments[0] === 'string') {
-    var str = arguments[0].trim().toLowerCase();
+  if (numArgs >= 3) {  // Argument is a list of component values.
 
-    if (namedColors[str]) {
-      // Handle named color values
-      return p5.Color._getFormattedColor.apply(this, [namedColors[str]]);
+    results[0] = arguments[0] / maxes[mode][0];
+    results[1] = arguments[1] / maxes[mode][1];
+    results[2] = arguments[2] / maxes[mode][2];
+
+    // Alpha may be undefined, so default it to 100%.
+    if (typeof arguments[3] === 'number') {
+      results[3] = arguments[3] / maxes[mode][3];
+    } else {
+      results[3] = 1;
     }
 
-    // Work through available string patterns to determine how to proceed
-    if (colorPatterns.HEX3.test(str)) {
+    // Constrain components to the range [0,1].
+    results = results.map(function(value) {
+      return Math.max(Math.min(value, 1), 0);
+    });
+
+    // Convert to RGBA and return.
+    if (mode === constants.HSL) {
+      return color_conversion._hslaToRGBA(results);
+    } else if (mode === constants.HSB) {
+      return color_conversion._hsbaToRGBA(results);
+    } else {
+      return results;
+    }
+
+  } else if (numArgs === 1 && typeof arguments[0] === 'string') {
+
+    var str = arguments[0].trim().toLowerCase();
+
+    // Return if string is a named colour.
+    if (namedColors[str]) {
+      return p5.Color._parseInputs.apply(this, [namedColors[str]]);
+    }
+
+    // Try RGBA pattern matching.
+    if (colorPatterns.HEX3.test(str)) {  // #rgb
       results = colorPatterns.HEX3.exec(str).slice(1).map(function(color) {
-        // Expand #RGB to #RRGGBB
         return parseInt(color + color, 16) / 255;
       });
       results[3] = 1;
-    } else if (colorPatterns.HEX6.test(str)) {
+      return results;
+    } else if (colorPatterns.HEX6.test(str)) {  // #rrggbb
       results = colorPatterns.HEX6.exec(str).slice(1).map(function(color) {
         return parseInt(color, 16) / 255;
       });
       results[3] = 1;
-    } else if (colorPatterns.RGB.test(str)) {
+      return results;
+    } else if (colorPatterns.RGB.test(str)) {  // rgb(R,G,B)
       results = colorPatterns.RGB.exec(str).slice(1).map(function(color) {
         return color / 255;
       });
       results[3] = 1;
-    } else if (colorPatterns.RGB_PERCENT.test(str)) {
+      return results;
+    } else if (colorPatterns.RGB_PERCENT.test(str)) {  // rgb(R%,G%,B%)
       results = colorPatterns.RGB_PERCENT.exec(str).slice(1)
         .map(function(color) {
           return parseFloat(color) / 100;
         });
       results[3] = 1;
-    } else if (colorPatterns.RGBA.test(str)) {
+      return results;
+    } else if (colorPatterns.RGBA.test(str)) {  // rgba(R,G,B,A)
       results = colorPatterns.RGBA.exec(str).slice(1)
         .map(function(color, idx) {
           if (idx === 3) {
@@ -9161,7 +9681,8 @@ p5.Color._getFormattedColor = function () {
           }
           return color / 255;
         });
-    } else if (colorPatterns.RGBA_PERCENT.test(str)) {
+      return results;
+    } else if (colorPatterns.RGBA_PERCENT.test(str)) {  // rgba(R%,G%,B%,A%)
       results = colorPatterns.RGBA_PERCENT.exec(str).slice(1)
         .map(function(color, idx) {
           if (idx === 3) {
@@ -9169,110 +9690,88 @@ p5.Color._getFormattedColor = function () {
           }
           return parseFloat(color) / 100;
         });
-    }
-    // convert RGBA result to correct color space
-    if( results.length ){
-      if( mode === constants.RGB ){
-        return results;
-      }
-      else if( mode === constants.HSL ){
-        return color_utils.rgbaToHSLA(results);
-      }
-      else if( mode === constants.HSB ){
-        return color_utils.rgbaToHSBA(results);
-      }
+      return results;
     }
 
-    // test string HSLA format
-    if (colorPatterns.HSL.test(str)) {
+    // Try HSLA pattern matching.
+    if (colorPatterns.HSL.test(str)) {  // hsl(H,S,L)
       results = colorPatterns.HSL.exec(str).slice(1)
         .map(function(color, idx) {
-        if( idx === 0 ) {
+        if (idx === 0) {
           return parseInt(color, 10) / 360;
         }
         return parseInt(color, 10) / 100;
       });
       results[3] = 1;
-    } else if (colorPatterns.HSLA.test(str)) {
+    } else if (colorPatterns.HSLA.test(str)) {  // hsla(H,S,L,A)
       results = colorPatterns.HSLA.exec(str).slice(1)
         .map(function(color, idx) {
-        if( idx === 0 ){
+        if (idx === 0) {
           return parseInt(color, 10) / 360;
         }
-        else if( idx === 3 ) {
+        else if (idx === 3) {
           return parseFloat(color);
         }
         return parseInt(color, 10) / 100;
       });
     }
-    // convert HSLA result to correct color space
-    if( results.length ){
-      if( mode === constants.RGB ){
-        return color_utils.hslaToRGBA(results);
-      }
-      else if( mode === constants.HSL ){
-        return results;
-      }
-      else if( mode === constants.HSB ){
-        return color_utils.hslaToHSBA(results);
-      }
+    if (results.length) {
+      return color_conversion._hslaToRGBA(results);
     }
 
-    // test string HSBA format
-    if (colorPatterns.HSB.test(str)) {
+    // Try HSBA pattern matching.
+    if (colorPatterns.HSB.test(str)) {  // hsb(H,S,B)
       results = colorPatterns.HSB.exec(str).slice(1)
         .map(function(color, idx) {
-        if( idx === 0 ) {
+        if (idx === 0) {
           return parseInt(color, 10) / 360;
         }
         return parseInt(color, 10) / 100;
       });
       results[3] = 1;
-    } else if (colorPatterns.HSBA.test(str)) {
+    } else if (colorPatterns.HSBA.test(str)) {  // hsba(H,S,B,A)
       results = colorPatterns.HSBA.exec(str).slice(1)
         .map(function(color, idx) {
-        if( idx === 0 ){
+        if (idx === 0) {
           return parseInt(color, 10) / 360;
         }
-        else if( idx === 3 ) {
+        else if (idx === 3) {
           return parseFloat(color);
         }
         return parseInt(color, 10) / 100;
       });
     }
-    // convert HSBA result to correct color space
-    if( results.length ){
-      if( mode === constants.RGB ){
-        return color_utils.hsbaToRGBA(results);
-      }
-      else if( mode === constants.HSB ){
-        return results;
-      }
-      else if( mode === constants.HSL ){
-        return color_utils.hsbaToHSLA(results);
-      }
+    if (results.length) {
+      return color_conversion._hsbaToRGBA(results);
     }
 
-    // Input did not match any CSS Color pattern: Default to white
+    // Input did not match any CSS color pattern: default to white.
     results = [1, 1, 1, 1];
-  } // Handle greyscale color mode
-  else if((numArgs === 1 || numArgs === 2)&& typeof arguments[0] === 'number')
-  {
-    // When users pass only one argument, they are presumed to be
-    // working in grayscale mode.
-    if (mode === constants.RGB) {
-      results[0] = arguments[0] / maxArr[0];
-      results[1] = arguments[0] / maxArr[1];
-      results[2] = arguments[0] / maxArr[2];
-      results[3] = typeof arguments[1] === 'number' ?
-                     arguments[1] / maxArr[3] : 1;
+
+  } else if ((numArgs === 1 || numArgs === 2) &&
+              typeof arguments[0] === 'number') {  // 'Grayscale' mode.
+
+    /**
+     * For HSB and HSL, interpret the gray level as a brightness/lightness
+     * value (they are equivalent when chroma is zero). For RGB, normalize the
+     * gray level according to the blue maximum.
+     */
+    results[0] = arguments[0] / maxes[mode][2];
+    results[1] = arguments[0] / maxes[mode][2];
+    results[2] = arguments[0] / maxes[mode][2];
+
+    // Alpha may be undefined, so default it to 100%.
+    if (typeof arguments[1] === 'number') {
+      results[3] = arguments[1] / maxes[mode][3];
     } else {
-      results[0] = arguments[0];
-      results[1] = arguments[0];
-      results[2] = arguments[0] / maxArr[2];
-      results[3] = typeof arguments[1] === 'number' ?
-                     arguments[1] / maxArr[3] : 1;
+      results[3] = 1;
     }
+
+    // Constrain components to the range [0,1].
+    results = results.map(function(value) {
+      return Math.max(Math.min(value, 1), 0);
+    });
+
   } else {
     throw new Error (arguments + 'is not a valid color representation.');
   }
@@ -9282,7 +9781,7 @@ p5.Color._getFormattedColor = function () {
 
 module.exports = p5.Color;
 
-},{"../core/constants":46,"../core/core":47,"./color_utils":39}],42:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"./color_conversion":40}],43:[function(_dereq_,module,exports){
 /**
  * @module Color
  * @submodule Setting
@@ -9296,17 +9795,6 @@ module.exports = p5.Color;
 var p5 = _dereq_('../core/core');
 var constants = _dereq_('../core/constants');
 _dereq_('./p5.Color');
-
-p5.prototype._doStroke = true;
-p5.prototype._doFill = true;
-p5.prototype._strokeSet = false;
-p5.prototype._fillSet = false;
-p5.prototype._colorMode = constants.RGB;
-p5.prototype._colorMaxes = {
-  rgb: [255, 255, 255, 255],
-  hsb: [360, 100, 100, 1],
-  hsl: [360, 100, 100, 1]
-};
 
 /**
  * The background() function sets the color used for the background of the
@@ -9411,7 +9899,7 @@ p5.prototype.background = function() {
   if (arguments[0] instanceof p5.Image) {
     this.image(arguments[0], 0, 0, this.width, this.height);
   } else {
-    this._graphics.background.apply(this._graphics, arguments);
+    this._renderer.background.apply(this._renderer, arguments);
   }
   return this;
 };
@@ -9432,28 +9920,32 @@ p5.prototype.background = function() {
  * </div>
  */
 p5.prototype.clear = function() {
-  this._graphics.clear();
+  this._renderer.clear();
   return this;
 };
 
 /**
- * Changes the way p5.js interprets color data. By default, the parameters
- * for fill(), stroke(), background(), and color() are defined by values
- * between 0 and 255 using the RGB color model. The colorMode() function is
- * used to switch color systems. Regardless of color system, all value ranges
- * are presumed to be 0â€“255 unless explicitly set otherwise. That is,
- * for a standard HSB range, one would pass colorMode(HSB, 360, 100, 100, 1).
+ * colorMode() changes the way p5.js interprets color data. By default, the
+ * parameters for fill(), stroke(), background(), and color() are defined by
+ * values between 0 and 255 using the RGB color model. This is equivalent to
+ * setting colorMode(RGB, 255). Setting colorMode(HSB) lets you use the HSB
+ * system instead. By default, this is colorMode(HSB, 360, 100, 100, 1). You
+ * can also use HSL.
+ *
+ * Note: existing color objects remember the mode that they were created in,
+ * so you can change modes as you like without affecting their appearance.
  *
  * @method colorMode
- * @param {Number|Constant} mode either RGB or HSB, corresponding to
- *                               Red/Green/Blue and Hue/Saturation/Brightness
- * @param {Number|Constant} max1 range for the red or hue depending on the
- *                               current color mode, or range for all values
- * @param {Number|Constant} max2 range for the green or saturation depending
- *                               on the current color mode
- * @param {Number|Constant} max3 range for the blue or brightness depending
- *                               on the current color mode
- * @param {Number|Constant} maxA range for the alpha
+ * @param {Number|Constant} mode   either RGB or HSB, corresponding to
+ *                                 Red/Green/Blue and Hue/Saturation/Brightness
+ *                                 (or Lightness)
+ * @param {Number|Constant} [max1] range for the red or hue depending on the
+ *                                 current color mode, or range for all values
+ * @param {Number|Constant} [max2] range for the green or saturation depending
+ *                                 on the current color mode
+ * @param {Number|Constant} [max3] range for the blue or brightness/lighntess
+ *                                 depending on the current color mode
+ * @param {Number|Constant} [maxA] range for the alpha
  * @example
  * <div>
  * <code>
@@ -9487,7 +9979,7 @@ p5.prototype.clear = function() {
  * var c = color(127, 255, 0);
  *
  * colorMode(RGB, 1);
- * var myColor = c.getRed();
+ * var myColor = c._getRed();
  * text(myColor, 10, 10, 80, 80);
  * </code>
  * </div>
@@ -9509,27 +10001,29 @@ p5.prototype.colorMode = function() {
   if (arguments[0] === constants.RGB ||
       arguments[0] === constants.HSB ||
       arguments[0] === constants.HSL) {
-    this._colorMode = arguments[0];
 
-    var maxArr = this._colorMaxes[this._colorMode];
+    // Set color mode.
+    this._renderer._colorMode = arguments[0];
 
+    // Set color maxes.
+    var maxes = this._renderer._colorMaxes[this._renderer._colorMode];
     if (arguments.length === 2) {
-      maxArr[0] = arguments[1];
-      maxArr[1] = arguments[1];
-      maxArr[2] = arguments[1];
-      maxArr[3] = arguments[1];
+      maxes[0] = arguments[1];  // Red
+      maxes[1] = arguments[1];  // Green
+      maxes[2] = arguments[1];  // Blue
+      maxes[3] = arguments[1];  // Alpha
     } else if (arguments.length === 4) {
-      maxArr[0] = arguments[1];
-      maxArr[1] = arguments[2];
-      maxArr[2] = arguments[3];
-    }
-    if (arguments.length === 5) {
-      maxArr[0] = arguments[1];
-      maxArr[1] = arguments[2];
-      maxArr[2] = arguments[3];
-      maxArr[3] = arguments[4];
+      maxes[0] = arguments[1];  // Red
+      maxes[1] = arguments[2];  // Green
+      maxes[2] = arguments[3];  // Blue
+    } else if (arguments.length === 5) {
+      maxes[0] = arguments[1];  // Red
+      maxes[1] = arguments[2];  // Green
+      maxes[2] = arguments[3];  // Blue
+      maxes[3] = arguments[4];  // Alpha
     }
   }
+
   return this;
 };
 
@@ -9646,9 +10140,9 @@ p5.prototype.colorMode = function() {
  * </div>
  */
 p5.prototype.fill = function() {
-  this._setProperty('_fillSet', true);
-  this._setProperty('_doFill', true);
-  this._graphics.fill.apply(this._graphics, arguments);
+  this._renderer._setProperty('_fillSet', true);
+  this._renderer._setProperty('_doFill', true);
+  this._renderer.fill.apply(this._renderer, arguments);
   return this;
 };
 
@@ -9667,7 +10161,7 @@ p5.prototype.fill = function() {
  * </div>
  */
 p5.prototype.noFill = function() {
-  this._setProperty('_doFill', false);
+  this._renderer._setProperty('_doFill', false);
   return this;
 };
 
@@ -9685,7 +10179,7 @@ p5.prototype.noFill = function() {
  * </div>
  */
 p5.prototype.noStroke = function() {
-  this._setProperty('_doStroke', false);
+  this._renderer._setProperty('_doStroke', false);
   return this;
 };
 
@@ -9812,17 +10306,15 @@ p5.prototype.noStroke = function() {
  * </div>
  */
 p5.prototype.stroke = function() {
-  this._setProperty('_strokeSet', true);
-  this._setProperty('_doStroke', true);
-  this._graphics.stroke.apply(this._graphics, arguments);
+  this._renderer._setProperty('_strokeSet', true);
+  this._renderer._setProperty('_doStroke', true);
+  this._renderer.stroke.apply(this._renderer, arguments);
   return this;
 };
 
-
-
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47,"./p5.Color":41}],43:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"./p5.Color":42}],44:[function(_dereq_,module,exports){
 /**
  * @module Shape
  * @submodule 2D Primitives
@@ -9840,9 +10332,14 @@ _dereq_('./error_helpers');
 
 /**
  * Draw an arc to the screen. If called with only a, b, c, d, start, and
- * stop, the arc will pe drawn as an open pie. If mode is provided, the arc
+ * stop, the arc will be drawn as an open pie. If mode is provided, the arc
  * will be drawn either open, as a chord, or as a pie as specified. The
- * origin may be changed with the ellipseMode() function.
+ * origin may be changed with the ellipseMode() function.<br><br>
+ * Note that drawing a full circle (ex: 0 to TWO_PI) will appear blank
+ * because 0 and TWO_PI are the same position on the unit circle. The
+ * best way to handle this is by using the ellipse() function instead
+ * to create a closed ellipse, and to use the arc() function
+ * only to draw parts of an ellipse.
  *
  * @method arc
  * @param  {Number} a      x-coordinate of the arc's ellipse
@@ -9884,9 +10381,13 @@ _dereq_('./error_helpers');
  * </div>
  */
 p5.prototype.arc = function(x, y, w, h, start, stop, mode) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'arc',
-    arguments,
+    args,
     [
       ['Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
       [ 'Number', 'Number', 'Number', 'Number',
@@ -9894,7 +10395,7 @@ p5.prototype.arc = function(x, y, w, h, start, stop, mode) {
     ]
   );
 
-  if (!this._doStroke && !this._doFill) {
+  if (!this._renderer._doStroke && !this._renderer._doFill) {
     return this;
   }
   if (this._angleMode === constants.DEGREES) {
@@ -9937,7 +10438,7 @@ p5.prototype.arc = function(x, y, w, h, start, stop, mode) {
   // p5 supports negative width and heights for ellipses
   w = Math.abs(w);
   h = Math.abs(h);
-  this._graphics.arc(x, y, w, h, start, stop, mode);
+  this._renderer.arc(x, y, w, h, start, stop, mode);
   return this;
 };
 
@@ -9961,21 +10462,25 @@ p5.prototype.arc = function(x, y, w, h, start, stop, mode) {
  * </div>
  */
 p5.prototype.ellipse = function(x, y, w, h) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'ellipse',
-    arguments,
+    args,
     ['Number', 'Number', 'Number', 'Number']
   );
 
-  if (!this._doStroke && !this._doFill) {
+  if (!this._renderer._doStroke && !this._renderer._doFill) {
     return this;
   }
   // p5 supports negative width and heights for ellipses
   w = Math.abs(w);
   h = Math.abs(h);
-  //@TODO add catch block here if this._graphics
+  //@TODO add catch block here if this._renderer
   //doesn't have the method implemented yet
-  this._graphics.ellipse(x, y, w, h);
+  this._renderer.ellipse(x, y, w, h);
   return this;
 };
 /**
@@ -10011,42 +10516,51 @@ p5.prototype.ellipse = function(x, y, w, h) {
  */
 ////commented out original
 // p5.prototype.line = function(x1, y1, x2, y2) {
-//   if (!this._doStroke) {
+//   if (!this._renderer._doStroke) {
 //     return this;
 //   }
-//   if(this._graphics.isP3D){
+//   if(this._renderer.isP3D){
 //   } else {
-//     this._graphics.line(x1, y1, x2, y2);
+//     this._renderer.line(x1, y1, x2, y2);
 //   }
 // };
 p5.prototype.line = function() {
-  this._validateParameters(
-    'line',
-    arguments,
-    [
-      ['Number', 'Number', 'Number', 'Number'],
-      ['Number', 'Number', 'Number', 'Number', 'Number', 'Number']
-    ]
-  );
-
-  if (!this._doStroke) {
+  if (!this._renderer._doStroke) {
     return this;
   }
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   //check whether we should draw a 3d line or 2d
-  if(this._graphics.isP3D){
-    this._graphics.line(
-      arguments[0],
-      arguments[1],
-      arguments[2],
-      arguments[3],
-      arguments[4],
-      arguments[5]);
+  if(this._renderer.isP3D){
+    this._validateParameters(
+      'line',
+      args,
+      [
+        ['Number', 'Number', 'Number', 'Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.line(
+      args[0],
+      args[1],
+      args[2],
+      args[3],
+      args[4],
+      args[5]);
   } else {
-    this._graphics.line(
-      arguments[0],
-      arguments[1],
-      arguments[2],
-      arguments[3]);
+    this._validateParameters(
+      'line',
+      args,
+      [
+        ['Number', 'Number', 'Number', 'Number'],
+      ]
+    );
+    this._renderer.line(
+      args[0],
+      args[1],
+      args[2],
+      args[3]);
   }
   return this;
 };
@@ -10072,29 +10586,38 @@ p5.prototype.line = function() {
  * </div>
  */
 p5.prototype.point = function() {
-  this._validateParameters(
-    'point',
-    arguments,
-    [
-      ['Number', 'Number'],
-      ['Number', 'Number', 'Number']
-    ]
-  );
-
-  if (!this._doStroke) {
+  if (!this._renderer._doStroke) {
     return this;
   }
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   //check whether we should draw a 3d line or 2d
-  if(this._graphics.isP3D){
-    this._graphics.point(
-      arguments[0],
-      arguments[1],
-      arguments[2]
+  if(this._renderer.isP3D){
+    this._validateParameters(
+      'point',
+      args,
+      [
+        ['Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.point(
+      args[0],
+      args[1],
+      args[2]
       );
   } else {
-    this._graphics.point(
-      arguments[0],
-      arguments[1]
+    this._validateParameters(
+      'point',
+      args,
+      [
+        ['Number', 'Number']
+      ]
+    );
+    this._renderer.point(
+      args[0],
+      args[1]
     );
   }
   return this;
@@ -10126,47 +10649,56 @@ p5.prototype.point = function() {
  * </div>
  */
 p5.prototype.quad = function() {
-  this._validateParameters(
-    'quad',
-    arguments,
-    [
-      [ 'Number', 'Number', 'Number', 'Number',
-        'Number', 'Number', 'Number', 'Number' ],
-      [ 'Number', 'Number', 'Number',
-        'Number', 'Number', 'Number',
-        'Number', 'Number', 'Number',
-        'Number', 'Number', 'Number']
-    ]
-  );
-
-  if (!this._doStroke && !this._doFill) {
+  if (!this._renderer._doStroke && !this._renderer._doFill) {
     return this;
   }
-  if(this._graphics.isP3D){
-    this._graphics.quad(
-      arguments[0],
-      arguments[1],
-      arguments[2],
-      arguments[3],
-      arguments[4],
-      arguments[5],
-      arguments[6],
-      arguments[7],
-      arguments[8],
-      arguments[9],
-      arguments[10],
-      arguments[11]
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  if(this._renderer.isP3D){
+    this._validateParameters(
+      'quad',
+      args,
+      [
+        [ 'Number', 'Number', 'Number',
+          'Number', 'Number', 'Number',
+          'Number', 'Number', 'Number',
+          'Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.quad(
+      args[0],
+      args[1],
+      args[2],
+      args[3],
+      args[4],
+      args[5],
+      args[6],
+      args[7],
+      args[8],
+      args[9],
+      args[10],
+      args[11]
       );
   } else {
-    this._graphics.quad(
-     arguments[0],
-     arguments[1],
-     arguments[2],
-     arguments[3],
-     arguments[4],
-     arguments[5],
-     arguments[6],
-    arguments[7]
+    this._validateParameters(
+      'quad',
+      args,
+      [
+        [ 'Number', 'Number', 'Number', 'Number',
+          'Number', 'Number', 'Number', 'Number' ]
+      ]
+    );
+    this._renderer.quad(
+     args[0],
+     args[1],
+     args[2],
+     args[3],
+     args[4],
+     args[5],
+     args[6],
+    args[7]
     );
   }
   return this;
@@ -10217,9 +10749,13 @@ p5.prototype.quad = function() {
 * </div>
 */
 p5.prototype.rect = function (x, y, w, h, tl, tr, br, bl) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'rect',
-    arguments,
+    args,
     [
       ['Number', 'Number', 'Number', 'Number'],
       ['Number', 'Number', 'Number', 'Number', 'Number'],
@@ -10228,10 +10764,10 @@ p5.prototype.rect = function (x, y, w, h, tl, tr, br, bl) {
     ]
   );
 
-  if (!this._doStroke && !this._doFill) {
+  if (!this._renderer._doStroke && !this._renderer._doFill) {
     return;
   }
-  this._graphics.rect(x, y, w, h, tl, tr, br, bl);
+  this._renderer.rect(x, y, w, h, tl, tr, br, bl);
   return this;
 };
 
@@ -10256,39 +10792,49 @@ p5.prototype.rect = function (x, y, w, h, tl, tr, br, bl) {
 * </div>
 */
 p5.prototype.triangle = function() {
-  this._validateParameters(
-    'triangle',
-    arguments,
-    [
-      ['Number', 'Number', 'Number', 'Number', 'Number', 'Number'],
-      ['Number', 'Number', 'Number', 'Number', 'Number', 'Number',
-       'Number', 'Number', 'Number']
-    ]
-  );
 
-  if (!this._doStroke && !this._doFill) {
+  if (!this._renderer._doStroke && !this._renderer._doFill) {
     return this;
   }
-  if(this._graphics.isP3D){
-    this._graphics.triangle(
-      arguments[0],
-      arguments[1],
-      arguments[2],
-      arguments[3],
-      arguments[4],
-      arguments[5],
-      arguments[6],
-      arguments[7],
-      arguments[8]
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  if(this._renderer.isP3D){
+    this._validateParameters(
+      'triangle',
+      args,
+      [
+        ['Number', 'Number', 'Number', 'Number', 'Number', 'Number',
+         'Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.triangle(
+      args[0],
+      args[1],
+      args[2],
+      args[3],
+      args[4],
+      args[5],
+      args[6],
+      args[7],
+      args[8]
       );
   } else {
-    this._graphics.triangle(
-     arguments[0],
-     arguments[1],
-     arguments[2],
-     arguments[3],
-     arguments[4],
-     arguments[5]
+    this._validateParameters(
+      'triangle',
+      args,
+      [
+        ['Number', 'Number', 'Number', 'Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.triangle(
+     args[0],
+     args[1],
+     args[2],
+     args[3],
+     args[4],
+     args[5]
     );
   }
   return this;
@@ -10296,7 +10842,7 @@ p5.prototype.triangle = function() {
 
 module.exports = p5;
 
-},{"./constants":46,"./core":47,"./error_helpers":50}],44:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48,"./error_helpers":51}],45:[function(_dereq_,module,exports){
 /**
  * @module Shape
  * @submodule Attributes
@@ -10309,9 +10855,6 @@ module.exports = p5;
 
 var p5 = _dereq_('./core');
 var constants = _dereq_('./constants');
-
-p5.prototype._rectMode = constants.CORNER;
-p5.prototype._ellipseMode = constants.CENTER;
 
 /**
  * Modifies the location from which ellipses are drawn by changing the way
@@ -10369,7 +10912,7 @@ p5.prototype.ellipseMode = function(m) {
     m === constants.CORNERS ||
     m === constants.RADIUS ||
     m === constants.CENTER) {
-    this._ellipseMode = m;
+    this._renderer._ellipseMode = m;
   }
   return this;
 };
@@ -10394,7 +10937,7 @@ p5.prototype.ellipseMode = function(m) {
  * </div>
  */
 p5.prototype.noSmooth = function() {
-  this._graphics.noSmooth();
+  this._renderer.noSmooth();
   return this;
 };
 
@@ -10454,7 +10997,7 @@ p5.prototype.rectMode = function(m) {
     m === constants.CORNERS ||
     m === constants.RADIUS ||
     m === constants.CENTER) {
-    this._rectMode = m;
+    this._renderer._rectMode = m;
   }
   return this;
 };
@@ -10480,7 +11023,7 @@ p5.prototype.rectMode = function(m) {
  * </div>
  */
 p5.prototype.smooth = function() {
-  this._graphics.smooth();
+  this._renderer.smooth();
   return this;
 };
 
@@ -10509,7 +11052,7 @@ p5.prototype.strokeCap = function(cap) {
   if (cap === constants.ROUND ||
     cap === constants.SQUARE ||
     cap === constants.PROJECT) {
-    this._graphics.strokeCap(cap);
+    this._renderer.strokeCap(cap);
   }
   return this;
 };
@@ -10567,7 +11110,7 @@ p5.prototype.strokeJoin = function(join) {
   if (join === constants.ROUND ||
     join === constants.BEVEL ||
     join === constants.MITER) {
-    this._graphics.strokeJoin(join);
+    this._renderer.strokeJoin(join);
   }
   return this;
 };
@@ -10592,13 +11135,13 @@ p5.prototype.strokeJoin = function(join) {
  * </div>
  */
 p5.prototype.strokeWeight = function(w) {
-  this._graphics.strokeWeight(w);
+  this._renderer.strokeWeight(w);
   return this;
 };
 
 module.exports = p5;
 
-},{"./constants":46,"./core":47}],45:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48}],46:[function(_dereq_,module,exports){
 /**
  * @requires constants
  */
@@ -10634,7 +11177,7 @@ module.exports = {
 };
 
 
-},{"./constants":46}],46:[function(_dereq_,module,exports){
+},{"./constants":47}],47:[function(_dereq_,module,exports){
 /**
  * @module Constants
  * @submodule Constants
@@ -10837,7 +11380,7 @@ module.exports = {
 
 };
 
-},{}],47:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 /**
  * @module Structure
  * @submodule Structure
@@ -10984,7 +11527,8 @@ var p5 = function(sketch, node, sync) {
   //////////////////////////////////////////////
 
   this._setupDone = false;
-  this.pixelDensity = window.devicePixelRatio || 1; // for handling hidpi
+  // for handling hidpi
+  this._pixelDensity = Math.ceil(window.devicePixelRatio) || 1;
   this._userNode = node;
   this._curElement = null;
   this._elements = [];
@@ -11001,6 +11545,8 @@ var p5 = function(sketch, node, sync) {
     'mousemove': null,
     'mousedown': null,
     'mouseup': null,
+    'dragend': null,
+    'dragover': null,
     'click': null,
     'mouseover': null,
     'mouseout': null,
@@ -11016,10 +11562,9 @@ var p5 = function(sketch, node, sync) {
 
   if (window.DeviceOrientationEvent) {
     this._events.deviceorientation = null;
-  } else if (window.DeviceMotionEvent) {
+  }
+  if (window.DeviceMotionEvent && !window._isNodeWebkit) {
     this._events.devicemotion = null;
-  } else {
-    this._events.MozOrientation = null;
   }
 
   //FF doesn't recognize mousewheel as of FF3.x
@@ -11079,6 +11624,7 @@ var p5 = function(sketch, node, sync) {
       }
 
       userPreload();
+      this._runIfPreloadsAreDone();
     } else {
       this._setup();
       this._runFrames();
@@ -11086,9 +11632,8 @@ var p5 = function(sketch, node, sync) {
     }
   }.bind(this);
 
-  this._decrementPreload = function(){
+  this._runIfPreloadsAreDone = function(){
     var context = this._isGlobal ? window : this;
-    context._setProperty('_preloadCount', context._preloadCount - 1);
     if (context._preloadCount === 0) {
       var loadingScreen = document.getElementById(context._loadingScreenId);
       if (loadingScreen) {
@@ -11098,6 +11643,12 @@ var p5 = function(sketch, node, sync) {
       context._runFrames();
       context._draw();
     }
+  };
+
+  this._decrementPreload = function(){
+    var context = this._isGlobal ? window : this;
+    context._setProperty('_preloadCount', context._preloadCount - 1);
+    context._runIfPreloadsAreDone();
   };
 
   this._wrapPreload = function(obj, fnName){
@@ -11166,11 +11717,13 @@ var p5 = function(sketch, node, sync) {
         time_since_last >= target_time_between_frames - epsilon) {
       this._setProperty('frameCount', this.frameCount + 1);
       this.redraw();
-      this._updatePAccelerations();
-      this._updatePMouseCoords();
-      this._updatePTouchCoords();
       this._frameRate = 1000.0/(now - this._lastFrameTime);
       this._lastFrameTime = now;
+    }
+
+    //mandatory update values(matrixs and stack) for 3d
+    if(this._renderer.isP3D){
+      this._renderer._update();
     }
 
     // get notified the next time the browser gives us
@@ -11312,13 +11865,17 @@ var p5 = function(sketch, node, sync) {
     }
   }
 
-  var self = this;
-  window.addEventListener('focus', function() {
-    self._setProperty('focused', true);
-  });
-
-  window.addEventListener('blur', function() {
-    self._setProperty('focused', false);
+  var focusHandler = function() {
+    this._setProperty('focused', true);
+  }.bind(this);
+  var blurHandler = function() {
+    this._setProperty('focused', false);
+  }.bind(this);
+  window.addEventListener('focus', focusHandler);
+  window.addEventListener('blur', blurHandler);
+  this.registerMethod('remove', function() {
+    window.removeEventListener('focus', focusHandler);
+    window.removeEventListener('blur', blurHandler);
   });
 
   // TODO: ???
@@ -11367,7 +11924,7 @@ p5.prototype.registerMethod = function(name, m) {
 
 module.exports = p5;
 
-},{"./constants":46,"./shim":56}],48:[function(_dereq_,module,exports){
+},{"./constants":47,"./shim":57}],49:[function(_dereq_,module,exports){
 /**
  * @module Shape
  * @submodule Curves
@@ -11383,7 +11940,6 @@ _dereq_('./error_helpers');
 
 var bezierDetail = 20;
 var curveDetail = 20;
-p5.prototype._curveTightness = 0;
 
 /**
  * Draws a cubic Bezier curve on the screen. These curves are defined by a
@@ -11419,17 +11975,21 @@ p5.prototype._curveTightness = 0;
  * </div>
  */
 p5.prototype.bezier = function(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'bezier',
-    arguments,
+    args,
     [ 'Number', 'Number', 'Number', 'Number',
       'Number', 'Number', 'Number', 'Number' ]
   );
 
-  if (!this._doStroke) {
+  if (!this._renderer._doStroke) {
     return this;
   }
-  this._graphics.bezier(x1, y1, x2, y2, x3, y3, x4, y4);
+  this._renderer.bezier(x1, y1, x2, y2, x3, y3, x4, y4);
   return this;
 };
 
@@ -11605,7 +12165,7 @@ p5.prototype.bezierTangent = function(a, b, c, d, t) {
  * p3 = {x: 73, y: 61}, p4 = {x: 15, y: 65}
  * noFill();
  * stroke(255, 102, 0);
- * curve(p1.x, p1.y, p1.x, p1.y, p2.x, p2.y)
+ * curve(p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
  * stroke(0);
  * curve(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
  * stroke(255, 102, 0);
@@ -11614,17 +12174,21 @@ p5.prototype.bezierTangent = function(a, b, c, d, t) {
  * </div>
  */
 p5.prototype.curve = function(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'curve',
-    arguments,
+    args,
     [ 'Number', 'Number', 'Number', 'Number',
       'Number', 'Number', 'Number', 'Number' ]
   );
 
-  if (!this._doStroke) {
+  if (!this._renderer._doStroke) {
     return;
   }
-  this._graphics.curve(x1, y1, x2, y2, x3, y3, x4, y4);
+  this._renderer.curve(x1, y1, x2, y2, x3, y3, x4, y4);
   return this;
 };
 
@@ -11688,7 +12252,7 @@ p5.prototype.curveDetail = function(d) {
  * </div>
  */
 p5.prototype.curveTightness = function (t) {
-  this._setProperty('_curveTightness', t);
+  this._renderer._curveTightness = t;
 };
 
 /**
@@ -11779,7 +12343,7 @@ p5.prototype.curveTangent = function(a, b,c, d, t) {
 
 module.exports = p5;
 
-},{"./core":47,"./error_helpers":50}],49:[function(_dereq_,module,exports){
+},{"./core":48,"./error_helpers":51}],50:[function(_dereq_,module,exports){
 /**
  * @module Environment
  * @submodule Environment
@@ -11805,8 +12369,7 @@ if (window.console && console.log) {
    * The print() function writes to the console area of your browser.
    * This function is often helpful for looking at the data a program is
    * producing. This function creates a new line of text for each call to
-   * the function. More than one parameter can be passed into the function by
-   * separating them with commas. Alternatively, individual elements can be
+   * the function. Individual elements can be
    * separated with quotes ("") and joined with the addition operator (+).
    *
    * While print() is similar to console.log(), it does not directly map to
@@ -11817,6 +12380,12 @@ if (window.console && console.log) {
    * @method print
    * @param {Any} contents any combination of Number, String, Object, Boolean,
    *                       Array to print
+   * @example
+   * <div><code class='norender'>
+   * var x = 10;
+   * print("The value of x is "+x);
+   * // prints "The value of x is 10"
+   * </code></div>
    */
   // Converts passed args into a string and then parses that string to
   // simulate synchronous behavior. This is a hack and is gross.
@@ -12093,7 +12662,7 @@ p5.prototype.windowHeight = window.innerHeight;
  * is resized. This is a good place to resize the canvas or do any other
  * adjustements to accomodate the new window size.
  *
- * @method windowResized()
+ * @method windowResized
  * @example
  * <div class="norender"><code>
  * function setup() {
@@ -12164,7 +12733,7 @@ p5.prototype.height = 0;
  * function mousePressed() {
  *   if (mouseX > 0 && mouseX < 100 && mouseY > 0 && mouseY < 100) {
  *     var fs = fullScreen();
- *     fullscreen(!fs);
+ *     fullScreen(!fs);
  *   }
  * }
  * </code>
@@ -12187,18 +12756,20 @@ p5.prototype.fullScreen = function(val) {
 };
 
 /**
- * Toggles pixel scaling for high pixel density displays. By default
- * pixel scaling is on, call devicePixelScaling(false) to turn it off.
- * This devicePixelScaling() function must be the first line of code
- * inside setup().
+ * Sets the pixel scaling for high pixel density displays. By default
+ * pixel density is set to match display density, call pixelDensity(1)
+ * to turn this off. Calling pixelDensity() with no arguments returns
+ * the current pixel density of the sketch.
  *
- * @method devicePixelScaling
- * @param  {Boolean|Number} [val] whether or how much the sketch should scale
+ *
+ * @method pixelDensity
+ * @param  {Number} [val] whether or how much the sketch should scale
+ * @returns {Number} current pixel density of the sketch
  * @example
  * <div>
  * <code>
  * function setup() {
- *   devicePixelScaling(false);
+ *   pixelDensity(1);
  *   createCanvas(100, 100);
  *   background(200);
  *   ellipse(width/2, height/2, 50, 50);
@@ -12208,7 +12779,7 @@ p5.prototype.fullScreen = function(val) {
  * <div>
  * <code>
  * function setup() {
- *   devicePixelScaling(3.0);
+ *   pixelDensity(3.0);
  *   createCanvas(100, 100);
  *   background(200);
  *   ellipse(width/2, height/2, 50, 50);
@@ -12216,18 +12787,35 @@ p5.prototype.fullScreen = function(val) {
  * </code>
  * </div>
  */
-p5.prototype.devicePixelScaling = function(val) {
-  if (val) {
-    if (typeof val === 'number') {
-      this.pixelDensity = val;
-    }
-    else {
-      this.pixelDensity = window.devicePixelRatio || 1;
-    }
+p5.prototype.pixelDensity = function(val) {
+  if (typeof val === 'number') {
+    this._pixelDensity = val;
   } else {
-    this.pixelDensity = 1;
+    return this._pixelDensity;
   }
   this.resizeCanvas(this.width, this.height, true);
+};
+
+/**
+ * Returns the pixel density of the current display the sketch is running on.
+ *
+ * @method displayDensity
+ * @returns {Number} current pixel density of the display
+ * @example
+ * <div>
+ * <code>
+ * function setup() {
+ *   var density = displayDensity();
+ *   pixelDensity(density);
+ *   createCanvas(100, 100);
+ *   background(200);
+ *   ellipse(width/2, height/2, 50, 50);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.displayDensity = function() {
+  return window.devicePixelRatio;
 };
 
 function launchFullscreen(element) {
@@ -12339,7 +12927,7 @@ p5.prototype.getURLParams = function() {
 
 module.exports = p5;
 
-},{"./constants":46,"./core":47}],50:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48}],51:[function(_dereq_,module,exports){
 /**
  * @for p5
  * @requires core
@@ -12348,7 +12936,7 @@ module.exports = p5;
 'use strict';
 
 var p5 = _dereq_('./core');
-var doFriendlyWelcome = true;
+var doFriendlyWelcome = false; // TEMP until we get it all working LM
 
 // -- Borrowed from jQuery 1.11.3 --
 var class2type = {};
@@ -12425,27 +13013,30 @@ function report(message, func, color) {
   } else if (getType(color) === 'number') { // Type to color
     color = typeColors[color];
   }
-  if (func.substring(0,4) === 'load'){
-    console.log(
-      '%c> p5.js says: '+message+'%c'+
-      '[https://github.com/processing/p5.js/wiki/Local-server]',
-      'background-color:' + color + ';color:#FFF;',
-      'background-color:transparent;color:' + color +';',
-      'background-color:' + color + ';color:#FFF;',
-      'background-color:transparent;color:' + color +';'
-    );
-  }
-  else{
-    console.log(
-      '%c> p5.js says: '+message+'%c [http://p5js.org/reference/#p5/'+func+
-      ']', 'background-color:' + color + ';color:#FFF;',
-      'background-color:transparent;color:' + color +';'
-    );
-  }
+  // LM TEMP commenting this out until we get the whole system working
+  // if (func.substring(0,4) === 'load'){
+  //   console.log(
+  //     '%c> p5.js says: '+message+'%c'+
+  //     '[https://github.com/processing/p5.js/wiki/Local-server]',
+  //     'background-color:' + color + ';color:#FFF;',
+  //     'background-color:transparent;color:' + color +';',
+  //     'background-color:' + color + ';color:#FFF;',
+  //     'background-color:transparent;color:' + color +';'
+  //   );
+  // }
+  // else{
+  //   console.log(
+  //     '%c> p5.js says: '+message+'%c [http://p5js.org/reference/#p5/'+func+
+  //     ']', 'background-color:' + color + ';color:#FFF;',
+  //     'background-color:transparent;color:' + color +';'
+  //   );
+  // }
 }
 
 /**
  * Validate all the parameters of a function for number and type
+ * NOTE THIS FUNCTION IS TEMPORARILY DISABLED UNTIL FURTHER WORK
+ * AND UPDATES ARE IMPLEMENTED. -LMCCART
  *
  * @param  {String} func  name of function we're checking
  * @param  {Array}  args  pass of the JS default arguments array
@@ -12461,12 +13052,9 @@ p5.prototype._validateParameters = function(func, args, types) {
   if (!isArray(types[0])) {
     types = [types];
   }
-  /**
-   * Check number of parameters
-   *
-   * Example: "You wrote ellipse(X,X,X). ellipse was expecting 4
-   *           parameters. Try ellipse(X,X,X,X)."
-   */
+  // Check number of parameters
+  // Example: "You wrote ellipse(X,X,X). ellipse was expecting 4
+  //          parameters. Try ellipse(X,X,X,X)."
   var diff = Math.abs(args.length-types[0].length);
   var message, tindex = 0;
   for (var i=1, len=types.length; i<len; i++) {
@@ -12497,13 +13085,10 @@ p5.prototype._validateParameters = function(func, args, types) {
     }
     report(message, func, PARAM_COUNT);
   }
-  /**
-   * Type checking
-   *
-   * Example: "It looks like ellipse received an empty variable in spot #2."
-   * Example: "ellipse was expecting a number for parameter #1,
-   *           received "foo" instead."
-   */
+  // Type checking
+  // Example: "It looks like ellipse received an empty variable in spot #2."
+  // Example: "ellipse was expecting a number for parameter #1,
+  //           received "foo" instead."
   for (var format=0; format<types.length; format++) {
     for (var p=0; p < types[format].length && p < args.length; p++) {
       var defType = types[format][p];
@@ -12530,6 +13115,14 @@ p5.prototype._validateParameters = function(func, args, types) {
     }
   }
 };
+/*
+ * NOTE THIS FUNCTION IS TEMPORARILY DISABLED UNTIL FURTHER WORK
+ * AND UPDATES ARE IMPLEMENTED. -LMCCART
+ */
+p5.prototype._validateParameters = function() {
+  return true;
+};
+
 var errorCases = {
   '0': {
     fileType: 'image',
@@ -12572,7 +13165,7 @@ function friendlyWelcome() {
   ' \\/|_|\\/ '+
   '\n\n%c> p5.js says: Welcome! '+
   'This is your friendly debugger. ' +
-  'To turn me off switch to using â€œp5.min.jsâ€.',
+  'To turn me off switch to using “p5.min.js”.',
   'background-color:'+astrixBgColor+';color:' + astrixTxtColor +';',
   'background-color:'+welcomeBgColor+';color:' + welcomeTextColor +';'
   );
@@ -12604,7 +13197,7 @@ function friendlyWelcome() {
 
 module.exports = p5;
 
-},{"./core":47}],51:[function(_dereq_,module,exports){
+},{"./core":48}],52:[function(_dereq_,module,exports){
 /**
  * @module DOM
  * @submodule DOM
@@ -12644,7 +13237,7 @@ p5.Element = function(elt, pInst) {
  *
  * Attaches the element to the parent specified. A way of setting
  * the container for the element. Accepts either a string ID, DOM
- * node, or p5.Element.
+ * node, or p5.Element. If no arguments given, parent node is returned.
  *
  * @method parent
  * @param  {String|Object} parent the ID, DOM node, or p5.Element
@@ -12676,13 +13269,20 @@ p5.Element = function(elt, pInst) {
  * </code></div>
  */
 p5.Element.prototype.parent = function(p) {
-  if (typeof p === 'string') {
-    p = document.getElementById(p);
-  } else if (p instanceof p5.Element) {
-    p = p.elt;
+  if (arguments.length === 0){
+    return this.elt.parentNode;
+  } else {
+    if (typeof p === 'string') {
+      if (p[0] === '#') {
+        p = p.substring(1);
+      }
+      p = document.getElementById(p);
+    } else if (p instanceof p5.Element) {
+      p = p.elt;
+    }
+    p.appendChild(this.elt);
+    return this;
   }
-  p.appendChild(this.elt);
-  return this;
 };
 
 /**
@@ -12707,7 +13307,7 @@ p5.Element.prototype.id = function(id) {
  * @return {p5.Element}
  */
 p5.Element.prototype.class = function(c) {
-  this.elt.className += ' '+c;
+  this.elt.className = c;
   return this;
 };
 
@@ -12840,16 +13440,33 @@ p5.Element.prototype.mouseOver = function (fxn) {
 
 
 /**
- * The .changed() function is called when the value of an element is changed.
+ * The .changed() function is called when the value of an
+ * element is changed.
  * This can be used to attach an element specific event listener.
  *
  * @method changed
- * @param  {Function} fxn function to be fired when mouse is
- *                    moved over the element.
+ * @param  {Function} fxn function to be fired when the value of an
+ * element changes.
  * @return {p5.Element}
  */
 p5.Element.prototype.changed = function (fxn) {
   attachListener('change', fxn, this);
+  return this;
+};
+
+/**
+ * The .input() function is called when any user input is
+ * detected with an element. The input event is often used
+ * to detect keystrokes in a input element, or changes on a
+ * slider element. This can be used to attach an element specific
+ * event listener.
+ *
+ * @method input
+ * @param  {Function} fxn function to be fired on user input.
+ * @return {p5.Element}
+ */
+p5.Element.prototype.input = function (fxn) {
+  attachListener('input', fxn, this);
   return this;
 };
 
@@ -13084,9 +13701,9 @@ p5.Element.prototype.drop = function (callback, fxn) {
         reader.onload = makeLoader(f);
 
 
-        // Text of data?
+        // Text or data?
         // This should likely be improved
-        if (f.type === 'text') {
+        if (f.type.indexOf('text') > -1) {
           reader.readAsText(f);
         } else {
           reader.readAsDataURL(f);
@@ -13123,7 +13740,7 @@ p5.Element.prototype._setProperty = function (prop, value) {
 
 module.exports = p5.Element;
 
-},{"./core":47}],52:[function(_dereq_,module,exports){
+},{"./core":48}],53:[function(_dereq_,module,exports){
 /**
  * @module Rendering
  * @submodule Rendering
@@ -13159,16 +13776,16 @@ p5.Graphics = function(w, h, renderer, pInst) {
   this._styles = [];
   this.width = w;
   this.height = h;
-  this.pixelDensity = pInst.pixelDensity;
+  this._pixelDensity = pInst._pixelDensity;
 
   if (r === constants.WEBGL) {
-    this._graphics = new p5.Renderer3D(c, pInst, false);
+    this._renderer = new p5.Renderer3D(c, pInst, false);
   } else {
-    this._graphics = new p5.Renderer2D(c, pInst, false);
+    this._renderer = new p5.Renderer2D(c, pInst, false);
   }
 
-  this._graphics.resize(w, h);
-  this._graphics._applyDefaults();
+  this._renderer.resize(w, h);
+  this._renderer._applyDefaults();
 
   pInst._elements.push(this);
 
@@ -13190,7 +13807,7 @@ p5.Graphics.prototype = Object.create(p5.Element.prototype);
 
 module.exports = p5.Graphics;
 
-},{"./constants":46,"./core":47}],53:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48}],54:[function(_dereq_,module,exports){
 /**
  * @module Rendering
  * @submodule Rendering
@@ -13198,6 +13815,7 @@ module.exports = p5.Graphics;
  */
 
 var p5 = _dereq_('./core');
+var constants = _dereq_('../core/constants');
 
 /**
  * Main graphics and rendering context, as well as the base API
@@ -13226,9 +13844,39 @@ p5.Renderer = function(elt, pInst, isMainCanvas) {
     this.canvas.style.display = 'none';
     this._styles = []; // non-main elt styles stored in p5.Renderer
   }
+
+
+  this._textSize = 12;
+  this._textLeading = 15;
+  this._textFont = 'sans-serif';
+  this._textStyle = constants.NORMAL;
+  this._textAscent = null;
+  this._textDescent = null;
+
+
+  this._rectMode = constants.CORNER;
+  this._ellipseMode = constants.CENTER;
+  this._curveTightness = 0;
+  this._imageMode = constants.CORNER;
+
+  this._tint = null;
+  this._doStroke = true;
+  this._doFill = true;
+  this._strokeSet = false;
+  this._fillSet = false;
+  this._colorMode = constants.RGB;
+  this._colorMaxes = {
+    rgb: [255, 255, 255, 255],
+    hsb: [360, 100, 100, 1],
+    hsl: [360, 100, 100, 1]
+  };
+
 };
 
 p5.Renderer.prototype = Object.create(p5.Element.prototype);
+
+
+
 
 /**
  * Resize our canvas element.
@@ -13236,8 +13884,8 @@ p5.Renderer.prototype = Object.create(p5.Element.prototype);
 p5.Renderer.prototype.resize = function(w, h) {
   this.width = w;
   this.height = h;
-  this.elt.width = w * this._pInst.pixelDensity;
-  this.elt.height = h * this._pInst.pixelDensity;
+  this.elt.width = w * this._pInst._pixelDensity;
+  this.elt.height = h * this._pInst._pixelDensity;
   this.elt.style.width = w +'px';
   this.elt.style.height = h + 'px';
   if (this._isMainCanvas) {
@@ -13246,9 +13894,138 @@ p5.Renderer.prototype.resize = function(w, h) {
   }
 };
 
+p5.Renderer.prototype.textLeading = function(l) {
+
+  if (arguments.length && arguments[0]) {
+
+    this._setProperty('_textLeading', l);
+    return this;
+  }
+
+  return this._textLeading;
+};
+
+p5.Renderer.prototype.textSize = function(s) {
+
+  if (arguments.length && arguments[0]) {
+
+    this._setProperty('_textSize', s);
+    this._setProperty('_textLeading', s * constants._DEFAULT_LEADMULT);
+    return this._applyTextProperties();
+  }
+
+  return this._textSize;
+};
+
+p5.Renderer.prototype.textStyle = function(s) {
+
+  if (arguments.length && arguments[0]) {
+
+    if (s === constants.NORMAL ||
+      s === constants.ITALIC ||
+      s === constants.BOLD) {
+      this._setProperty('_textStyle', s);
+    }
+
+    return this._applyTextProperties();
+  }
+
+  return this._textStyle;
+};
+
+p5.Renderer.prototype.textAscent = function() {
+  if (this._textAscent === null) {
+    this._updateTextMetrics();
+  }
+  return this._textAscent;
+};
+
+p5.Renderer.prototype.textDescent = function() {
+
+  if (this._textDescent === null) {
+    this._updateTextMetrics();
+  }
+  return this._textDescent;
+};
+
+/**
+ * Helper fxn to check font type (system or otf)
+ */
+p5.Renderer.prototype._isOpenType = function(f) {
+
+  f = f || this._textFont;
+  return (typeof f === 'object' && f.font && f.font.supported);
+};
+
+p5.Renderer.prototype._updateTextMetrics = function() {
+
+  if (this._isOpenType()) {
+
+    this._setProperty('_textAscent', this._textFont._textAscent());
+    this._setProperty('_textDescent', this._textFont._textDescent());
+    return this;
+  }
+
+  // Adapted from http://stackoverflow.com/a/25355178
+  var text = document.createElement('span');
+  text.style.fontFamily = this._textFont;
+  text.style.fontSize = this._textSize + 'px';
+  text.innerHTML = 'ABCjgq|';
+
+  var block = document.createElement('div');
+  block.style.display = 'inline-block';
+  block.style.width = '1px';
+  block.style.height = '0px';
+
+  var container = document.createElement('div');
+  container.appendChild(text);
+  container.appendChild(block);
+
+  container.style.height = '0px';
+  container.style.overflow = 'hidden';
+  document.body.appendChild(container);
+
+  block.style.verticalAlign = 'baseline';
+  var blockOffset = calculateOffset(block);
+  var textOffset = calculateOffset(text);
+  var ascent = blockOffset[1] - textOffset[1];
+
+  block.style.verticalAlign = 'bottom';
+  blockOffset = calculateOffset(block);
+  textOffset = calculateOffset(text);
+  var height = blockOffset[1] - textOffset[1];
+  var descent = height - ascent;
+
+  document.body.removeChild(container);
+
+  this._setProperty('_textAscent', ascent);
+  this._setProperty('_textDescent', descent);
+
+  return this;
+};
+
+/**
+ * Helper fxn to measure ascent and descent.
+ * Adapted from http://stackoverflow.com/a/25355178
+ */
+function calculateOffset(object) {
+  var currentLeft = 0,
+    currentTop = 0;
+  if (object.offsetParent) {
+    do {
+      currentLeft += object.offsetLeft;
+      currentTop += object.offsetTop;
+    } while (object = object.offsetParent);
+  } else {
+    currentLeft += object.offsetLeft;
+    currentTop += object.offsetTop;
+  }
+  return [currentLeft, currentTop];
+}
+
 module.exports = p5.Renderer;
 
-},{"./core":47}],54:[function(_dereq_,module,exports){
+},{"../core/constants":47,"./core":48}],55:[function(_dereq_,module,exports){
 
 var p5 = _dereq_('./core');
 var canvas = _dereq_('./canvas');
@@ -13308,8 +14085,8 @@ p5.Renderer2D.prototype._applyDefaults = function() {
 
 p5.Renderer2D.prototype.resize = function(w,h) {
   p5.Renderer.prototype.resize.call(this, w,h);
-  this.drawingContext.scale(this._pInst.pixelDensity,
-                            this._pInst.pixelDensity);
+  this.drawingContext.scale(this._pInst._pixelDensity,
+                            this._pInst._pixelDensity);
 };
 
 //////////////////////////////////////////////
@@ -13319,8 +14096,8 @@ p5.Renderer2D.prototype.resize = function(w,h) {
 p5.Renderer2D.prototype.background = function() {
   this.drawingContext.save();
   this.drawingContext.setTransform(1, 0, 0, 1, 0, 0);
-  this.drawingContext.scale(this._pInst.pixelDensity,
-                            this._pInst.pixelDensity);
+  this.drawingContext.scale(this._pInst._pixelDensity,
+                            this._pInst._pixelDensity);
 
   if (arguments[0] instanceof p5.Image) {
     this._pInst.image(arguments[0], 0, 0, this.width, this.height);
@@ -13358,14 +14135,16 @@ p5.Renderer2D.prototype.stroke = function() {
 // IMAGE | Loading & Displaying
 //////////////////////////////////////////////
 
-p5.Renderer2D.prototype.image = function (img, x, y, w, h) {
+p5.Renderer2D.prototype.image =
+  function (img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   var frame = img.canvas || img.elt;
   try {
-    if (this._pInst._tint && img.canvas) {
-      this.drawingContext.drawImage(this._getTintedImageCanvas(img),
-        x, y, w, h);
+    if (this._tint && img.canvas) {
+      this.drawingContext.drawImage(this._getTintedImageCanvas(img), sx, sy,
+        sWidth, sHeight, dx, dy, dWidth, dHeight);
     } else {
-      this.drawingContext.drawImage(frame, x, y, w, h);
+      this.drawingContext.drawImage(frame, sx, sy, sWidth, sHeight, dx, dy,
+        dWidth, dHeight);
     }
   } catch (e) {
     if (e.name !== 'NS_ERROR_NOT_AVAILABLE') {
@@ -13390,10 +14169,10 @@ p5.Renderer2D.prototype._getTintedImageCanvas = function (img) {
     var g = pixels[i + 1];
     var b = pixels[i + 2];
     var a = pixels[i + 3];
-    newPixels[i] = r * this._pInst._tint[0] / 255;
-    newPixels[i + 1] = g * this._pInst._tint[1] / 255;
-    newPixels[i + 2] = b * this._pInst._tint[2] / 255;
-    newPixels[i + 3] = a * this._pInst._tint[3] / 255;
+    newPixels[i] = r * this._tint[0] / 255;
+    newPixels[i + 1] = g * this._tint[1] / 255;
+    newPixels[i + 2] = b * this._tint[2] / 255;
+    newPixels[i + 3] = a * this._tint[3] / 255;
   }
   tmpCtx.putImageData(id, 0, 0);
   return tmpCanvas;
@@ -13469,26 +14248,32 @@ p5.Renderer2D.prototype.get = function(x, y, w, h) {
     h = 1;
   }
 
-  if(x > this.width || y > this.height || x < 0 || y < 0){
+  // if the section does not overlap the canvas
+  if(x + w < 0 || y + h < 0 || x > this.width || y > this.height){
     return [0, 0, 0, 255];
   }
 
-  var pd = this.pixelDensity || this._pInst.pixelDensity;
+  var ctx = this._pInst || this;
+
+  var pd = ctx._pixelDensity;
+
+  this.loadPixels.call(ctx);
 
   if (w === 1 && h === 1){
+
     return [
-      this.pixels[pd*4*(y*this.width+x)],
-      this.pixels[pd*(4*(y*this.width+x)+1)],
-      this.pixels[pd*(4*(y*this.width+x)+2)],
-      this.pixels[pd*(4*(y*this.width+x)+3)]
+      ctx.pixels[pd*4*(y*this.width+x)],
+      ctx.pixels[pd*(4*(y*this.width+x)+1)],
+      ctx.pixels[pd*(4*(y*this.width+x)+2)],
+      ctx.pixels[pd*(4*(y*this.width+x)+3)]
     ];
   } else {
     var sx = x * pd;
     var sy = y * pd;
     //auto constrain the width and height to
     //dimensions of the source image
-    var dw = Math.min(w, this.width);
-    var dh = Math.min(h, this.height);
+    var dw = Math.min(w, ctx.width);
+    var dh = Math.min(h, ctx.height);
     var sw = dw * pd;
     var sh = dh * pd;
 
@@ -13501,10 +14286,12 @@ p5.Renderer2D.prototype.get = function(x, y, w, h) {
 };
 
 p5.Renderer2D.prototype.loadPixels = function () {
-  var pd = this.pixelDensity || this._pInst.pixelDensity;
+  var pd = this._pixelDensity || this._pInst._pixelDensity;
   var w = this.width * pd;
   var h = this.height * pd;
   var imageData = this.drawingContext.getImageData(0, 0, w, h);
+  // @todo this should actually set pixels per object, so diff buffers can
+  // have diff pixel arrays.
   if (this._pInst) {
     this._pInst._setProperty('imageData', imageData);
     this._pInst._setProperty('pixels', imageData.data);
@@ -13518,16 +14305,16 @@ p5.Renderer2D.prototype.set = function (x, y, imgOrCol) {
   if (imgOrCol instanceof p5.Image) {
     this.drawingContext.save();
     this.drawingContext.setTransform(1, 0, 0, 1, 0, 0);
-    this.drawingContext.scale(this._pInst.pixelDensity,
-      this._pInst.pixelDensity);
+    this.drawingContext.scale(this._pInst._pixelDensity,
+      this._pInst._pixelDensity);
     this.drawingContext.drawImage(imgOrCol.canvas, x, y);
     this.loadPixels.call(this._pInst);
     this.drawingContext.restore();
   } else {
     var ctx = this._pInst || this;
     var r = 0, g = 0, b = 0, a = 0;
-    var idx = 4*((y * ctx.pixelDensity) *
-      (this.width * ctx.pixelDensity) + (x * ctx.pixelDensity));
+    var idx = 4*((y * ctx._pixelDensity) *
+      (this.width * ctx._pixelDensity) + (x * ctx._pixelDensity));
     if (!ctx.imageData) {
       ctx.loadPixels.call(ctx);
     }
@@ -13553,19 +14340,19 @@ p5.Renderer2D.prototype.set = function (x, y, imgOrCol) {
       }
     } else if (imgOrCol instanceof p5.Color) {
       if (idx < ctx.pixels.length) {
-        r = imgOrCol.rgba[0];
-        g = imgOrCol.rgba[1];
-        b = imgOrCol.rgba[2];
-        a = imgOrCol.rgba[3];
+        r = imgOrCol.levels[0];
+        g = imgOrCol.levels[1];
+        b = imgOrCol.levels[2];
+        a = imgOrCol.levels[3];
         //this.updatePixels.call(this);
       }
     }
     // loop over pixelDensity * pixelDensity
-    for (var i = 0; i < ctx.pixelDensity; i++) {
-      for (var j = 0; j < ctx.pixelDensity; j++) {
+    for (var i = 0; i < ctx._pixelDensity; i++) {
+      for (var j = 0; j < ctx._pixelDensity; j++) {
         // loop over
-        idx = 4*((y * ctx.pixelDensity + j) * this.width *
-          ctx.pixelDensity + (x * ctx.pixelDensity + i));
+        idx = 4*((y * ctx._pixelDensity + j) * this.width *
+          ctx._pixelDensity + (x * ctx._pixelDensity + i));
         ctx.pixels[idx] = r;
         ctx.pixels[idx+1] = g;
         ctx.pixels[idx+2] = b;
@@ -13576,7 +14363,7 @@ p5.Renderer2D.prototype.set = function (x, y, imgOrCol) {
 };
 
 p5.Renderer2D.prototype.updatePixels = function (x, y, w, h) {
-  var pd = this.pixelDensity || this._pInst.pixelDensity;
+  var pd = this._pixelDensity || this._pInst._pixelDensity;
   if (x === undefined &&
       y === undefined &&
       w === undefined &&
@@ -13636,7 +14423,7 @@ p5.Renderer2D.prototype._acuteArcToBezier =
 p5.Renderer2D.prototype.arc =
   function(x, y, w, h, start, stop, mode) {
   var ctx = this.drawingContext;
-  var vals = canvas.arcModeAdjust(x, y, w, h, this._pInst._ellipseMode);
+  var vals = canvas.arcModeAdjust(x, y, w, h, this._ellipseMode);
   var rx = vals.w / 2.0;
   var ry = vals.h / 2.0;
   var epsilon = 0.00001;  // Smallest visible angle on displays up to 4K.
@@ -13651,7 +14438,7 @@ p5.Renderer2D.prototype.arc =
   }
 
   // Fill curves
-  if (this._pInst._doFill) {
+  if (this._doFill) {
     ctx.beginPath();
     curves.forEach(function (curve, index) {
       if (index === 0) {
@@ -13669,7 +14456,7 @@ p5.Renderer2D.prototype.arc =
   }
 
   // Stroke curves
-  if (this._pInst._doStroke) {
+  if (this._doStroke) {
     ctx.beginPath();
     curves.forEach(function (curve, index) {
       if (index === 0) {
@@ -13692,7 +14479,7 @@ p5.Renderer2D.prototype.arc =
 
 p5.Renderer2D.prototype.ellipse = function(x, y, w, h) {
   var ctx = this.drawingContext;
-  var doFill = this._pInst._doFill, doStroke = this._pInst._doStroke;
+  var doFill = this._doFill, doStroke = this._doStroke;
   if (doFill && !doStroke) {
     if(ctx.fillStyle === styleEmpty) {
       return this;
@@ -13702,7 +14489,7 @@ p5.Renderer2D.prototype.ellipse = function(x, y, w, h) {
       return this;
     }
   }
-  var vals = canvas.modeAdjust(x, y, w, h, this._pInst._ellipseMode);
+  var vals = canvas.modeAdjust(x, y, w, h, this._ellipseMode);
   var kappa = 0.5522847498,
     ox = (vals.w / 2) * kappa, // control point offset horizontal
     oy = (vals.h / 2) * kappa, // control point offset vertical
@@ -13727,7 +14514,7 @@ p5.Renderer2D.prototype.ellipse = function(x, y, w, h) {
 
 p5.Renderer2D.prototype.line = function(x1, y1, x2, y2) {
   var ctx = this.drawingContext;
-  if (!this._pInst._doStroke) {
+  if (!this._doStroke) {
     return this;
   } else if(ctx.strokeStyle === styleEmpty){
     return this;
@@ -13750,7 +14537,7 @@ p5.Renderer2D.prototype.point = function(x, y) {
   var ctx = this.drawingContext;
   var s = ctx.strokeStyle;
   var f = ctx.fillStyle;
-  if (!this._pInst._doStroke) {
+  if (!this._doStroke) {
     return this;
   } else if(ctx.strokeStyle === styleEmpty){
     return this;
@@ -13778,7 +14565,7 @@ p5.Renderer2D.prototype.point = function(x, y) {
 p5.Renderer2D.prototype.quad =
   function(x1, y1, x2, y2, x3, y3, x4, y4) {
   var ctx = this.drawingContext;
-  var doFill = this._pInst._doFill, doStroke = this._pInst._doStroke;
+  var doFill = this._doFill, doStroke = this._doStroke;
   if (doFill && !doStroke) {
     if(ctx.fillStyle === styleEmpty) {
       return this;
@@ -13805,7 +14592,7 @@ p5.Renderer2D.prototype.quad =
 
 p5.Renderer2D.prototype.rect = function(x, y, w, h, tl, tr, br, bl) {
   var ctx = this.drawingContext;
-  var doFill = this._pInst._doFill, doStroke = this._pInst._doStroke;
+  var doFill = this._doFill, doStroke = this._doStroke;
   if (doFill && !doStroke) {
     if(ctx.fillStyle === styleEmpty) {
       return this;
@@ -13815,9 +14602,9 @@ p5.Renderer2D.prototype.rect = function(x, y, w, h, tl, tr, br, bl) {
       return this;
     }
   }
-  var vals = canvas.modeAdjust(x, y, w, h, this._pInst._rectMode);
+  var vals = canvas.modeAdjust(x, y, w, h, this._rectMode);
   // Translate the line by (0.5, 0.5) to draw a crisp rectangle border
-  if (this._pInst._doStroke && ctx.lineWidth % 2 === 1) {
+  if (this._doStroke && ctx.lineWidth % 2 === 1) {
     ctx.translate(0.5, 0.5);
   }
   ctx.beginPath();
@@ -13859,13 +14646,13 @@ p5.Renderer2D.prototype.rect = function(x, y, w, h, tl, tr, br, bl) {
     ctx.arcTo(_x, _y, _x + _w, _y, tl);
     ctx.closePath();
   }
-  if (this._pInst._doFill) {
+  if (this._doFill) {
     ctx.fill();
   }
-  if (this._pInst._doStroke) {
+  if (this._doStroke) {
     ctx.stroke();
   }
-  if (this._pInst._doStroke && ctx.lineWidth % 2 === 1) {
+  if (this._doStroke && ctx.lineWidth % 2 === 1) {
     ctx.translate(-0.5, -0.5);
   }
   return this;
@@ -13873,7 +14660,7 @@ p5.Renderer2D.prototype.rect = function(x, y, w, h, tl, tr, br, bl) {
 
 p5.Renderer2D.prototype.triangle = function(x1, y1, x2, y2, x3, y3) {
   var ctx = this.drawingContext;
-  var doFill = this._pInst._doFill, doStroke = this._pInst._doStroke;
+  var doFill = this._doFill, doStroke = this._doStroke;
   if (doFill && !doStroke) {
     if(ctx.fillStyle === styleEmpty) {
       return this;
@@ -13902,7 +14689,7 @@ function (mode, vertices, isCurve, isBezier,
   if (vertices.length === 0) {
     return this;
   }
-  if (!this._pInst._doStroke && !this._pInst._doFill) {
+  if (!this._doStroke && !this._doFill) {
     return this;
   }
   var closeShape = mode === constants.CLOSE;
@@ -13914,7 +14701,7 @@ function (mode, vertices, isCurve, isBezier,
   var numVerts = vertices.length;
   if (isCurve && (shapeKind === constants.POLYGON || shapeKind === null)) {
     if (numVerts > 3) {
-      var b = [], s = 1 - this._pInst._curveTightness;
+      var b = [], s = 1 - this._curveTightness;
       this.drawingContext.beginPath();
       this.drawingContext.moveTo(vertices[1][0], vertices[1][1]);
       for (i = 1; i + 2 < numVerts; i++) {
@@ -13979,7 +14766,7 @@ function (mode, vertices, isCurve, isBezier,
     if (shapeKind === constants.POINTS) {
       for (i = 0; i < numVerts; i++) {
         v = vertices[i];
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(v[6]);
         }
         this._pInst.point(v[0], v[1]);
@@ -13987,7 +14774,7 @@ function (mode, vertices, isCurve, isBezier,
     } else if (shapeKind === constants.LINES) {
       for (i = 0; i + 1 < numVerts; i += 2) {
         v = vertices[i];
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(vertices[i + 1][6]);
         }
         this._pInst.line(v[0], v[1], vertices[i + 1][0], vertices[i + 1][1]);
@@ -14000,11 +14787,11 @@ function (mode, vertices, isCurve, isBezier,
         this.drawingContext.lineTo(vertices[i + 1][0], vertices[i + 1][1]);
         this.drawingContext.lineTo(vertices[i + 2][0], vertices[i + 2][1]);
         this.drawingContext.lineTo(v[0], v[1]);
-        if (this._pInst._doFill) {
+        if (this._doFill) {
           this._pInst.fill(vertices[i + 2][5]);
           this.drawingContext.fill();
         }
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(vertices[i + 2][6]);
           this.drawingContext.stroke();
         }
@@ -14016,18 +14803,18 @@ function (mode, vertices, isCurve, isBezier,
         this.drawingContext.beginPath();
         this.drawingContext.moveTo(vertices[i + 1][0], vertices[i + 1][1]);
         this.drawingContext.lineTo(v[0], v[1]);
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(vertices[i + 1][6]);
         }
-        if (this._pInst._doFill) {
+        if (this._doFill) {
           this._pInst.fill(vertices[i + 1][5]);
         }
         if (i + 2 < numVerts) {
           this.drawingContext.lineTo(vertices[i + 2][0], vertices[i + 2][1]);
-          if (this._pInst._doStroke) {
+          if (this._doStroke) {
             this._pInst.stroke(vertices[i + 2][6]);
           }
-          if (this._pInst._doFill) {
+          if (this._doFill) {
             this._pInst.fill(vertices[i + 2][5]);
           }
         }
@@ -14039,10 +14826,10 @@ function (mode, vertices, isCurve, isBezier,
         this.drawingContext.moveTo(vertices[0][0], vertices[0][1]);
         this.drawingContext.lineTo(vertices[1][0], vertices[1][1]);
         this.drawingContext.lineTo(vertices[2][0], vertices[2][1]);
-        if (this._pInst._doFill) {
+        if (this._doFill) {
           this._pInst.fill(vertices[2][5]);
         }
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(vertices[2][6]);
         }
         this._doFillStrokeClose();
@@ -14052,10 +14839,10 @@ function (mode, vertices, isCurve, isBezier,
           this.drawingContext.moveTo(vertices[0][0], vertices[0][1]);
           this.drawingContext.lineTo(vertices[i - 1][0], vertices[i - 1][1]);
           this.drawingContext.lineTo(v[0], v[1]);
-          if (this._pInst._doFill) {
+          if (this._doFill) {
             this._pInst.fill(v[5]);
           }
-          if (this._pInst._doStroke) {
+          if (this._doStroke) {
             this._pInst.stroke(v[6]);
           }
           this._doFillStrokeClose();
@@ -14070,10 +14857,10 @@ function (mode, vertices, isCurve, isBezier,
           this.drawingContext.lineTo(vertices[i + j][0], vertices[i + j][1]);
         }
         this.drawingContext.lineTo(v[0], v[1]);
-        if (this._pInst._doFill) {
+        if (this._doFill) {
           this._pInst.fill(vertices[i + 3][5]);
         }
-        if (this._pInst._doStroke) {
+        if (this._doStroke) {
           this._pInst.stroke(vertices[i + 3][6]);
         }
         this._doFillStrokeClose();
@@ -14088,10 +14875,10 @@ function (mode, vertices, isCurve, isBezier,
             this.drawingContext.lineTo(v[0], v[1]);
             this.drawingContext.lineTo(vertices[i + 1][0], vertices[i+1][1]);
             this.drawingContext.lineTo(vertices[i + 3][0], vertices[i+3][1]);
-            if (this._pInst._doFill) {
+            if (this._doFill) {
               this._pInst.fill(vertices[i + 3][5]);
             }
-            if (this._pInst._doStroke) {
+            if (this._doStroke) {
               this._pInst.stroke(vertices[i + 3][6]);
             }
           } else {
@@ -14224,10 +15011,10 @@ p5.Renderer2D.prototype.curve = function (x1, y1, x2, y2, x3, y3, x4, y4) {
 //////////////////////////////////////////////
 
 p5.Renderer2D.prototype._doFillStrokeClose = function () {
-  if (this._pInst._doFill) {
+  if (this._doFill) {
     this.drawingContext.fill();
   }
-  if (this._pInst._doStroke) {
+  if (this._doStroke) {
     this.drawingContext.stroke();
   }
   this.drawingContext.closePath();
@@ -14244,8 +15031,8 @@ function(n00, n01, n02, n10, n11, n12) {
 
 p5.Renderer2D.prototype.resetMatrix = function() {
   this.drawingContext.setTransform(1, 0, 0, 1, 0, 0);
-  this.drawingContext.scale(this._pInst.pixelDensity,
-                            this._pInst.pixelDensity);
+  this.drawingContext.scale(this._pInst._pixelDensity,
+                            this._pInst._pixelDensity);
   return this;
 };
 
@@ -14253,17 +15040,8 @@ p5.Renderer2D.prototype.rotate = function(r) {
   this.drawingContext.rotate(r);
 };
 
-p5.Renderer2D.prototype.scale = function() {
-  var x = 1.0,
-    y = 1.0;
-  if (arguments.length === 1) {
-    x = y = arguments[0];
-  } else {
-    x = arguments[0];
-    y = arguments[1];
-  }
+p5.Renderer2D.prototype.scale = function(x,y) {
   this.drawingContext.scale(x, y);
-
   return this;
 };
 
@@ -14296,14 +15074,14 @@ p5.Renderer2D.prototype.translate = function(x, y) {
 p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
 
   var p = this._pInst, cars, n, ii, jj, line, testLine,
-    testWidth, words, totalHeight, baselineHacked;
+    testWidth, words, totalHeight, baselineHacked,
+    finalMaxHeight = Number.MAX_VALUE;
 
   // baselineHacked: (HACK)
-  // This is an ugly temporary fix to conform to
-  // Processing's vertical alignment implementation
-  // for BASELINE vetical alignment in a boundings box
+  // A temporary fix to conform to Processing's implementation
+  // of BASELINE vertical alignment in a bounding box
 
-  if (!(p._doFill || p._doStroke)) {
+  if (!(this._doFill || this._doStroke)) {
     return;
   }
 
@@ -14332,7 +15110,7 @@ p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
       }
     }
 
-    if (this._pInst._rectMode === constants.CENTER ){
+    if (this._rectMode === constants.CENTER) {
 
       x -= maxWidth / 2;
       y -= maxHeight / 2;
@@ -14362,6 +15140,9 @@ p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
         this.drawingContext.textBaseline = constants.TOP;
         break;
       }
+
+      // remember the max-allowed y-position for any line (fix to #928)
+      finalMaxHeight = (y + maxHeight) - p.textAscent();
     }
 
     for (ii = 0; ii < cars.length; ii++) {
@@ -14372,7 +15153,7 @@ p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
         testLine = line + words[n] + ' ';
         testWidth = this.textWidth(testLine);
         if (testWidth > maxWidth && line.length > 0) {
-          this._renderText(p, line, x, y);
+          this._renderText(p, line, x, y, finalMaxHeight);
           line = words[n] + ' ';
           y += p.textLeading();
         } else {
@@ -14380,14 +15161,14 @@ p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
         }
       }
 
-      this._renderText(p, line, x, y);
+      this._renderText(p, line, x, y, finalMaxHeight);
       y += p.textLeading();
     }
   }
   else {
     for (jj = 0; jj < cars.length; jj++) {
 
-      this._renderText(p, cars[jj], x, y);
+      this._renderText(p, cars[jj], x, y, finalMaxHeight);
       y += p.textLeading();
     }
   }
@@ -14395,25 +15176,30 @@ p5.Renderer2D.prototype.text = function (str, x, y, maxWidth, maxHeight) {
   if (baselineHacked) {
     this.drawingContext.textBaseline = constants.BASELINE;
   }
+
   return p;
 };
 
-p5.Renderer2D.prototype._renderText = function(p, line, x, y) {
+p5.Renderer2D.prototype._renderText = function(p, line, x, y, maxY) {
+
+  if (y >= maxY) {
+    return; // don't render lines beyond our maxY position
+  }
 
   p.push(); // fix to #803
 
-  if (!p._isOpenType()) {  // a system/browser font
+  if (!this._isOpenType()) {  // a system/browser font
 
     // no stroke unless specified by user
-    if (p._doStroke && p._strokeSet) {
+    if (this._doStroke && this._strokeSet) {
 
       this.drawingContext.strokeText(line, x, y);
     }
 
-    if (p._doFill) {
+    if (this._doFill) {
 
       // if fill hasn't been set by user, use default text fill
-      this.drawingContext.fillStyle =  p._fillSet ?
+      this.drawingContext.fillStyle =  this._fillSet ?
         this.drawingContext.fillStyle : constants._DEFAULT_TEXT_FILL;
 
       this.drawingContext.fillText(line, x, y);
@@ -14421,7 +15207,7 @@ p5.Renderer2D.prototype._renderText = function(p, line, x, y) {
   }
   else { // an opentype font, let it handle the rendering
 
-    p._textFont._renderPath(line, x, y);
+    this._textFont._renderPath(line, x, y);
   }
 
   p.pop();
@@ -14431,9 +15217,9 @@ p5.Renderer2D.prototype._renderText = function(p, line, x, y) {
 
 p5.Renderer2D.prototype.textWidth = function(s) {
 
-  if (this._pInst._isOpenType()) {
+  if (this._isOpenType()) {
 
-    return this._pInst._textFont._textWidth(s);
+    return this._textFont._textWidth(s);
   }
 
   return this.drawingContext.measureText(s).width;
@@ -14485,18 +15271,19 @@ p5.Renderer2D.prototype._applyTextProperties = function() {
 
   var font, p = this._pInst;
 
-  p._setProperty('_textAscent', null);
-  p._setProperty('_textDescent', null);
+  this._setProperty('_textAscent', null);
+  this._setProperty('_textDescent', null);
 
-  font = p._textFont;
+  font = this._textFont;
 
-  if (p._isOpenType()) {
+  if (this._isOpenType()) {
 
-    font = p._textFont.font.familyName;
-    p._setProperty('_textStyle', p._textFont.font.styleName);
+    font = this._textFont.font.familyName;
+    this._setProperty('_textStyle', this._textFont.font.styleName);
   }
 
-  this.drawingContext.font = p._textStyle + ' ' + p._textSize + 'px ' + font;
+  this.drawingContext.font = this._textStyle + ' ' +
+  this._textSize + 'px ' + font;
 
   return p;
 };
@@ -14516,7 +15303,7 @@ p5.Renderer2D.prototype.pop = function() {
 
 module.exports = p5.Renderer2D;
 
-},{"../image/filters":64,"./canvas":45,"./constants":46,"./core":47,"./p5.Renderer":53}],55:[function(_dereq_,module,exports){
+},{"../image/filters":65,"./canvas":46,"./constants":47,"./core":48,"./p5.Renderer":54}],56:[function(_dereq_,module,exports){
 /**
  * @module Rendering
  * @submodule Rendering
@@ -14528,6 +15315,7 @@ var constants = _dereq_('./constants');
 _dereq_('./p5.Graphics');
 _dereq_('./p5.Renderer2D');
 _dereq_('../3d/p5.Renderer3D');
+var defaultId = 'defaultCanvas0'; // this gets set again in createCanvas
 
 /**
  * Creates a canvas element in the document, and sets the dimensions of it
@@ -14569,17 +15357,22 @@ p5.prototype.createCanvas = function(w, h, renderer) {
   }
 
   if(r === constants.WEBGL){
-    c = document.getElementById('defaultCanvas');
+    c = document.getElementById(defaultId);
     if(c){ //if defaultCanvas already exists
       c.parentNode.removeChild(c); //replace the existing defaultCanvas
     }
     c = document.createElement('canvas');
-    c.id = 'defaultCanvas';
+    c.id = defaultId;
   }
   else {
     if (isDefault) {
       c = document.createElement('canvas');
-      c.id = 'defaultCanvas';
+      var i = 0;
+      while (document.getElementById('defaultCanvas'+i)) {
+        i++;
+      }
+      defaultId = 'defaultCanvas'+i;
+      c.id = defaultId;
     } else { // resize the default canvas if new one is created
       c = this.canvas;
     }
@@ -14602,22 +15395,22 @@ p5.prototype.createCanvas = function(w, h, renderer) {
   // Init our graphics renderer
   //webgl mode
   if (r === constants.WEBGL) {
-    this._setProperty('_graphics', new p5.Renderer3D(c, this, true));
+    this._setProperty('_renderer', new p5.Renderer3D(c, this, true));
     this._isdefaultGraphics = true;
   }
   //P2D mode
   else {
     if (!this._isdefaultGraphics) {
-      this._setProperty('_graphics', new p5.Renderer2D(c, this, true));
+      this._setProperty('_renderer', new p5.Renderer2D(c, this, true));
       this._isdefaultGraphics = true;
     }
   }
-  this._graphics.resize(w, h);
-  this._graphics._applyDefaults();
+  this._renderer.resize(w, h);
+  this._renderer._applyDefaults();
   if (isDefault) { // only push once
-    this._elements.push(this._graphics);
+    this._elements.push(this._renderer);
   }
-  return this._graphics;
+  return this._renderer;
 };
 
 /**
@@ -14642,9 +15435,9 @@ p5.prototype.createCanvas = function(w, h, renderer) {
  * </code></div>
  */
 p5.prototype.resizeCanvas = function (w, h, noRedraw) {
-  if (this._graphics) {
-    this._graphics.resize(w, h);
-    this._graphics._applyDefaults();
+  if (this._renderer) {
+    this._renderer.resize(w, h);
+    this._renderer._applyDefaults();
     if (!noRedraw) {
       this.redraw();
     }
@@ -14772,7 +15565,7 @@ p5.prototype.blendMode = function(mode) {
     mode === constants.SOFT_LIGHT || mode === constants.DODGE ||
     mode === constants.BURN || mode === constants.ADD ||
     mode === constants.NORMAL) {
-    this._graphics.blendMode(mode);
+    this._renderer.blendMode(mode);
   } else {
     throw new Error('Mode '+mode+' not recognized.');
   }
@@ -14780,7 +15573,7 @@ p5.prototype.blendMode = function(mode) {
 
 module.exports = p5;
 
-},{"../3d/p5.Renderer3D":35,"./constants":46,"./core":47,"./p5.Graphics":52,"./p5.Renderer2D":54}],56:[function(_dereq_,module,exports){
+},{"../3d/p5.Renderer3D":36,"./constants":47,"./core":48,"./p5.Graphics":53,"./p5.Renderer2D":55}],57:[function(_dereq_,module,exports){
 
 // requestAnim shim layer by Paul Irish
 window.requestAnimationFrame = (function(){
@@ -14813,7 +15606,7 @@ window.performance.now = (function(){
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/
 // requestanimationframe-for-smart-er-animating
-// requestAnimationFrame polyfill by Erik MÃ¶ller
+// requestAnimationFrame polyfill by Erik Möller
 // fixes from Paul Irish and Tino Zijdel
 (function() {
   var lastTime = 0;
@@ -14860,7 +15653,7 @@ window.performance.now = (function(){
 }());
 
 
-},{}],57:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 /**
  * @module Structure
  * @submodule Structure
@@ -15023,19 +15816,19 @@ p5.prototype.loop = function() {
  * </div>
  */
 p5.prototype.push = function () {
-  this._graphics.push();
+  this._renderer.push();
   this._styles.push({
-    doStroke: this._doStroke,
-    doFill: this._doFill,
-    tint: this._tint,
-    imageMode: this._imageMode,
-    rectMode: this._rectMode,
-    ellipseMode: this._ellipseMode,
-    colorMode: this._colorMode,
-    textFont: this.textFont,
-    textLeading: this.textLeading,
-    textSize: this.textSize,
-    textStyle: this.textStyle
+    _doStroke: this._renderer._doStroke,
+    _doFill: this._renderer._doFill,
+    _tint: this._renderer._tint,
+    _imageMode: this._renderer._imageMode,
+    _rectMode: this._renderer._rectMode,
+    _ellipseMode: this._renderer._ellipseMode,
+    _colorMode: this._renderer._colorMode,
+    _textFont: this._renderer._textFont,
+    _textLeading: this._renderer._textLeading,
+    _textSize: this._renderer._textSize,
+    _textStyle: this._renderer._textStyle
   });
 };
 
@@ -15091,19 +15884,11 @@ p5.prototype.push = function () {
  * </div>
  */
 p5.prototype.pop = function () {
-  this._graphics.pop();
+  this._renderer.pop();
   var lastS = this._styles.pop();
-  this._doStroke = lastS.doStroke;
-  this._doFill = lastS.doFill;
-  this._tint = lastS.tint;
-  this._imageMode = lastS.imageMode;
-  this._rectMode = lastS.rectMode;
-  this._ellipseMode = lastS.ellipseMode;
-  this._colorMode = lastS.colorMode;
-  this.textFont = lastS.textFont;
-  this.textLeading = lastS.textLeading;
-  this.textSize = lastS.textSize;
-  this.textStyle = lastS.textStyle;
+  for(var prop in lastS){
+    this._renderer[prop] = lastS[prop];
+  }
 };
 
 p5.prototype.pushStyle = function() {
@@ -15155,17 +15940,17 @@ p5.prototype.redraw = function () {
   if (typeof userDraw === 'function') {
     this.push();
     if (typeof userSetup === 'undefined') {
-      this.scale(this.pixelDensity, this.pixelDensity);
+      this.scale(this._pixelDensity, this._pixelDensity);
     }
     var self = this;
     this._registeredMethods.pre.forEach(function (f) {
       f.call(self);
     });
+    this.pop();
     userDraw();
     this._registeredMethods.post.forEach(function (f) {
       f.call(self);
     });
-    this.pop();
   }
 };
 
@@ -15178,7 +15963,7 @@ p5.prototype.size = function() {
 
 module.exports = p5;
 
-},{"./core":47}],58:[function(_dereq_,module,exports){
+},{"./core":48}],59:[function(_dereq_,module,exports){
 /**
  * @module Transform
  * @submodule Transform
@@ -15214,7 +15999,7 @@ var constants = _dereq_('./constants');
  * </div>
  */
 p5.prototype.applyMatrix = function(n00, n01, n02, n10, n11, n12) {
-  this._graphics.applyMatrix(n00, n01, n02, n10, n11, n12);
+  this._renderer.applyMatrix(n00, n01, n02, n10, n11, n12);
   return this;
 };
 
@@ -15243,7 +16028,7 @@ p5.prototype.pushMatrix = function() {
  * </div>
  */
 p5.prototype.resetMatrix = function() {
-  this._graphics.resetMatrix();
+  this._renderer.resetMatrix();
   return this;
 };
 
@@ -15276,11 +16061,18 @@ p5.prototype.resetMatrix = function() {
  * </code>
  * </div>
  */
-p5.prototype.rotate = function(r) {
+p5.prototype.rotate = function() {
+  var r = arguments[0];
   if (this._angleMode === constants.DEGREES) {
     r = this.radians(r);
   }
-  this._graphics.rotate(r);
+  //in webgl mode
+  if(arguments.length > 1){
+    this._renderer.rotate(r, arguments[1]);
+  }
+  else {
+    this._renderer.rotate(r);
+  }
   return this;
 };
 
@@ -15290,10 +16082,21 @@ p5.prototype.rotate = function(r) {
  * @return {[type]}     [description]
  */
 p5.prototype.rotateX = function(rad) {
-  if (this._graphics.isP3D) {
-    this._graphics.rotateX(rad);
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  if (this._renderer.isP3D) {
+    this._validateParameters(
+      'rotateX',
+      args,
+      [
+        ['Number']
+      ]
+    );
+    this._renderer.rotateX(rad);
   } else {
-    throw 'not yet implemented.';
+    throw 'not supported in p2d. Please use webgl mode';
   }
   return this;
 };
@@ -15304,10 +16107,21 @@ p5.prototype.rotateX = function(rad) {
  * @return {[type]}     [description]
  */
 p5.prototype.rotateY = function(rad) {
-  if (this._graphics.isP3D) {
-    this._graphics.rotateY(rad);
+  if (this._renderer.isP3D) {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; ++i) {
+      args[i] = arguments[i];
+    }
+    this._validateParameters(
+      'rotateY',
+      args,
+      [
+        ['Number']
+      ]
+    );
+    this._renderer.rotateY(rad);
   } else {
-    throw 'not yet implemented.';
+    throw 'not supported in p2d. Please use webgl mode';
   }
   return this;
 };
@@ -15318,8 +16132,19 @@ p5.prototype.rotateY = function(rad) {
  * @return {[type]}     [description]
  */
 p5.prototype.rotateZ = function(rad) {
-  if (this._graphics.isP3D) {
-    this._graphics.rotateZ(rad);
+  if (this._renderer.isP3D) {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; ++i) {
+      args[i] = arguments[i];
+    }
+    this._validateParameters(
+      'rotateZ',
+      args,
+      [
+        ['Number']
+      ]
+    );
+    this._renderer.rotateZ(rad);
   } else {
     throw 'not supported in p2d. Please use webgl mode';
   }
@@ -15343,10 +16168,12 @@ p5.prototype.rotateZ = function(rad) {
  * can be further controlled with push() and pop().
  *
  * @method scale
- * @param  {Number} s   percentage to scale the object, or percentage to
+ * @param  {Number | p5.Vector | Array} s
+ *                      percent to scale the object, or percentage to
  *                      scale the object in the x-axis if multiple arguments
  *                      are given
- * @param  {Number} [y] percentage to scale the object in the y-axis
+ * @param  {Number} [y] percent to scale the object in the y-axis
+ * @param  {Number} [z] percent to scale the object in the z-axis (webgl only)
  * @return {p5}         the p5 object
  * @example
  * <div>
@@ -15366,10 +16193,37 @@ p5.prototype.rotateZ = function(rad) {
  * </div>
  */
 p5.prototype.scale = function() {
-  if (this._graphics.isP3D) {
-    this._graphics.scale(arguments[0], arguments[1], arguments[2]);
-  } else {
-    this._graphics.scale.apply(this._graphics, arguments);
+  var x,y,z;
+  var args = new Array(arguments.length);
+  for(var i = 0; i < args.length; i++) {
+    args[i] = arguments[i];
+  }
+  if(args[0] instanceof p5.Vector){
+    x = args[0].x;
+    y = args[0].y;
+    z = args[0].z;
+  }
+  else if(args[0] instanceof Array){
+    x = args[0][0];
+    y = args[0][1];
+    z = args[0][2] || 1;
+  }
+  else {
+    if(args.length === 1){
+      x = y = z = args[0];
+    }
+    else {
+      x = args[0];
+      y = args[1];
+      z = args[2] || 1;
+    }
+  }
+
+  if(this._renderer.isP3D){
+    this._renderer.scale.call(this._renderer, x,y,z);
+  }
+  else {
+    this._renderer.scale.call(this._renderer, x,y);
   }
   return this;
 };
@@ -15407,7 +16261,7 @@ p5.prototype.shearX = function(angle) {
   if (this._angleMode === constants.DEGREES) {
     angle = this.radians(angle);
   }
-  this._graphics.shearX(angle);
+  this._renderer.shearX(angle);
   return this;
 };
 
@@ -15444,7 +16298,7 @@ p5.prototype.shearY = function(angle) {
   if (this._angleMode === constants.DEGREES) {
     angle = this.radians(angle);
   }
-  this._graphics.shearY(angle);
+  this._renderer.shearY(angle);
   return this;
 };
 
@@ -15483,17 +16337,38 @@ p5.prototype.shearY = function(angle) {
  * </div>
  */
 p5.prototype.translate = function(x, y, z) {
-  if (this._graphics.isP3D) {
-    this._graphics.translate(x, y, z);
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+
+  if (this._renderer.isP3D) {
+    this._validateParameters(
+      'translate',
+      args,
+      [
+        //p3d
+        ['Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.translate(x, y, z);
   } else {
-    this._graphics.translate(x, y);
+    this._validateParameters(
+      'translate',
+      args,
+      [
+        //p2d
+        ['Number', 'Number']
+      ]
+    );
+    this._renderer.translate(x, y);
   }
   return this;
 };
 
 module.exports = p5;
 
-},{"./constants":46,"./core":47}],59:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48}],60:[function(_dereq_,module,exports){
 /**
  * @module Shape
  * @submodule Vertex
@@ -15722,20 +16597,20 @@ p5.prototype.beginContour = function() {
  * </div>
  */
 p5.prototype.beginShape = function(kind) {
-  if(this._graphics.isP3D){
-    this._graphics.beginShape(kind);
-  }else{
-    if (kind === constants.POINTS ||
-      kind === constants.LINES ||
-      kind === constants.TRIANGLES ||
-      kind === constants.TRIANGLE_FAN ||
-      kind === constants.TRIANGLE_STRIP ||
-      kind === constants.QUADS ||
-      kind === constants.QUAD_STRIP) {
-      shapeKind = kind;
-    } else {
-      shapeKind = null;
-    }
+  if (kind === constants.POINTS ||
+    kind === constants.LINES ||
+    kind === constants.TRIANGLES ||
+    kind === constants.TRIANGLE_FAN ||
+    kind === constants.TRIANGLE_STRIP ||
+    kind === constants.QUADS ||
+    kind === constants.QUAD_STRIP) {
+    shapeKind = kind;
+  } else {
+    shapeKind = null;
+  }
+  if(this._renderer.isP3D){
+    this._renderer.beginShape(kind);
+  } else {
     vertices = [];
     contourVertices = [];
   }
@@ -15918,11 +16793,11 @@ p5.prototype.endContour = function() {
  * </div>
  */
 p5.prototype.endShape = function(mode) {
-  if(this._graphics.isP3D){
-    this._graphics.endShape();
+  if(this._renderer.isP3D){
+    this._renderer.endShape();
   }else{
     if (vertices.length === 0) { return this; }
-    if (!this._doStroke && !this._doFill) { return this; }
+    if (!this._renderer._doStroke && !this._renderer._doFill) { return this; }
 
     var closeShape = mode === constants.CLOSE;
 
@@ -15931,7 +16806,7 @@ p5.prototype.endShape = function(mode) {
       vertices.push(vertices[0]);
     }
 
-    this._graphics.endShape(mode, vertices, isCurve, isBezier,
+    this._renderer.endShape(mode, vertices, isCurve, isBezier,
       isQuadratic, isContour, shapeKind);
 
     // Reset some settings
@@ -16045,10 +16920,29 @@ p5.prototype.quadraticVertex = function(cx, cy, x3, y3) {
  * </div>
  */
 p5.prototype.vertex = function(x, y, moveTo) {
-  if(this._graphics.isP3D){
-    this._graphics.vertex
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  if(this._renderer.isP3D){
+    this._validateParameters(
+      'vertex',
+      args,
+      [
+        ['Number', 'Number', 'Number']
+      ]
+    );
+    this._renderer.vertex
     (arguments[0], arguments[1], arguments[2]);
   }else{
+    this._validateParameters(
+      'vertex',
+      args,
+      [
+        ['Number', 'Number'],
+        ['Number', 'Number', 'Number']
+      ]
+    );
     var vert = [];
     vert.isVert = true;
     vert[0] = x;
@@ -16056,8 +16950,8 @@ p5.prototype.vertex = function(x, y, moveTo) {
     vert[2] = 0;
     vert[3] = 0;
     vert[4] = 0;
-    vert[5] = this._graphics._getFill();
-    vert[6] = this._graphics._getStroke();
+    vert[5] = this._renderer._getFill();
+    vert[6] = this._renderer._getStroke();
 
     if (moveTo) {
       vert.moveTo = moveTo;
@@ -16076,7 +16970,7 @@ p5.prototype.vertex = function(x, y, moveTo) {
 
 module.exports = p5;
 
-},{"./constants":46,"./core":47}],60:[function(_dereq_,module,exports){
+},{"./constants":47,"./core":48}],61:[function(_dereq_,module,exports){
 /**
  * @module Events
  * @submodule Acceleration
@@ -16159,12 +17053,173 @@ p5.prototype._updatePAccelerations = function(){
   this._setProperty('pAccelerationZ', this.accelerationZ);
 };
 
+/**
+ * The system variable rotationX always contains the rotation of the
+ * device along the x axis. Value is represented as 0 to +/-180 degrees.
+ *
+ * @property rotationX
+ */
+p5.prototype.rotationX = 0;
+
+/**
+ * The system variable rotationY always contains the rotation of the
+ * device along the y axis. Value is represented as 0 to +/-180 degrees.
+ *
+ * @property rotationY
+ */
+p5.prototype.rotationY = 0;
+
+/**
+ * The system variable rotationZ always contains the rotation of the
+ * device along the z axis. Value is represented as 0 to 359 degrees.
+ * <br><br>
+ * Unlike rotationX and rotationY, this variable is available for devices
+ * with a built-in compass only.
+ *
+ * @property rotationZ
+ */
+p5.prototype.rotationZ = 0;
+
+/**
+ * The system variable pRotationX always contains the rotation of the
+ * device along the x axis in the frame previous to the current frame. Value
+ * is represented as 0 to +/-180 degrees.
+ * <br><br>
+ * pRotationX can also be used with rotationX to determine the rotate
+ * direction of the device along the X-axis.
+ * @example
+ * <div class='norender'>
+ * <code>
+ * // A simple if statement looking at whether
+ * // rotationX - pRotationX < 0 is true or not will be
+ * // sufficient for determining the rotate direction
+ * // in most cases.
+ *
+ * // Some extra logic is needed to account for cases where
+ * // the angles wrap around.
+ * var rotateDirection = 'clockwise';
+ *
+ * // Simple range conversion to make things simpler.
+ * // This is not absolutely neccessary but the logic
+ * // will be different in that case.
+ *
+ * var rX = rotationX + 180;
+ * var pRX = pRotationX + 180;
+ *
+ * if ((rX - pRX > 0 && rX - pRX < 270)|| rX - pRX < -270){
+ *   rotateDirection = 'clockwise';
+ * } else if (rX - pRX < 0 || rX - pRX > 270){
+ *   rotateDirection = 'counter-clockwise';
+ * }
+ * </code>
+ * </div>
+ *
+ * @property pRotationX
+ */
+p5.prototype.pRotationX = 0;
+
+/**
+ * The system variable pRotationY always contains the rotation of the
+ * device along the y axis in the frame previous to the current frame. Value
+ * is represented as 0 to +/-180 degrees.
+ * <br><br>
+ * pRotationY can also be used with rotationY to determine the rotate
+ * direction of the device along the Y-axis.
+ * @example
+ * <div class='norender'>
+ * <code>
+ * // A simple if statement looking at whether
+ * // rotationY - pRotationY < 0 is true or not will be
+ * // sufficient for determining the rotate direction
+ * // in most cases.
+ *
+ * // Some extra logic is needed to account for cases where
+ * // the angles wrap around.
+ * var rotateDirection = 'clockwise';
+ *
+ * // Simple range conversion to make things simpler.
+ * // This is not absolutely neccessary but the logic
+ * // will be different in that case.
+ *
+ * var rY = rotationY + 180;
+ * var pRY = pRotationY + 180;
+ *
+ * if ((rY - pRY > 0 && rY - pRY < 270)|| rY - pRY < -270){
+ *   rotateDirection = 'clockwise';
+ * } else if (rY - pRY < 0 || rY - pRY > 270){
+ *   rotateDirection = 'counter-clockwise';
+ * }
+ * </code>
+ * </div>
+ *
+ * @property pRotationY
+ */
+p5.prototype.pRotationY = 0;
+
+/**
+ * The system variable pRotationZ always contains the rotation of the
+ * device along the z axis in the frame previous to the current frame. Value
+ * is represented as 0 to 359 degrees.
+ * <br><br>
+ * pRotationZ can also be used with rotationZ to determine the rotate
+ * direction of the device along the Z-axis.
+ * @example
+ * <div class='norender'>
+ * <code>
+ * // A simple if statement looking at whether
+ * // rotationZ - pRotationZ < 0 is true or not will be
+ * // sufficient for determining the rotate direction
+ * // in most cases.
+ *
+ * // Some extra logic is needed to account for cases where
+ * // the angles wrap around.
+ * var rotateDirection = 'clockwise';
+ *
+ * if ((rotationZ - pRotationZ > 0 &&
+ *   rotationZ - pRotationZ < 270)||
+ *   rotationZ - pRotationZ < -270){
+ *
+ *   rotateDirection = 'clockwise';
+ *
+ * } else if (rotationZ - pRotationZ < 0 ||
+ *   rotationZ - pRotationZ > 270){
+ *
+ *   rotateDirection = 'counter-clockwise';
+ *
+ * }
+ * </code>
+ * </div>
+ *
+ * @property pRotationZ
+ */
+p5.prototype.pRotationZ = 0;
+
+var startAngleX = 0;
+var startAngleY = 0;
+var startAngleZ = 0;
+
+var rotateDirectionX = 'clockwise';
+var rotateDirectionY = 'clockwise';
+var rotateDirectionZ = 'clockwise';
+
+var pRotateDirectionX;
+var pRotateDirectionY;
+var pRotateDirectionZ;
+
+p5.prototype._updatePRotations = function(){
+  this._setProperty('pRotationX', this.rotationX);
+  this._setProperty('pRotationY', this.rotationY);
+  this._setProperty('pRotationZ', this.rotationZ);
+};
+
+p5.prototype.turnAxis = undefined;
+
 var move_threshold = 0.5;
 var shake_threshold = 30;
 
 /**
  * The setMoveThreshold() function is used to set the movement threshold for
- * the deviceMoved() function.
+ * the deviceMoved() function. The default threshold is set to 0.5.
  *
  * @method setMoveThreshold
  * @param {number} value The threshold value
@@ -16188,12 +17243,10 @@ p5.prototype.setShakeThreshold = function(val){
   }
 };
 
-var old_max_axis = '';
-var new_max_axis = '';
-
 /**
- * The deviceMoved() function is called when the devices orientation changes
- * by more than the threshold value.
+ * The deviceMoved() function is called when the device is moved by more than
+ * the threshold value along X, Y or Z axis. The default threshold is set to
+ * 0.5.
  * @method deviceMoved
  * @example
  * <div>
@@ -16219,7 +17272,12 @@ var new_max_axis = '';
 
 /**
  * The deviceTurned() function is called when the device rotates by
- * more than 90 degrees.
+ * more than 90 degrees continuously.
+ * <br><br>
+ * The axis that triggers the deviceTurned() method is stored in the turnAxis
+ * variable. The deviceTurned() method can be locked to trigger on any axis:
+ * X, Y or Z by comparing the turnAxis variable to 'X', 'Y' or 'Z'.
+ *
  * @method deviceTurned
  * @example
  * <div>
@@ -16234,9 +17292,32 @@ var new_max_axis = '';
  *   rect(25, 25, 50, 50);
  * }
  * function deviceTurned() {
- *   value = value + 5;
- *   if (value > 255) {
+ *   if (value == 0){
+ *     value = 255
+ *   } else if (value == 255) {
  *     value = 0;
+ *   }
+ * }
+ * </code>
+ * </div>
+ * <div>
+ * <code>
+ * // Run this example on a mobile device
+ * // Rotate the device by 90 degrees in the
+ * // X-axis to change the value.
+ *
+ * var value = 0;
+ * function draw() {
+ *   fill(value);
+ *   rect(25, 25, 50, 50);
+ * }
+ * function deviceTurned() {
+ *   if (turnAxis == 'X'){
+ *     if (value == 0){
+ *       value = 255
+ *     } else if (value == 255) {
+ *       value = 0;
+ *     }
  *   }
  * }
  * </code>
@@ -16270,21 +17351,17 @@ var new_max_axis = '';
  */
 
 p5.prototype._ondeviceorientation = function (e) {
-  this._setProperty('accelerationX', e.beta);
-  this._setProperty('accelerationY', e.gamma);
-  this._setProperty('accelerationZ', e.alpha);
+  this._updatePRotations();
+  this._setProperty('rotationX', e.beta);
+  this._setProperty('rotationY', e.gamma);
+  this._setProperty('rotationZ', e.alpha);
   this._handleMotion();
 };
 p5.prototype._ondevicemotion = function (e) {
+  this._updatePAccelerations();
   this._setProperty('accelerationX', e.acceleration.x * 2);
   this._setProperty('accelerationY', e.acceleration.y * 2);
   this._setProperty('accelerationZ', e.acceleration.z * 2);
-  this._handleMotion();
-};
-p5.prototype._onMozOrientation = function (e) {
-  this._setProperty('accelerationX', e.x);
-  this._setProperty('accelerationY', e.y);
-  this._setProperty('accelerationZ', e.z);
   this._handleMotion();
 };
 p5.prototype._handleMotion = function() {
@@ -16305,23 +17382,70 @@ p5.prototype._handleMotion = function() {
   }
   var deviceTurned = this.deviceTurned || window.deviceTurned;
   if (typeof deviceTurned === 'function') {
-    var max_val = 0;
-    if (Math.abs(this.accelerationX) > max_val) {
-      max_val = this.accelerationX;
-      new_max_axis = 'x';
+    // The angles given by rotationX etc is from range -180 to 180.
+    // The following will convert them to 0 to 360 for ease of calculation
+    // of cases when the angles wrapped around.
+    // _startAngleX will be converted back at the end and updated.
+    var wRX = this.rotationX + 180;
+    var wPRX = this.pRotationX + 180;
+    var wSAX = startAngleX + 180;
+    if ((wRX - wPRX > 0 && wRX - wPRX < 270)|| wRX - wPRX < -270){
+      rotateDirectionX = 'clockwise';
+    } else if (wRX - wPRX < 0 || wRX - wPRX > 270){
+      rotateDirectionX = 'counter-clockwise';
     }
-    if (Math.abs(this.accelerationY) > max_val) {
-      max_val = this.accelerationY;
-      new_max_axis = 'y';
+    if (rotateDirectionX !== pRotateDirectionX){
+      wSAX = wRX;
     }
-    if (Math.abs(this.accelerationZ) > max_val) {
-      new_max_axis = 'z';
+    if (Math.abs(wRX - wSAX) > 90 && Math.abs(wRX - wSAX) < 270){
+      wSAX = wRX;
+      this._setProperty('turnAxis', 'X');
+      deviceTurned();
     }
-    if (old_max_axis !== '' && old_max_axis !== new_max_axis) {
-      deviceTurned(new_max_axis);
+    pRotateDirectionX = rotateDirectionX;
+    startAngleX = wSAX - 180;
 
+    // Y-axis is identical to X-axis except for changing some names.
+    var wRY = this.rotationY + 180;
+    var wPRY = this.pRotationY + 180;
+    var wSAY = startAngleY + 180;
+    if ((wRY - wPRY > 0 && wRY - wPRY < 270)|| wRY - wPRY < -270){
+      rotateDirectionY = 'clockwise';
+    } else if (wRY - wPRY < 0 || wRY - this.pRotationY > 270){
+      rotateDirectionY = 'counter-clockwise';
     }
-    old_max_axis = new_max_axis;
+    if (rotateDirectionY !== pRotateDirectionY){
+      wSAY = wRY;
+    }
+    if (Math.abs(wRY - wSAY) > 90 && Math.abs(wRY - wSAY) < 270){
+      wSAY = wRY;
+      this._setProperty('turnAxis', 'Y');
+      deviceTurned();
+    }
+    pRotateDirectionY = rotateDirectionY;
+    startAngleY = wSAY - 180;
+
+    // Z-axis is already in the range 0 to 360
+    // so no conversion is needed.
+    if ((this.rotationZ - this.pRotationZ > 0 &&
+      this.rotationZ - this.pRotationZ < 270)||
+      this.rotationZ - this.pRotationZ < -270){
+      rotateDirectionZ = 'clockwise';
+    } else if (this.rotationZ - this.pRotationZ < 0 ||
+      this.rotationZ - this.pRotationZ > 270){
+      rotateDirectionZ = 'counter-clockwise';
+    }
+    if (rotateDirectionZ !== pRotateDirectionZ){
+      startAngleZ = this.rotationZ;
+    }
+    if (Math.abs(this.rotationZ - startAngleZ) > 90 &&
+      Math.abs(this.rotationZ - startAngleZ) < 270){
+      startAngleZ = this.rotationZ;
+      this._setProperty('turnAxis', 'Z');
+      deviceTurned();
+    }
+    pRotateDirectionZ = rotateDirectionZ;
+    this._setProperty('turnAxis', undefined);
   }
   var deviceShaken = this.deviceShaken || window.deviceShaken;
   if (typeof deviceShaken === 'function') {
@@ -16341,7 +17465,7 @@ p5.prototype._handleMotion = function() {
 
 module.exports = p5;
 
-},{"../core/core":47}],61:[function(_dereq_,module,exports){
+},{"../core/core":48}],62:[function(_dereq_,module,exports){
 /**
  * @module Events
  * @submodule Keyboard
@@ -16484,7 +17608,14 @@ p5.prototype.keyCode = 0;
  *   } else if (keyCode === RIGHT_ARROW) {
  *     value = 0;
  *   }
- *   return false; // prevent any default behavior
+ * }
+ * </code>
+ * </div>
+ * <div class="norender">
+ * <code>
+ * function keyPressed(){
+ *   // Do something
+ *   return false; // prevent any default behaviour
  * }
  * </code>
  * </div>
@@ -16652,7 +17783,7 @@ p5.prototype.keyIsDown = function(code) {
 
 module.exports = p5;
 
-},{"../core/core":47}],62:[function(_dereq_,module,exports){
+},{"../core/core":48}],63:[function(_dereq_,module,exports){
 /**
  * @module Events
  * @submodule Mouse
@@ -16959,10 +18090,12 @@ p5.prototype._updateMouseCoords = function(e) {
   if(e.type === 'touchstart' ||
      e.type === 'touchmove' ||
      e.type === 'touchend') {
+    this._updatePTouchCoords();
     this._setProperty('mouseX', this.touchX);
     this._setProperty('mouseY', this.touchY);
   } else {
     if(this._curElement !== null) {
+      this._updatePMouseCoords();
       var mousePos = getMousePos(this._curElement.elt, e);
       this._setProperty('mouseX', mousePos.x);
       this._setProperty('mouseY', mousePos.y);
@@ -16972,7 +18105,7 @@ p5.prototype._updateMouseCoords = function(e) {
   this._setProperty('winMouseY', e.pageY);
 };
 
-p5.prototype._updatePMouseCoords = function(e) {
+p5.prototype._updatePMouseCoords = function() {
   this._setProperty('pmouseX', this.mouseX);
   this._setProperty('pmouseY', this.mouseY);
   this._setProperty('pwinMouseX', this.winMouseX);
@@ -17231,6 +18364,9 @@ p5.prototype._onmouseup = function(e) {
   }
 };
 
+p5.prototype._ondragend = p5.prototype._onmouseup;
+p5.prototype._ondragover = p5.prototype._onmousemove;
+
 /**
  * The mouseClicked() function is called once after a mouse button has been
  * pressed and then released.<br><br>
@@ -17336,7 +18472,7 @@ p5.prototype._onmousewheel = p5.prototype._onDOMMouseScroll = function(e) {
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47}],63:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48}],64:[function(_dereq_,module,exports){
 /**
  * @module Events
  * @submodule Touch
@@ -17388,8 +18524,9 @@ p5.prototype.ptouchY = 0;
 
 /**
  * The system variable touches[] contains an array of the positions of all
- * current touch points, relative to (0, 0) of the canvas. Each element in
- * the array is an object with x and y properties.
+ * current touch points, relative to (0, 0) of the canvas, and IDs identifying a
+ * unique touch as it moves. Each element in the array is an object with x, y,
+ * and id properties.
  *
  * @property touches[]
  */
@@ -17407,17 +18544,18 @@ p5.prototype._updateTouchCoords = function(e) {
   if(e.type === 'mousedown' ||
      e.type === 'mousemove' ||
      e.type === 'mouseup'){
+    this._updatePMouseCoords();
     this._setProperty('touchX', this.mouseX);
     this._setProperty('touchY', this.mouseY);
   } else {
-    var touchPos = getTouchPos(this._curElement.elt, e, 0);
-    this._setProperty('touchX', touchPos.x);
-    this._setProperty('touchY', touchPos.y);
+    this._updatePTouchCoords();
+    var touchInfo = getTouchInfo(this._curElement.elt, e, 0);
+    this._setProperty('touchX', touchInfo.x);
+    this._setProperty('touchY', touchInfo.y);
 
     var touches = [];
     for(var i = 0; i < e.touches.length; i++){
-      var pos = getTouchPos(this._curElement.elt, e, i);
-      touches[i] = {x: pos.x, y: pos.y};
+      touches[i] = getTouchInfo(this._curElement.elt, e, i);
     }
     this._setProperty('touches', touches);
   }
@@ -17428,13 +18566,14 @@ p5.prototype._updatePTouchCoords = function() {
   this._setProperty('ptouchY', this.touchY);
 };
 
-function getTouchPos(canvas, e, i) {
+function getTouchInfo(canvas, e, i) {
   i = i || 0;
   var rect = canvas.getBoundingClientRect();
   var touch = e.touches[i] || e.changedTouches[i];
-  return  {
+  return {
     x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top
+    y: touch.clientY - rect.top,
+    id: touch.identifier
   };
 }
 
@@ -17615,7 +18754,7 @@ p5.prototype._ontouchend = function(e) {
 
 module.exports = p5;
 
-},{"../core/core":47}],64:[function(_dereq_,module,exports){
+},{"../core/core":48}],65:[function(_dereq_,module,exports){
 /*global ImageData:false */
 
 /**
@@ -18218,7 +19357,7 @@ Filters.blur = function(canvas, radius){
 
 module.exports = Filters;
 
-},{}],65:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 /**
  * @module Image
  * @submodule Image
@@ -18234,7 +19373,6 @@ module.exports = Filters;
 
 
 var p5 = _dereq_('../core/core');
-var constants = _dereq_('../core/constants');
 
 /* global frames:true */// This is not global, but JSHint is not aware that
 // this module is implicitly enclosed with Browserify: this overrides the
@@ -18242,8 +19380,6 @@ var constants = _dereq_('../core/constants');
 // of saved animation frames.
 var frames = [];
 
-p5.prototype._imageMode = constants.CORNER;
-p5.prototype._tint = null;
 
 /**
  * Creates a new p5.Image (the datatype for storing images). This provides a
@@ -18523,7 +19659,7 @@ p5.prototype._makeFrame = function(filename, extension, _cnv) {
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47}],66:[function(_dereq_,module,exports){
+},{"../core/core":48}],67:[function(_dereq_,module,exports){
 /**
  * @module Image
  * @submodule Loading & Displaying
@@ -18542,11 +19678,16 @@ _dereq_('../core/error_helpers');
 
 /**
  * Loads an image from a path and creates a p5.Image from it.
- *
+ * <br><br>
  * The image may not be immediately available for rendering
  * If you want to ensure that the image is ready before doing
- * anything with it you can do perform those operations in the
- * callback, or place the loadImage() call in preload().
+ * anything with it, place the loadImage() call in preload().
+ * You may also supply a callback function to handle the image when it's ready.
+ * <br><br>
+ * The path to the image should be relative to the HTML file
+ * that links in your sketch. Loading an from a URL or other
+ * remote location may be blocked due to your browser's built-in
+ * security.
  *
  * @method loadImage
  * @param  {String} path Path of the image to be loaded
@@ -18582,6 +19723,7 @@ _dereq_('../core/error_helpers');
 p5.prototype.loadImage = function(path, successCallback, failureCallback) {
   var img = new Image();
   var pImg = new p5.Image(1, 1, this);
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
 
   img.onload = function() {
     pImg.width = pImg.canvas.width = img.width;
@@ -18593,10 +19735,15 @@ p5.prototype.loadImage = function(path, successCallback, failureCallback) {
     if (typeof successCallback === 'function') {
       successCallback(pImg);
     }
+    if (decrementPreload && (successCallback !== decrementPreload)) {
+      decrementPreload();
+    }
   };
   img.onerror = function(e) {
     p5._friendlyFileLoadError(0,img.src);
-    if (typeof failureCallback === 'function') {
+    // don't get failure callback mixed up with decrementPreload
+    if ((typeof failureCallback === 'function') &&
+      (failureCallback !== decrementPreload)) {
       failureCallback(e);
     }
   };
@@ -18617,14 +19764,50 @@ p5.prototype.loadImage = function(path, successCallback, failureCallback) {
 };
 
 /**
+ * Validates clipping params. Per drawImage spec sWidth and sHight cannot be
+ * negative or greater than image intrinsic width and height
+ * @private
+ * @param {Number} sVal
+ * @param {Number} iVal
+ * @returns {Number}
+ * @private
+ */
+function _sAssign(sVal, iVal) {
+  if (sVal > 0 && sVal < iVal) {
+    return sVal;
+  }
+  else {
+    return iVal;
+  }
+}
+
+/**
  * Draw an image to the main canvas of the p5js sketch
  *
  * @method image
- * @param  {p5.Image} image    the image to display
- * @param  {Number}   [x=0]    x-coordinate of the image
- * @param  {Number}   [y=0]    y-coordinate of the image
- * @param  {Number}   [width]  width to display the image
- * @param  {Number}   [height] height to display the image
+ * @param  {p5.Image} img    the image to display
+ * @param  {Number}   [sx=0]   The X coordinate of the top left corner of the
+ *                             sub-rectangle of the source image to draw into
+ *                             the destination canvas.
+ * @param  {Number}   [sy=0]   The Y coordinate of the top left corner of the
+ *                             sub-rectangle of the source image to draw into
+ *                             the destination canvas.
+ * @param {Number} [sWidth=img.width] The width of the sub-rectangle of the
+ *                                    source image to draw into the destination
+ *                                    canvas.
+ * @param {Number} [sHeight=img.height] The height of the sub-rectangle of the
+ *                                      source image to draw into the
+ *                                      destination context.
+ * @param  {Number}   [dx=0]    The X coordinate in the destination canvas at
+ *                              which to place the top-left corner of the
+ *                              source image.
+ * @param  {Number}   [dy=0]    The Y coordinate in the destination canvas at
+ *                              which to place the top-left corner of the
+ *                              source image.
+ * @param  {Number}   [dWidth]  The width to draw the image in the destination
+ *                              canvas. This allows scaling of the drawn image.
+ * @param  {Number}   [dHeight] The height to draw the image in the destination
+ *                              canvas. This allows scaling of the drawn image.
  * @example
  * <div>
  * <code>
@@ -18634,6 +19817,8 @@ p5.prototype.loadImage = function(path, successCallback, failureCallback) {
  * }
  * function setup() {
  *   image(img, 0, 0);
+ *   image(img, 0, 0, 100, 100);
+ *   image(img, 0, 0, 100, 100, 0, 0, 100, 100);
  * }
  * </code>
  * </div>
@@ -18648,25 +19833,61 @@ p5.prototype.loadImage = function(path, successCallback, failureCallback) {
  * </code>
  * </div>
  */
-p5.prototype.image = function(img, x, y, width, height) {
+p5.prototype.image =
+  function(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
   // Temporarily disabling until options for p5.Graphics are added.
+  // var args = new Array(arguments.length);
+  // for (var i = 0; i < args.length; ++i) {
+  //   args[i] = arguments[i];
+  // }
   // this._validateParameters(
   //   'image',
-  //   arguments,
+  //   args,
   //   [
   //     ['p5.Image', 'Number', 'Number'],
   //     ['p5.Image', 'Number', 'Number', 'Number', 'Number']
   //   ]
   // );
 
-  // set defaults
-  x = x || 0;
-  y = y || 0;
-  width = width || img.width;
-  height = height || img.height;
-  var vals = canvas.modeAdjust(x, y, width, height, this._imageMode);
+  // set defaults per spec: https://goo.gl/3ykfOq
+  if (arguments.length <= 5) {
+    dx = sx || 0;
+    dy = sy || 0;
+    sx = 0;
+    sy = 0;
+    if (img.elt && img.elt.videoWidth && !img.canvas) { // video no canvas
+      var actualW = img.elt.videoWidth;
+      var actualH = img.elt.videoHeight;
+      dWidth = sWidth || img.width;
+      dHeight = sHeight || img.width*actualH/actualW;
+      sWidth = actualW;
+      sHeight = actualH;
+    } else {
+      dWidth = sWidth || img.width;
+      dHeight = sHeight || img.height;
+      sWidth = img.width;
+      sHeight = img.height;
+    }
+  } else if (arguments.length === 9) {
+    sx = sx || 0;
+    sy = sy || 0;
+    sWidth = _sAssign(sWidth, img.width);
+    sHeight = _sAssign(sHeight, img.height);
+
+    dx = dx || 0;
+    dy = dy || 0;
+    dWidth = dWidth || img.width;
+    dHeight = dHeight || img.height;
+  } else {
+    throw 'Wrong number of arguments to image()';
+  }
+
+  var vals = canvas.modeAdjust(dx, dy, dWidth, dHeight,
+    this._renderer._imageMode);
+
   // tint the image if there is a tint
-  this._graphics.image(img, vals.x, vals.y, vals.w, vals.h);
+  this._renderer.image(img, sx, sy, sWidth, sHeight, vals.x, vals.y, vals.w,
+    vals.h);
 };
 
 /**
@@ -18735,7 +19956,7 @@ p5.prototype.image = function(img, x, y, width, height) {
  */
 p5.prototype.tint = function () {
   var c = this.color.apply(this, arguments);
-  this._tint = c.rgba;
+  this._renderer._tint = c.levels;
 };
 
 /**
@@ -18760,7 +19981,7 @@ p5.prototype.tint = function () {
  * </div>
  */
 p5.prototype.noTint = function() {
-  this._tint = null;
+  this._renderer._tint = null;
 };
 
 /**
@@ -18789,10 +20010,10 @@ p5.prototype._getTintedImageCanvas = function(img) {
     var b = pixels[i+2];
     var a = pixels[i+3];
 
-    newPixels[i] = r*this._tint[0]/255;
-    newPixels[i+1] = g*this._tint[1]/255;
-    newPixels[i+2] = b*this._tint[2]/255;
-    newPixels[i+3] = a*this._tint[3]/255;
+    newPixels[i] = r*this._renderer._tint[0]/255;
+    newPixels[i+1] = g*this._renderer._tint[1]/255;
+    newPixels[i+2] = b*this._renderer._tint[2]/255;
+    newPixels[i+3] = a*this._renderer._tint[3]/255;
   }
 
   tmpCtx.putImageData(id, 0, 0);
@@ -18861,14 +20082,14 @@ p5.prototype.imageMode = function(m) {
   if (m === constants.CORNER ||
     m === constants.CORNERS ||
     m === constants.CENTER) {
-    this._imageMode = m;
+    this._renderer._imageMode = m;
   }
 };
 
 
 module.exports = p5;
 
-},{"../core/canvas":45,"../core/constants":46,"../core/core":47,"../core/error_helpers":50,"./filters":64}],67:[function(_dereq_,module,exports){
+},{"../core/canvas":46,"../core/constants":47,"../core/core":48,"../core/error_helpers":51,"./filters":65}],68:[function(_dereq_,module,exports){
 /**
  * @module Image
  * @submodule Image
@@ -18925,7 +20146,9 @@ p5.Image = function(width, height){
   this.canvas.width = this.width;
   this.canvas.height = this.height;
   this.drawingContext = this.canvas.getContext('2d');
-  this.pixelDensity = 1;
+  this._pixelDensity = 1;
+  //used for webgl texturing only
+  this.isTexture = false;
   /**
    * Array containing the values for all the pixels in the display window.
    * These values are numbers. This array is the size (include an appropriate
@@ -18951,6 +20174,7 @@ p5.Image = function(width, height){
    *     pixels[idx+3] = a;
    *   }
    * }
+   * </pre></code>
    * <br><br>
    * Before accessing this array, the data must loaded with the loadPixels()
    * function. After the array data has been modified, the updatePixels()
@@ -19191,7 +20415,7 @@ p5.Image.prototype.mask = function(p5Image) {
 
   var scaleFactor = 1;
   if (p5Image instanceof p5.Renderer) {
-    scaleFactor = p5Image._pInst.pixelDensity;
+    scaleFactor = p5Image._pInst._pixelDensity;
   }
 
   var copyArgs = [
@@ -19293,9 +20517,20 @@ p5.Image.prototype.save = function(filename, extension) {
   p5.prototype.downloadFile(imageData, filename, extension);
 };
 
+/**
+ * creates a gl texture
+ * used in WEBGL mode only
+ * @param  {[type]} tex [description]
+ * @return {[type]}     [description]
+ */
+p5.Image.prototype.createTexture = function(tex){
+  //this.texture = tex;
+  return this;
+};
+
 module.exports = p5.Image;
 
-},{"../core/core":47,"./filters":64}],68:[function(_dereq_,module,exports){
+},{"../core/core":48,"./filters":65}],69:[function(_dereq_,module,exports){
 /**
  * @module Image
  * @submodule Pixels
@@ -19440,7 +20675,7 @@ p5.prototype.pixels = [];
  * </code></div>
  */
 p5.prototype.blend = function() {
-  this._graphics.blend.apply(this._graphics, arguments);
+  this._renderer.blend.apply(this._renderer, arguments);
 };
 
 /**
@@ -19471,9 +20706,8 @@ p5.prototype.blend = function() {
  * }
  *
  * function setup() {
- *   background(img0);
- *   image(img1, 0, 0);
- *   copy(7, 22, 10, 10, 35, 25, 50, 50);
+ *   background(img);
+ *   copy(img, 7, 22, 10, 10, 35, 25, 50, 50);
  *   stroke(255);
  *   noFill();
  *   // Rectangle shows area being copied
@@ -19531,9 +20765,9 @@ p5.prototype.copy = function () {
  * Increases the light areas. No parameter is used.
  *
  * @method filter
- * @param  {String}    kind
- *
- * @param  {Number|undefined} param
+ * @param  {String} filterType
+ * @param  {Number} filterParam an optional parameter unique
+ *  to each filter, see above
  *
  *
  * @example
@@ -19705,7 +20939,7 @@ p5.prototype.filter = function(operation, value) {
  * </div>
  */
 p5.prototype.get = function(x, y, w, h){
-  return this._graphics.get(x, y, w, h);
+  return this._renderer.get(x, y, w, h);
 };
 
 /**
@@ -19736,14 +20970,14 @@ p5.prototype.get = function(x, y, w, h){
  * </div>
  */
 p5.prototype.loadPixels = function() {
-  this._graphics.loadPixels();
+  this._renderer.loadPixels();
 };
 
 /**
  * <p>Changes the color of any pixel, or writes an image directly to the
  * display window.</p>
  * <p>The x and y parameters specify the pixel to change and the c parameter
- * specifies the color value. This can be a p5.COlor object, or [R, G, B, A]
+ * specifies the color value. This can be a p5.Color object, or [R, G, B, A]
  * pixel array. It can also be a single grayscale value.
  * When setting an image, the x and y parameters define the coordinates for
  * the upper-left corner of the image, regardless of the current imageMode().
@@ -19805,12 +21039,12 @@ p5.prototype.loadPixels = function() {
  * </div>
  */
 p5.prototype.set = function (x, y, imgOrCol) {
-  this._graphics.set(x, y, imgOrCol);
+  this._renderer.set(x, y, imgOrCol);
 };
 /**
  * Updates the display window with the data in the pixels[] array.
  * Use in conjunction with loadPixels(). If you're only reading pixels from
- * the array, there's no need to call updatePixels() â€” updating is only
+ * the array, there's no need to call updatePixels() — updating is only
  * necessary to apply changes. updatePixels() should be called anytime the
  * pixels array is manipulated or set() is called.
  *
@@ -19843,12 +21077,12 @@ p5.prototype.set = function (x, y, imgOrCol) {
  * </div>
  */
 p5.prototype.updatePixels = function (x, y, w, h) {
-  this._graphics.updatePixels(x, y, w, h);
+  this._renderer.updatePixels(x, y, w, h);
 };
 
 module.exports = p5;
 
-},{"../color/p5.Color":41,"../core/core":47,"./filters":64}],69:[function(_dereq_,module,exports){
+},{"../color/p5.Color":42,"../core/core":48,"./filters":65}],70:[function(_dereq_,module,exports){
 /**
  * @module IO
  * @submodule Input
@@ -19864,12 +21098,35 @@ var reqwest = _dereq_('reqwest');
 var opentype = _dereq_('opentype.js');
 _dereq_('../core/error_helpers');
 
+/**
+ * Checks if we are in preload and returns the last arg which will be the
+ * _decrementPreload function if called from a loadX() function.  Should
+ * only be used in loadX() functions.
+ * @private
+ */
+p5._getDecrementPreload = function() {
+  var decrementPreload = arguments[arguments.length - 1];
+
+  // when in preload decrementPreload will always be the last arg as it is set
+  // with args.push() before invocation in _wrapPreload
+  if ((window.preload || (this && this.preload)) &&
+    typeof decrementPreload === 'function') {
+    return decrementPreload;
+  } else {
+    return null;
+  }
+};
 
 /**
  * Loads an opentype font file (.otf, .ttf) from a file or a URL,
  * and returns a PFont Object. This method is asynchronous,
  * meaning it may not finish before the next line in your sketch
  * is executed.
+ * <br><br>
+ * The path to the font should be relative to the HTML file
+ * that links in your sketch. Loading an from a URL or other
+ * remote location may be blocked due to your browser's built-in
+ * security.
  *
  * @method loadFont
  * @param  {String}        path       name of the file or url to load
@@ -19896,7 +21153,7 @@ _dereq_('../core/error_helpers');
  * }
  * </code></div>
  *
- * <p>Outside preload(), you may supply a callback function to handle the
+ * <p>Outside of preload(), you may supply a callback function to handle the
  * object:</p>
  *
  * <div><code>
@@ -19912,16 +21169,32 @@ _dereq_('../core/error_helpers');
  *
  * </code></div>
  *
+ * <p>You can also use the string name of the font to style other HTML
+ * elements.</p>
+ *
+ * <div><code>
+ * var myFont;
+ *
+ * function preload() {
+ *   myFont = loadFont('assets/Avenir.otf');
+ * }
+ *
+ * function setup() {
+ *   var myDiv = createDiv('hello there');
+ *   myDiv.style('font-family', 'Avenir');
+ * }
+* </code></div>
  */
 p5.prototype.loadFont = function(path, onSuccess, onError) {
 
   var p5Font = new p5.Font(this);
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
 
   opentype.load(path, function(err, font) {
 
     if (err) {
 
-      if (typeof onError !== 'undefined') {
+      if ((typeof onError !== 'undefined') && (onError !== decrementPreload)) {
         return onError(err);
       }
       throw err;
@@ -19932,6 +21205,23 @@ p5.prototype.loadFont = function(path, onSuccess, onError) {
     if (typeof onSuccess !== 'undefined') {
       onSuccess(p5Font);
     }
+    if (decrementPreload && (onSuccess !== decrementPreload)) {
+      decrementPreload();
+    }
+    /*jshint multistr: true */
+    var exp =/\/[a-zA-Z]*((.ttf)|(.otf)|(.woff)|(.woff2))$/i;
+    if(!exp) {
+      return p5Font;
+    }
+    var i = (exp).exec( path ).index + 1;
+    var fontName = path.substring(i);
+    fontName = fontName.match(/[A-Za-z]*/);
+    var fontFamily = fontName[0];
+    var newStyle = document.createElement('style');
+    newStyle.appendChild(document.createTextNode('\n@font-face {\
+      \nfont-family: '+fontFamily+';\nsrc: url('+path+');\n}\n'));
+    document.head.appendChild(newStyle);
+
   });
 
   return p5Font;
@@ -19962,9 +21252,11 @@ p5.prototype.loadBytes = function() {
  * @method loadJSON
  * @param  {String}        path       name of the file or url to load
  * @param  {Function}      [callback] function to be executed after
- *                                    loadJSON()
- *                                    completes, Array is passed in as first
- *                                    argument
+ *                                    loadJSON() completes, data is passed
+ *                                    in as first argument
+ * @param  {Function}      [errorCallback] function to be executed if
+ *                                    there is an error, response is passed
+ *                                    in as first argument
  * @param  {String}        [datatype] "json" or "jsonp"
  * @return {Object|Array}             JSON data
  * @example
@@ -19975,7 +21267,8 @@ p5.prototype.loadBytes = function() {
  * <div><code>
  * var weather;
  * function preload() {
- *   var url = 'http://api.openweathermap.org/data/2.5/weather?q=London,UK';
+ *   var url = 'http://api.openweathermap.org/data/2.5/weather?q=London,UK'+
+ *    '&APPID=7bbbb47522848e8b9c26ba35c226c734';
  *   weather = loadJSON(url);
  * }
  *
@@ -19992,13 +21285,14 @@ p5.prototype.loadBytes = function() {
  * }
  * </code></div>
  *
- * <p>Outside preload(), you may supply a callback function to handle the
+ *
+ * <p>Outside of preload(), you may supply a callback function to handle the
  * object:</p>
-
  * <div><code>
  * function setup() {
  *   noLoop();
- *   var url = 'http://api.openweathermap.org/data/2.5/weather?q=NewYork,USA';
+ *   var url = 'http://api.openweathermap.org/data/2.5/weather?q=NewYork'+
+ *    '&APPID=7bbbb47522848e8b9c26ba35c226c734';
  *   loadJSON(url, drawWeather);
  * }
  *
@@ -20018,26 +21312,50 @@ p5.prototype.loadBytes = function() {
 p5.prototype.loadJSON = function() {
   var path = arguments[0];
   var callback = arguments[1];
+  var errorCallback;
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
+
   var ret = []; // array needed for preload
   // assume jsonp for URLs
   var t = 'json'; //= path.indexOf('http') === -1 ? 'json' : 'jsonp';
 
   // check for explicit data type argument
-  if (typeof arguments[2] === 'string'){
-    if (arguments[2] === 'jsonp' || arguments[2] === 'json') {
-      t = arguments[2];
+  for (var i=2; i<arguments.length; i++) {
+    var arg = arguments[i];
+    if (typeof arg === 'string'){
+      if (arg === 'jsonp' || arg === 'json') {
+        t = arg;
+      }
+    } else if (typeof arg === 'function') {
+      errorCallback = arg;
     }
   }
 
-  reqwest({url: path, type: t, crossOrigin: true})
-    .then(function(resp) {
+  reqwest({
+    url: path,
+    type: t,
+    crossOrigin: true,
+    error: function (resp) {
+      // pass to error callback if defined
+      if (errorCallback) {
+        errorCallback(resp);
+      } else { // otherwise log error msg
+        console.log(resp.statusText);
+      }
+    },
+    success: function(resp) {
       for (var k in resp) {
         ret[k] = resp[k];
       }
       if (typeof callback !== 'undefined') {
         callback(resp);
       }
-    });
+      if (decrementPreload && (callback !== decrementPreload)) {
+        decrementPreload();
+      }
+    }
+  });
+
   return ret;
 };
 
@@ -20059,6 +21377,9 @@ p5.prototype.loadJSON = function() {
  * @param  {Function} [callback] function to be executed after loadStrings()
  *                               completes, Array is passed in as first
  *                               argument
+ * @param  {Function} [errorCallback] function to be executed if
+ *                               there is an error, response is passed
+ *                               in as first argument
  * @return {Array}               Array of Strings
  * @example
  *
@@ -20078,7 +21399,7 @@ p5.prototype.loadJSON = function() {
  * }
  * </code></div>
  *
- * <p>Outside preload(), you may supply a callback function to handle the
+ * <p>Outside of preload(), you may supply a callback function to handle the
  * object:</p>
  *
  * <div><code>
@@ -20093,22 +21414,41 @@ p5.prototype.loadJSON = function() {
  * }
  * </code></div>
  */
-p5.prototype.loadStrings = function (path, callback) {
+p5.prototype.loadStrings = function (path, callback, errorCallback) {
   var ret = [];
   var req = new XMLHttpRequest();
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
+
+  req.addEventListener('error', function (resp) {
+    if (errorCallback) {
+      errorCallback(resp);
+    } else {
+      console.log(resp.responseText);
+    }
+  });
+
   req.open('GET', path, true);
   req.onreadystatechange = function () {
-    if (req.readyState === 4 && (req.status === 200 )) {
-      var arr = req.responseText.match(/[^\r\n]+/g);
-      for (var k in arr) {
-        ret[k] = arr[k];
+    if (req.readyState === 4) {
+      if (req.status === 200) {
+        var arr = req.responseText.match(/[^\r\n]+/g);
+        for (var k in arr) {
+          ret[k] = arr[k];
+        }
+        if (typeof callback !== 'undefined') {
+          callback(ret);
+        }
+        if (decrementPreload && (callback !== decrementPreload)) {
+          decrementPreload();
+        }
+      } else {
+        if (errorCallback) {
+          errorCallback(req);
+        } else {
+          console.log(req.statusText);
+        }
+        //p5._friendlyFileLoadError(3, path);
       }
-      if (typeof callback !== 'undefined') {
-        callback(ret);
-      }
-    }
-    else{
-      p5._friendlyFileLoadError(3,path);
     }
   };
   req.send(null);
@@ -20144,7 +21484,8 @@ p5.prototype.loadStrings = function (path, callback) {
  * <p>This method is asynchronous, meaning it may not finish before the next
  * line in your sketch is executed. Calling loadTable() inside preload()
  * guarantees to complete the operation before setup() and draw() are called.
- * Outside preload(), you may supply a callback function to handle the object.
+ * <p>Outside of preload(), you may supply a callback function to handle the
+ * object:</p>
  * </p>
  *
  * @method loadTable
@@ -20200,8 +21541,11 @@ p5.prototype.loadTable = function (path) {
   var header = false;
   var sep = ',';
   var separatorSet = false;
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
+
   for (var i = 1; i < arguments.length; i++) {
-    if (typeof(arguments[i]) === 'function' ){
+    if ((typeof(arguments[i]) === 'function') &&
+      (arguments[i] !== decrementPreload)) {
       callback = arguments[i];
     }
     else if (typeof(arguments[i]) === 'string') {
@@ -20366,10 +21710,15 @@ p5.prototype.loadTable = function (path) {
       if (callback !== null) {
         callback(t);
       }
+      if (decrementPreload && (callback !== decrementPreload)) {
+        decrementPreload();
+      }
     })
     .fail(function(err,msg){
       p5._friendlyFileLoadError(2,path);
-      if (typeof callback !== 'undefined') {
+      // don't get error callback mixed up with decrementPreload
+      if ((typeof callback !== 'undefined') &&
+        (callback !== decrementPreload)) {
         callback(false);
       }
     });
@@ -20407,32 +21756,48 @@ function makeObject(row, headers) {
  * This method is asynchronous, meaning it may not finish before the next
  * line in your sketch is executed. Calling loadXML() inside preload()
  * guarantees to complete the operation before setup() and draw() are called.
- * Outside preload(), you may supply a callback function to handle the object.
+ *
+ * <p>Outside of preload(), you may supply a callback function to handle the
+ * object:</p>
  *
  * @method loadXML
  * @param  {String}   filename   name of the file or URL to load
  * @param  {Function} [callback] function to be executed after loadXML()
  *                               completes, XML object is passed in as
  *                               first argument
+ * @param  {Function} [errorCallback] function to be executed if
+ *                               there is an error, response is passed
+ *                               in as first argument
  * @return {Object}              XML object containing data
  */
-p5.prototype.loadXML = function(path, callback) {
+p5.prototype.loadXML = function(path, callback, errorCallback) {
   var ret = document.implementation.createDocument(null, null);
+  var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
+
   reqwest({
     url: path,
     type: 'xml',
     crossOrigin: true,
-    error: function(err){
-      p5._friendlyFileLoadError(1,path);
+    error: function(resp){
+      // pass to error callback if defined
+      if (errorCallback) {
+        errorCallback(resp);
+      } else { // otherwise log error msg
+        console.log(resp.statusText);
+      }
+      //p5._friendlyFileLoadError(1,path);
     }
   })
-    .then(function(resp){
-      var x = resp.documentElement;
-      ret.appendChild(x);
-      if (typeof callback !== 'undefined') {
-        callback(resp);
-      }
-    });
+  .then(function(resp){
+    var x = resp.documentElement;
+    ret.appendChild(x);
+    if (typeof callback !== 'undefined') {
+      callback(ret);
+    }
+    if (decrementPreload && (callback !== decrementPreload)) {
+      decrementPreload();
+    }
+  });
   return ret;
 };
 
@@ -20471,6 +21836,9 @@ p5.prototype.selectInput = function() {
  * @param  {Function}      [callback] function to be executed after
  *                                    httpGet() completes, data is passed in
  *                                    as first argument
+ * @param  {Function}      [errorCallback] function to be executed if
+ *                                    there is an error, response is passed
+ *                                    in as first argument
  */
 p5.prototype.httpGet = function () {
   var args = Array.prototype.slice.call(arguments);
@@ -20490,6 +21858,9 @@ p5.prototype.httpGet = function () {
  * @param  {Function}      [callback] function to be executed after
  *                                    httpGet() completes, data is passed in
  *                                    as first argument
+ * @param  {Function}      [errorCallback] function to be executed if
+ *                                    there is an error, response is passed
+ *                                    in as first argument
  */
 p5.prototype.httpPost = function () {
   var args = Array.prototype.slice.call(arguments);
@@ -20499,7 +21870,11 @@ p5.prototype.httpPost = function () {
 
 /**
  * Method for executing an HTTP request. If data type is not specified,
- * p5 will try to guess based on the URL, defaulting to text.
+ * p5 will try to guess based on the URL, defaulting to text.<br><br>
+ * You may also pass a single object specifying all parameters for the
+ * request following the examples inside the reqwest() calls here:
+ * <a href='https://github.com/ded/reqwest#api'
+ * >https://github.com/ded/reqwest#api</a>
  *
  * @method httpDo
  * @param  {String}        path       name of the file or url to load
@@ -20510,56 +21885,75 @@ p5.prototype.httpPost = function () {
  * @param  {Function}      [callback] function to be executed after
  *                                    httpGet() completes, data is passed in
  *                                    as first argument
+ * @param  {Function}      [errorCallback] function to be executed if
+ *                                    there is an error, response is passed
+ *                                    in as first argument
  */
 p5.prototype.httpDo = function() {
-  var method = 'GET';
-  var path = arguments[0];
-  var data = {};
-  var type = '';
-  var callback;
+  if (typeof arguments[0] === 'object') {
+    reqwest(arguments[0]);
+  } else {
+    var method = 'GET';
+    var path = arguments[0];
+    var data = {};
+    var type = '';
+    var callback;
+    var errorCallback;
 
-  for (var i=1; i<arguments.length; i++) {
-    var a = arguments[i];
-    if (typeof a === 'string') {
-      if (a === 'GET' || a === 'POST' || a === 'PUT') {
-        method = a;
-      } else {
-        type = a;
-      }
-    } else if (typeof a === 'object') {
-      data = a;
-    } else if (typeof a === 'function') {
-      callback = a;
-    }
-  }
-
-  // do some sort of smart type checking
-  if (type === '') {
-    if (path.indexOf('json') !== -1) {
-      type = 'json';
-    } else if (path.indexOf('xml') !== -1) {
-      type = 'xml';
-    } else {
-      type = 'text';
-    }
-  }
-
-  reqwest({
-    url: path,
-    method: method,
-    data: data,
-    type: type,
-    crossOrigin: true,
-    success: function (resp) {
-      if (typeof callback !== 'undefined') {
-        if (type === 'text') {
-          callback(resp.response);
+    for (var i=1; i<arguments.length; i++) {
+      var a = arguments[i];
+      if (typeof a === 'string') {
+        if (a === 'GET' || a === 'POST' || a === 'PUT') {
+          method = a;
         } else {
-          callback(resp);
+          type = a;
+        }
+      } else if (typeof a === 'object') {
+        data = a;
+      } else if (typeof a === 'function') {
+        if (!callback) {
+          callback = a;
+        } else {
+          errorCallback = a;
         }
       }
     }
-  });
+
+    // do some sort of smart type checking
+    if (type === '') {
+      if (path.indexOf('json') !== -1) {
+        type = 'json';
+      } else if (path.indexOf('xml') !== -1) {
+        type = 'xml';
+      } else {
+        type = 'text';
+      }
+    }
+
+    reqwest({
+      url: path,
+      method: method,
+      data: data,
+      type: type,
+      crossOrigin: true,
+      success: function(resp) {
+        if (typeof callback !== 'undefined') {
+          if (type === 'text') {
+            callback(resp.response);
+          } else {
+            callback(resp);
+          }
+        }
+      },
+      error: function(resp) {
+        if (errorCallback) {
+          errorCallback(resp);
+        } else {
+          console.log(resp.statusText);
+        }
+      }
+    });
+  }
 };
 
 
@@ -20861,7 +22255,7 @@ p5.prototype.saveStream = function() {
 p5.prototype.saveStrings = function(list, filename, extension) {
   var ext = extension || 'txt';
   var pWriter = this.createWriter(filename, ext);
-  for (var i in list) {
+  for (var i = 0; i < list.length; i++) {
     if (i < list.length - 1) {
       pWriter.println(list[i]);
     } else {
@@ -21127,7 +22521,7 @@ function destroyClickedElement(event) {
 
 module.exports = p5;
 
-},{"../core/core":47,"../core/error_helpers":50,"opentype.js":8,"reqwest":27}],70:[function(_dereq_,module,exports){
+},{"../core/core":48,"../core/error_helpers":51,"opentype.js":8,"reqwest":27}],71:[function(_dereq_,module,exports){
 /**
  * @module IO
  * @submodule Table
@@ -21967,7 +23361,7 @@ p5.Table.prototype.set = function(row, column, value) {
     * </div>
  */
 p5.Table.prototype.setNum = function(row, column, value){
-  this.rows[row].set(column, value);
+  this.rows[row].setNum(column, value);
 };
 
 
@@ -21983,7 +23377,7 @@ p5.Table.prototype.setNum = function(row, column, value){
  * @param {String} value  value to assign
  */
 p5.Table.prototype.setString = function(row, column, value){
-  this.rows[row].set(column, value);
+  this.rows[row].setString(column, value);
 };
 
 /**
@@ -22191,7 +23585,7 @@ p5.Table.prototype.getArray = function () {
 
 module.exports = p5.Table;
 
-},{"../core/core":47}],71:[function(_dereq_,module,exports){
+},{"../core/core":48}],72:[function(_dereq_,module,exports){
 /**
  * @module IO
  * @submodule Table
@@ -22361,7 +23755,7 @@ p5.TableRow.prototype.getString = function(column) {
 
 module.exports = p5.TableRow;
 
-},{"../core/core":47}],72:[function(_dereq_,module,exports){
+},{"../core/core":48}],73:[function(_dereq_,module,exports){
 /**
  * @module Math
  * @submodule Calculation
@@ -22389,7 +23783,7 @@ var p5 = _dereq_('../core/core');
  *   print(x); // -3
  *   print(y); // 3
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.abs = Math.abs;
 
@@ -22425,7 +23819,7 @@ p5.prototype.abs = Math.abs;
  *   text(nfc(ax, 2,2), ax, ay - 5);
  *   text(nfc(bx,1,1), bx, by - 5);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.ceil = Math.ceil;
 
@@ -22463,7 +23857,7 @@ p5.prototype.ceil = Math.ceil;
  *   fill(0);
  *   ellipse(xc, 66, 9,9); // Constrained
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.constrain = function(n, low, high) {
   return Math.max(Math.min(n, high), low);
@@ -22475,8 +23869,10 @@ p5.prototype.constrain = function(n, low, high) {
  * @method dist
  * @param  {Number} x1 x-coordinate of the first point
  * @param  {Number} y1 y-coordinate of the first point
+ * @param  {Number} [z1] z-coordinate of the first point
  * @param  {Number} x2 x-coordinate of the second point
  * @param  {Number} y2 y-coordinate of the second point
+ * @param  {Number} [z2] z-coordinate of the second point
  * @return {Number}    distance between the two points
  * @example
  * <div><code>
@@ -22507,10 +23903,15 @@ p5.prototype.constrain = function(n, low, high) {
  *   pop();
  *   // Fancy!
  * }
- * </div></code>
+ * </code></div>
  */
-p5.prototype.dist = function(x1, y1, x2, y2) {
-  return Math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
+p5.prototype.dist = function(x1, y1, z1, x2, y2, z2) {
+  if (arguments.length === 4) {
+    // In the case of 2d: z1 means x2 and x2 means y2
+    return Math.sqrt( (z1-x1)*(z1-x1) + (x2-y1)*(x2-y1) );
+  } else if (arguments.length === 6) {
+    return Math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1) );
+  }
 };
 
 /**
@@ -22555,7 +23956,7 @@ p5.prototype.dist = function(x1, y1, x2, y2) {
  *   line(0, 0, 0, height);
  *   line(0, height-1, width, height-1);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.exp = Math.exp;
 
@@ -22590,7 +23991,7 @@ p5.prototype.exp = Math.exp;
  *   text(nfc(ax, 2,2), ax, ay - 5);
  *   text(nfc(bx,1,1), bx, by - 5);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.floor = Math.floor;
 
@@ -22628,7 +24029,7 @@ p5.prototype.floor = Math.floor;
  *   point(d, y);
  *   point(e, y);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.lerp = function(start, stop, amt) {
   return amt*(stop-start)+start;
@@ -22670,7 +24071,7 @@ p5.prototype.lerp = function(start, stop, amt) {
  *   noFill();
  *   stroke(0);
  *   beginShape();
- *   for(var x=0; x<width; x++) {
+ *   for(var x=0; x < width; x++) {
  *     xValue = map(x, 0, width, 0, maxX);
  *     yValue = log(xValue);
  *     y = map(yValue, -maxY, maxY, height, 0);
@@ -22680,7 +24081,7 @@ p5.prototype.lerp = function(start, stop, amt) {
  *   line(0,0,0,height);
  *   line(0,height/2,width, height/2);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.log = Math.log;
 
@@ -22712,7 +24113,7 @@ p5.prototype.log = Math.log;
  *   line(0, 0, x2, y2);
  *   print(mag(x2, y2));  // Prints "106.30146"
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.mag = function(x, y) {
   return Math.sqrt(x*x+y*y);
@@ -22752,7 +24153,7 @@ p5.prototype.mag = function(x, y) {
  *       var x2 = map(mouseX, 0, width, 0, 200);
  *       ellipse(x2, 125, 50, 50);
  *     }
- *   </div></code>
+ *   </code></div>
  */
 p5.prototype.map = function(n, start1, stop1, start2, stop2) {
   return ((n-start1)/(stop1-start1))*(stop2-start2)+start2;
@@ -22787,7 +24188,7 @@ p5.prototype.map = function(n, start1, stop1, start2, stop2) {
  *   textSize(32);
  *   text(max(numArray), maxX, maxY);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.max = function() {
   if (arguments[0] instanceof Array) {
@@ -22826,7 +24227,7 @@ p5.prototype.max = function() {
  *   textSize(32);
  *   text(min(numArray), maxX, maxY);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.min = function() {
   if (arguments[0] instanceof Array) {
@@ -22878,7 +24279,7 @@ p5.prototype.min = function() {
  *   normalX = 20;
  *   text(normalized, normalX, normalY);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.norm = function(n, start, stop) {
   return this.map(n, start, stop, 0, 1);
@@ -22910,7 +24311,7 @@ p5.prototype.norm = function(n, start, stop) {
  *
  *   ellipse(eLoc*8, eLoc*8, pow(eSize, 4), pow(eSize, 4));
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.pow = Math.pow;
 
@@ -22945,7 +24346,7 @@ p5.prototype.pow = Math.pow;
  *   text(nfc(ax, 2,2), ax, ay - 5);
  *   text(nfc(bx,1,1), bx, by - 5);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.round = Math.round;
 
@@ -22985,7 +24386,7 @@ p5.prototype.round = Math.round;
  *   text("x = " + x1, 0, y1 + spacing);
  *   text("sqrt(x) = " + x2, 0, y2 + spacing);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.sq = function(n) { return n*n; };
 
@@ -23027,13 +24428,13 @@ p5.prototype.sq = function(n) { return n*n; };
  *   text("x = " + x1, 0, y1 + spacing);
  *   text("sqrt(x) = " + x2, 0, y2 + spacing);
  * }
- * </div></code>
+ * </code></div>
  */
 p5.prototype.sqrt = Math.sqrt;
 
 module.exports = p5;
 
-},{"../core/core":47}],73:[function(_dereq_,module,exports){
+},{"../core/core":48}],74:[function(_dereq_,module,exports){
 /**
  * @module Math
  * @submodule Math
@@ -23067,7 +24468,7 @@ p5.prototype.createVector = function (x, y, z) {
 
 module.exports = p5;
 
-},{"../core/core":47}],74:[function(_dereq_,module,exports){
+},{"../core/core":48}],75:[function(_dereq_,module,exports){
 //////////////////////////////////////////////////////////////
 
 // http://mrl.nyu.edu/~perlin/noise/
@@ -23354,7 +24755,7 @@ p5.prototype.noiseSeed = function(seed) {
 
 module.exports = p5;
 
-},{"../core/core":47}],75:[function(_dereq_,module,exports){
+},{"../core/core":48}],76:[function(_dereq_,module,exports){
 /**
  * @module Math
  * @submodule Math
@@ -24392,7 +25793,7 @@ p5.Vector.angleBetween = function (v1, v2) {
 
 module.exports = p5.Vector;
 
-},{"../core/constants":46,"../core/core":47,"./polargeometry":76}],76:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"./polargeometry":77}],77:[function(_dereq_,module,exports){
 
 module.exports = {
 
@@ -24406,7 +25807,7 @@ module.exports = {
 
 };
 
-},{}],77:[function(_dereq_,module,exports){
+},{}],78:[function(_dereq_,module,exports){
 /**
  * @module Math
  * @submodule Random
@@ -24621,7 +26022,7 @@ p5.prototype.randomGaussian = function(mean, sd)  {
 
 module.exports = p5;
 
-},{"../core/core":47}],78:[function(_dereq_,module,exports){
+},{"../core/core":48}],79:[function(_dereq_,module,exports){
 /**
  * @module Math
  * @submodule Trigonometry
@@ -24649,7 +26050,7 @@ p5.prototype._angleMode = constants.RADIANS;
  * @return {Number}       the arc cosine of the given value
  *
  * @example
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI;
  * var c = cos(a);
@@ -24659,7 +26060,7 @@ p5.prototype._angleMode = constants.RADIANS;
  * </code>
  * </div>
  *
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI + PI/4.0;
  * var c = cos(a);
@@ -24687,7 +26088,7 @@ p5.prototype.acos = function(ratio) {
  * @return {Number}       the arc sine of the given value
  *
  * @example
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI + PI/3;
  * var s = sin(a);
@@ -24697,7 +26098,7 @@ p5.prototype.acos = function(ratio) {
  * </code>
  * </div>
  *
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI + PI/3.0;
  * var s = sin(a);
@@ -24726,7 +26127,7 @@ p5.prototype.asin = function(ratio) {
  * @return {Number}       the arc tangent of the given value
  *
  * @example
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI + PI/3;
  * var t = tan(a);
@@ -24736,7 +26137,7 @@ p5.prototype.asin = function(ratio) {
  * </code>
  * </div>
  *
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var a = PI + PI/3.0;
  * var t = tan(a);
@@ -24879,7 +26280,7 @@ p5.prototype.tan = function(angle) {
  * Converts a radian measurement to its corresponding value in degrees.
  * Radians and degrees are two ways of measuring the same thing. There are
  * 360 degrees in a circle and 2*PI radians in a circle. For example,
- * 90Â° = PI/2 = 1.5707964.
+ * 90° = PI/2 = 1.5707964.
  *
  * @method degrees
  * @param  {Number} radians the radians value to convert to degrees
@@ -24887,7 +26288,7 @@ p5.prototype.tan = function(angle) {
  *
  *
  * @example
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var rad = PI/4;
  * var deg = degrees(rad);
@@ -24905,14 +26306,14 @@ p5.prototype.degrees = function(angle) {
  * Converts a degree measurement to its corresponding value in radians.
  * Radians and degrees are two ways of measuring the same thing. There are
  * 360 degrees in a circle and 2*PI radians in a circle. For example,
- * 90Â° = PI/2 = 1.5707964.
+ * 90° = PI/2 = 1.5707964.
  *
  * @method radians
  * @param  {Number} degrees the degree value to convert to radians
  * @return {Number}         the converted angle
  *
  * @example
- * <div class= â€œnorender">
+ * <div class= “norender">
  * <code>
  * var deg = 45.0;
  * var rad = radians(deg);
@@ -24959,7 +26360,7 @@ p5.prototype.angleMode = function(mode) {
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47,"./polargeometry":76}],79:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"./polargeometry":77}],80:[function(_dereq_,module,exports){
 /**
  * @module Typography
  * @submodule Attributes
@@ -24971,24 +26372,16 @@ module.exports = p5;
 'use strict';
 
 var p5 = _dereq_('../core/core');
-var constants = _dereq_('../core/constants');
-
-p5.prototype._textSize = 12;
-p5.prototype._textLeading = 15;
-p5.prototype._textFont = 'sans-serif';
-p5.prototype._textStyle = constants.NORMAL;
-p5.prototype._textAscent = null;
-p5.prototype._textDescent = null;
 
 /**
  * Sets the current alignment for drawing text. The parameters LEFT, CENTER,
- * and RIGHT set the display characteristics of the letters in relation to
- * the values for the x and y parameters of the text() function.
+ * and RIGHT set the alignment of text in relation to the values for
+ * the x and y parameters of the text() function.
  *
  * @method textAlign
- * @param {Number/Constant} h horizontal alignment, either LEFT,
+ * @param {Number/Constant} horizAlign horizontal alignment, either LEFT,
  *                            CENTER, or RIGHT
- * @param {Number/Constant} v vertical alignment, either TOP,
+ * @param {Number/Constant} vertAlign vertical alignment, either TOP,
  *                            BOTTOM, CENTER, or BASELINE
  * @return {Number}
  * @example
@@ -25004,17 +26397,16 @@ p5.prototype._textDescent = null;
  * </code>
  * </div>
  */
-p5.prototype.textAlign = function(h, v) {
-
-  return this._graphics.textAlign(h,v);
+p5.prototype.textAlign = function(horizAlign, vertAlign) {
+  return this._renderer.textAlign.apply(this._renderer, arguments);
 };
 
 /**
- * Sets/gets the spacing between lines of text in units of pixels. This
+ * Sets/gets the spacing, in pixels, between lines of text. This
  * setting will be used in all subsequent calls to the text() function.
  *
  * @method textLeading
- * @param {Number} l the size in pixels for spacing between lines
+ * @param {Number} leading the size in pixels for spacing between lines
  * @return {Object|Number}
  * @example
  * <div>
@@ -25022,7 +26414,6 @@ p5.prototype.textAlign = function(h, v) {
  * // Text to display. The "\n" is a "new line" character
  * lines = "L1\nL2\nL3";
  * textSize(12);
- * fill(0);  // Set fill to black
  *
  * textLeading(10);  // Set leading to 10
  * text(lines, 10, 25);
@@ -25035,23 +26426,16 @@ p5.prototype.textAlign = function(h, v) {
  * </code>
  * </div>
  */
-p5.prototype.textLeading = function(l) {
-
-  if (arguments.length) {
-
-    this._setProperty('_textLeading', l);
-    return this;
-  }
-
-  return this._textLeading;
+p5.prototype.textLeading = function(theLeading) {
+  return this._renderer.textLeading.apply(this._renderer, arguments);
 };
 
 /**
  * Sets/gets the current font size. This size will be used in all subsequent
- * calls to the text() function. Font size is measured in units of pixels.
+ * calls to the text() function. Font size is measured in pixels.
  *
  * @method textSize
- * @param {Number} s the size of the letters in units of pixels
+ * @param {Number} theSize the size of the letters in units of pixels
  * @return {Object|Number}
  * @example
  * <div>
@@ -25065,32 +26449,22 @@ p5.prototype.textLeading = function(l) {
  * </code>
  * </div>
  */
-p5.prototype.textSize = function(s) {
-
-  if (arguments.length) {
-
-    this._setProperty('_textSize', s);
-    this._setProperty('_textLeading', s * constants._DEFAULT_LEADMULT);
-    return this._graphics._applyTextProperties();
-  }
-
-  return this._textSize;
+p5.prototype.textSize = function(theSize) {
+  return this._renderer.textSize.apply(this._renderer, arguments);
 };
 
 /**
- * Sets/gets the style of the text to NORMAL, ITALIC, or BOLD. Note this is
- * overridden by CSS styling.
- * (Style only apply to system font, for custom fonts, please load styled
- * fonts instead.)
+ * Sets/gets the style of the text for system fonts to NORMAL, ITALIC, or BOLD.
+ * Note: this may be is overridden by CSS styling. For non-system fonts
+ * (opentype, truetype, etc.) please load styled fonts instead.
  *
  * @method textStyle
- * @param {Number/Constant} s styling for text, either NORMAL,
+ * @param {Number/Constant} theStyle styling for text, either NORMAL,
  *                            ITALIC, or BOLD
  * @return {Object|String}
  * @example
  * <div>
  * <code>
- * fill(0);
  * strokeWeight(0);
  * textSize(12);
  * textStyle(NORMAL);
@@ -25102,52 +26476,42 @@ p5.prototype.textSize = function(s) {
  * </code>
  * </div>
  */
-p5.prototype.textStyle = function(s) {
-
-  if (arguments.length) {
-
-    if (s === constants.NORMAL ||
-      s === constants.ITALIC ||
-      s === constants.BOLD) {
-      this._setProperty('_textStyle', s);
-    }
-
-    return this._graphics._applyTextProperties();
-  }
-
-  return this._textStyle;
+p5.prototype.textStyle = function(theStyle) {
+  return this._renderer.textStyle.apply(this._renderer, arguments);
 };
 
 /**
  * Calculates and returns the width of any character or text string.
  *
  * @method textWidth
- * @param {String} s the String of characters to measure
+ * @param {String} theText the String of characters to measure
  * @return {Number}
  * @example
  * <div>
  * <code>
  * textSize(28);
  *
- * var c = 'P';
- * var cw = textWidth(c);
- * text(c, 0, 40);
- * line(cw, 0, cw, 50);
+ * var aChar = 'P';
+ * var cWidth = textWidth(aChar);
+ * text(aChar, 0, 40);
+ * line(cWidth, 0, cWidth, 50);
  *
- * var s = "p5.js";
- * var sw = textWidth(s);
- * text(s, 0, 85);
- * line(sw, 50, sw, 100);
+ * var aString = "p5.js";
+ * var sWidth = textWidth(aString);
+ * text(aString, 0, 85);
+ * line(sWidth, 50, sWidth, 100);
  * </code>
  * </div>
  */
-p5.prototype.textWidth = function(s) {
-
-  return this._graphics.textWidth(s);
+p5.prototype.textWidth = function(theText) {
+  return this._renderer.textWidth.apply(this._renderer, arguments);
 };
 
 /**
- * Returns ascent of the current font at its current size.
+ * Returns the ascent of the current font at its current size. The ascent
+ * represents the distance, in pixels, of the tallest character above
+ * the baseline.
+ *
  * @return {Number}
  * @example
  * <div>
@@ -25156,59 +26520,26 @@ p5.prototype.textWidth = function(s) {
  * var scalar = 0.8; // Different for each font
  *
  * textSize(32);  // Set initial text size
- * var a = textAscent() * scalar;  // Calc ascent
- * line(0, base-a, width, base-a);
+ * var asc = textAscent() * scalar;  // Calc ascent
+ * line(0, base - asc, width, base - asc);
  * text("dp", 0, base);  // Draw text on baseline
  *
  * textSize(64);  // Increase text size
- * a = textAscent() * scalar;  // Recalc ascent
- * line(40, base-a, width, base-a);
+ * asc = textAscent() * scalar;  // Recalc ascent
+ * line(40, base - asc, width, base - asc);
  * text("dp", 40, base);  // Draw text on baseline
  * </code>
  * </div>
  */
 p5.prototype.textAscent = function() {
-  if (this._textAscent === null) {
-    this._updateTextMetrics();
-  }
-  return this._textAscent;
+  return this._renderer.textAscent();
 };
 
-/*p5.prototype.fontMetrics = function(font, text, x, y, fontSize) {
-
-  var xMins = [], yMins = [], xMaxs= [], yMaxs = [], p5 = this;
-  //font = font || this._textFont;
-  fontSize = fontSize || p5._textSize;
-
-  font.forEachGlyph(text, x, y, fontSize,
-    {}, function(glyph, gX, gY, gFontSize) {
-
-      var gm = glyph.getMetrics();
-
-      gX = gX !== undefined ? gX : 0;
-      gY = gY !== undefined ? gY : 0;
-      fontSize = fontSize !== undefined ? fontSize : 24;
-
-      var scale = 1 / font.unitsPerEm * fontSize;
-
-      p5.noFill();
-      p5.rectMode(p5.CORNERS);
-      p5.rect(gX + (gm.xMin * scale), gY + (-gm.yMin * scale),
-              gX + (gm.xMax * scale), gY + (-gm.yMax * scale));
-
-      p5.rectMode(p5.CORNER);
-  });
-
-  return { // metrics
-      xMin: Math.min.apply(null, xMins),
-      yMin: Math.min.apply(null, yMins),
-      xMax: Math.max.apply(null, xMaxs),
-      yMax: Math.max.apply(null, yMaxs)
-  };
-};*/
-
 /**
- * Returns descent of the current font at its current size.
+ * Returns the descent of the current font at its current size. The descent
+ * represents the distance, in pixels, of the character with the longest
+ * descender below the baseline.
+ *
  * @return {Number}
  * @example
  * <div>
@@ -25217,106 +26548,31 @@ p5.prototype.textAscent = function() {
  * var scalar = 0.8; // Different for each font
  *
  * textSize(32);  // Set initial text size
- * var a = textDescent() * scalar;  // Calc ascent
- * line(0, base+a, width, base+a);
+ * var desc = textDescent() * scalar;  // Calc ascent
+ * line(0, base+desc, width, base+desc);
  * text("dp", 0, base);  // Draw text on baseline
  *
  * textSize(64);  // Increase text size
- * a = textDescent() * scalar;  // Recalc ascent
- * line(40, base+a, width, base+a);
+ * desc = textDescent() * scalar;  // Recalc ascent
+ * line(40, base + desc, width, base + desc);
  * text("dp", 40, base);  // Draw text on baseline
  * </code>
  * </div>
  */
 p5.prototype.textDescent = function() {
-
-  if (this._textDescent === null) {
-    this._updateTextMetrics();
-  }
-  return this._textDescent;
+  return this._renderer.textDescent();
 };
 
 /**
- * Helper fxn to check font type (system or otf)
- */
-p5.prototype._isOpenType = function(f) {
-
-  f = f || this._textFont;
-  return (typeof f === 'object' && f.font && f.font.supported);
-};
-
-/**
- * Helper fxn to measure ascent and descent.
+ * Helper function to measure ascent and descent.
  */
 p5.prototype._updateTextMetrics = function() {
-
-  if (this._isOpenType()) {
-
-    this._setProperty('_textAscent', this._textFont._textAscent());
-    this._setProperty('_textDescent', this._textFont._textDescent());
-    return this;
-  }
-
-  // Adapted from http://stackoverflow.com/a/25355178
-  var text = document.createElement('span');
-  text.style.fontFamily = this._textFont;
-  text.style.fontSize = this._textSize + 'px';
-  text.innerHTML = 'ABCjgq|';
-
-  var block = document.createElement('div');
-  block.style.display = 'inline-block';
-  block.style.width = '1px';
-  block.style.height = '0px';
-
-  var container = document.createElement('div');
-  container.appendChild(text);
-  container.appendChild(block);
-
-  container.style.height = '0px';
-  container.style.overflow = 'hidden';
-  document.body.appendChild(container);
-
-  block.style.verticalAlign = 'baseline';
-  var blockOffset = this._calculateOffset(block);
-  var textOffset = this._calculateOffset(text);
-  var ascent = blockOffset[1] - textOffset[1];
-
-  block.style.verticalAlign = 'bottom';
-  blockOffset = this._calculateOffset(block);
-  textOffset = this._calculateOffset(text);
-  var height = blockOffset[1] - textOffset[1];
-  var descent = height - ascent;
-
-  document.body.removeChild(container);
-
-  this._setProperty('_textAscent', ascent);
-  this._setProperty('_textDescent', descent);
-
-  return this;
-};
-
-/**
- * Helper fxn to measure ascent and descent.
- * Adapted from http://stackoverflow.com/a/25355178
- */
-p5.prototype._calculateOffset = function(object) {
-  var currentLeft = 0,
-    currentTop = 0;
-  if (object.offsetParent) {
-    do {
-      currentLeft += object.offsetLeft;
-      currentTop += object.offsetTop;
-    } while (object = object.offsetParent);
-  } else {
-    currentLeft += object.offsetLeft;
-    currentTop += object.offsetTop;
-  }
-  return [currentLeft, currentTop];
+  return this._renderer._updateTextMetrics();
 };
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47}],80:[function(_dereq_,module,exports){
+},{"../core/core":48}],81:[function(_dereq_,module,exports){
 /**
  * @module Typography
  * @submodule Loading & Displaying
@@ -25379,18 +26635,21 @@ _dereq_('../core/error_helpers');
  * </div>
  */
 p5.prototype.text = function(str, x, y, maxWidth, maxHeight) {
-
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
   this._validateParameters(
     'text',
-    arguments,
+    args,
     [
       ['*', 'Number', 'Number'],
       ['*', 'Number', 'Number', 'Number', 'Number']
     ]
   );
 
-  return (!(this._doFill || this._doStroke)) ? this :
-    this._graphics.text.apply(this._graphics, arguments);
+  return (!(this._renderer._doFill || this._renderer._doStroke)) ? this :
+    this._renderer.text.apply(this._renderer, arguments);
 };
 
 /**
@@ -25441,16 +26700,16 @@ p5.prototype.textFont = function(theFont, theSize) {
       throw Error('null font passed to textFont');
     }
 
-    this._setProperty('_textFont', theFont);
+    this._renderer._setProperty('_textFont', theFont);
 
     if (theSize) {
 
-      this._setProperty('_textSize', theSize);
-      this._setProperty('_textLeading',
+      this._renderer._setProperty('_textSize', theSize);
+      this._renderer._setProperty('_textLeading',
         theSize * constants._DEFAULT_LEADMULT);
     }
 
-    return this._graphics._applyTextProperties();
+    return this._renderer._applyTextProperties();
   }
 
   return this;
@@ -25458,7 +26717,7 @@ p5.prototype.textFont = function(theFont, theSize) {
 
 module.exports = p5;
 
-},{"../core/constants":46,"../core/core":47,"../core/error_helpers":50}],81:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48,"../core/error_helpers":51}],82:[function(_dereq_,module,exports){
 /**
  * This module defines the p5.Font class and functions for
  * drawing text to the display canvas.
@@ -25556,7 +26815,7 @@ p5.Font.prototype.textBounds = function(str, x, y, fontSize, options) {
 
   x = x !== undefined ? x : 0;
   y = y !== undefined ? y : 0;
-  fontSize = fontSize || this.parent._textSize;
+  fontSize = fontSize || this.parent._renderer._textSize;
 
   var result = this.cache[cacheKey('textBounds', str, x, y, fontSize)];
   if (!result) {
@@ -25570,15 +26829,15 @@ p5.Font.prototype.textBounds = function(str, x, y, fontSize, options) {
         xCoords.push(gX);
         yCoords.push(gY);
 
-        if (glyph.name !== 'space') {
+        var gm = glyph.getMetrics();
 
-          var gm = glyph.getMetrics();
+        if (glyph.name !== 'space') {
 
           xCoords.push(gX + (gm.xMax * scale));
           yCoords.push(gY + (-gm.yMin * scale));
           yCoords.push(gY + (-gm.yMax * scale));
 
-        } else {
+        } else { // NOTE: deals with broken metrics for spaces in opentype.js
 
           xCoords.push(gX + self.font.charToGlyph(' ').advanceWidth *
             self._scale(fontSize));
@@ -25634,10 +26893,10 @@ p5.Font.prototype._getGlyphs = function(str) {
 p5.Font.prototype._getPath = function(line, x, y, options) {
 
   var p = this.parent,
-    ctx = p._graphics.drawingContext,
+    ctx = p._renderer.drawingContext,
     pos = this._handleAlignment(p, ctx, line, x, y);
 
-  return this.font.getPath(line, pos.x, pos.y, p._textSize, options);
+  return this.font.getPath(line, pos.x, pos.y, p._renderer._textSize, options);
 };
 
 /*
@@ -25746,8 +27005,7 @@ p5.Font.prototype._getSVG = function(line, x, y, options) {
 p5.Font.prototype._renderPath = function(line, x, y, options) {
 
   // /console.log('_renderPath', typeof line);
-  var pdata, p = this.parent,
-    pg = p._graphics,
+  var pdata, pg = this.parent._renderer,
     ctx = pg.drawingContext;
 
   if (typeof line === 'object' && line.commands) {
@@ -25756,7 +27014,7 @@ p5.Font.prototype._renderPath = function(line, x, y, options) {
   } else {
 
     //pos = handleAlignment(p, ctx, line, x, y);
-    pdata = this._getPath(line, x, y, p._textSize, options).commands;
+    pdata = this._getPath(line, x, y, pg._textSize, options).commands;
   }
 
   ctx.beginPath();
@@ -25777,15 +27035,15 @@ p5.Font.prototype._renderPath = function(line, x, y, options) {
   }
 
   // only draw stroke if manually set by user
-  if (p._doStroke && p._strokeSet) {
+  if (pg._doStroke && pg._strokeSet) {
 
     ctx.stroke();
   }
 
-  if (p._doFill) {
+  if (pg._doFill) {
 
     // if fill hasn't been set by user, use default-text-fill
-    ctx.fillStyle = p._fillSet ? ctx.fillStyle : constants._DEFAULT_TEXT_FILL;
+    ctx.fillStyle = pg._fillSet ? ctx.fillStyle : constants._DEFAULT_TEXT_FILL;
     ctx.fill();
   }
 
@@ -25815,7 +27073,8 @@ p5.Font.prototype._textDescent = function(fontSize) {
 
 p5.Font.prototype._scale = function(fontSize) {
 
-  return (1 / this.font.unitsPerEm) * (fontSize || this.parent._textSize);
+  return (1 / this.font.unitsPerEm) * (fontSize ||
+    this.parent._renderer._textSize);
 };
 
 p5.Font.prototype._handleAlignment = function(p, ctx, line, x, y) {
@@ -25843,9 +27102,12 @@ p5.Font.prototype._handleAlignment = function(p, ctx, line, x, y) {
 };
 
 function cacheKey() {
-  var args = Array.prototype.slice.call(arguments),
-    i = args.length,
-    hash = '';
+  var args = new Array(arguments.length);
+  for (var i = 0; i < args.length; ++i) {
+    args[i] = arguments[i];
+  }
+  i = args.length;
+  var hash = '';
 
   while (i--) {
     hash += (args[i] === Object(args[i])) ?
@@ -25856,7 +27118,7 @@ function cacheKey() {
 
 module.exports = p5.Font;
 
-},{"../core/constants":46,"../core/core":47}],82:[function(_dereq_,module,exports){
+},{"../core/constants":47,"../core/core":48}],83:[function(_dereq_,module,exports){
 /**
  * @module Data
  * @submodule Array Functions
@@ -25901,7 +27163,7 @@ p5.prototype.append = function(array, value) {
  * overwrites existing values in the destination array. To append values
  * instead of overwriting them, use concat().
  *
- * The simplified version with only two arguments â€” arrayCopy(src, dst) â€”
+ * The simplified version with only two arguments — arrayCopy(src, dst) —
  * copies an entire array to another of the same size. It is equivalent to
  * arrayCopy(src, 0, dst, 0, src.length).
  *
@@ -26204,7 +27466,7 @@ p5.prototype.subset = function(list, start, count) {
 
 module.exports = p5;
 
-},{"../core/core":47}],83:[function(_dereq_,module,exports){
+},{"../core/core":48}],84:[function(_dereq_,module,exports){
 /**
  * @module Data
  * @submodule Conversion
@@ -26465,7 +27727,7 @@ p5.prototype.unhex = function(n) {
 
 module.exports = p5;
 
-},{"../core/core":47}],84:[function(_dereq_,module,exports){
+},{"../core/core":48}],85:[function(_dereq_,module,exports){
 /**
  * @module Data
  * @submodule String Functions
@@ -26917,7 +28179,28 @@ p5.prototype.split = function(str, delim) {
  * </code>
  */
 p5.prototype.splitTokens = function() {
-  var d = (arguments.length > 0) ? arguments[1] : /\s/g;
+  var d,sqo,sqc,str;
+  str = arguments[1];
+  if (arguments.length > 1) {
+    sqc = /\]/g.exec(str);
+    sqo = /\[/g.exec(str);
+    if ( sqo && sqc ) {
+      str = str.slice(0, sqc.index) + str.slice(sqc.index+1);
+      sqo = /\[/g.exec(str);
+      str = str.slice(0, sqo.index) + str.slice(sqo.index+1);
+      d = new RegExp('[\\['+str+'\\]]','g');
+    } else if ( sqc ) {
+      str = str.slice(0, sqc.index) + str.slice(sqc.index+1);
+      d = new RegExp('[' + str + '\\]]', 'g');
+    } else if(sqo) {
+      str = str.slice(0, sqo.index) + str.slice(sqo.index+1);
+      d = new RegExp('[' + str + '\\[]', 'g');
+    } else {
+      d = new RegExp('[' + str + ']', 'g');
+    }
+  } else {
+    d = /\s/g;
+  }
   return arguments[0].split(d).filter(function(n){return n;});
 };
 
@@ -26947,7 +28230,7 @@ p5.prototype.trim = function(str) {
 
 module.exports = p5;
 
-},{"../core/core":47}],85:[function(_dereq_,module,exports){
+},{"../core/core":48}],86:[function(_dereq_,module,exports){
 /**
  * @module Input
  * @submodule Time & Date
@@ -27088,5 +28371,5 @@ p5.prototype.year = function() {
 
 module.exports = p5;
 
-},{"../core/core":47}]},{},[38])(38)
+},{"../core/core":48}]},{},[39])(39)
 });
