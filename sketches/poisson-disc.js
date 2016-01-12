@@ -1,6 +1,6 @@
 var sketch = function (p) {
     var dimensions = 2,
-        minDist = 10,
+        minDist = 150,
         rejectLimit = 30,
         grid = [],
         cellSize = minDist / Math.sqrt(dimensions),
@@ -10,21 +10,55 @@ var sketch = function (p) {
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
+        p.ellipseMode(p.CENTER);
         grid = makeGrid();
         poisson();
     };
 
     p.draw = function () {
         p.background(0);
-        p.noFill();
+        //p.noStroke();
         for (var i = 0; i < samples.length; i++) {
+            // p.strokeWeight(3);
+            // p.stroke(255);
+            // p.point(samples[i].x, samples[i].y);
+            // p.noFill();
+            // p.noStroke();
+            p.fill(175);
+            //p.ellipse(samples[i].x, samples[i].y, 50, 50);
             p.strokeWeight(3);
-            p.stroke(255);
-            p.point(samples[i].x, samples[i].y);
+            p.stroke(175);
+            p.fill(255, 0, 0);
+            flower(samples[i]);
+
         }
         p.noLoop();
     };
 
+
+    function flower(point) {
+        var r = 60,
+            petals = 30,
+            size = r/2;
+        while (petals > 5) {
+            for (var i = 0; i < petals; i++) {
+                var offset = 0;//(p.TWO_PI/(petals)) / 2,
+                    angle = i * (p.TWO_PI/petals) + offset;
+                //     x =  point.x + r * Math.cos(angle),
+                //     y = point.y + r * Math.sin(angle);
+                // p.ellipse(x, y, size, size);
+                p.push();
+                p.translate(point.x + r * Math.cos(angle), point.y +r * Math.sin(angle));
+                p.rotate(angle);
+                p.ellipse(0, 0, size * 2, size);
+                p.pop();
+            }
+            petals /= 2;
+            size *= 0.6;
+            r *= 0.8;
+        }
+
+    }
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
