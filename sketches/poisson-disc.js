@@ -17,20 +17,15 @@ var sketch = function (p) {
 
     p.draw = function () {
         p.background(0);
-        //p.noStroke();
+        p.fill(255);
+
         for (var i = 0; i < samples.length; i++) {
-            // p.strokeWeight(3);
-            // p.stroke(255);
-            // p.point(samples[i].x, samples[i].y);
-            // p.noFill();
-            // p.noStroke();
             p.fill(175);
             //p.ellipse(samples[i].x, samples[i].y, 50, 50);
-            p.strokeWeight(3);
+            p.strokeWeight(1);
             p.stroke(175);
             p.fill(255, 0, 0);
             flower(samples[i]);
-
         }
         p.noLoop();
     };
@@ -39,23 +34,26 @@ var sketch = function (p) {
     function flower(point) {
         var r = 60,
             petals = 30,
-            size = r/2;
-        while (petals > 5) {
+            size = r/2,
+            stroke = 1,
+            layers = 3;
+        while (layers > 0) {
+            var spacing = p.TWO_PI/petals;
             for (var i = 0; i < petals; i++) {
-                var offset = 0;//(p.TWO_PI/(petals)) / 2,
-                    angle = i * (p.TWO_PI/petals) + offset;
-                //     x =  point.x + r * Math.cos(angle),
-                //     y = point.y + r * Math.sin(angle);
-                // p.ellipse(x, y, size, size);
+                var angle = spacing * i;
                 p.push();
-                p.translate(point.x + r * Math.cos(angle), point.y +r * Math.sin(angle));
+                p.translate(point.x, point.y);
                 p.rotate(angle);
-                p.ellipse(0, 0, size * 2, size);
+                p.strokeWeight(stroke);
+                p.line(0, 0, size, 0);
+                p.ellipse(r, 0, size * 2, size);
                 p.pop();
             }
-            petals /= 2;
+            petals = Math.round(petals/2);
             size *= 0.6;
             r *= 0.8;
+            stroke ++;
+            layers--;
         }
 
     }
