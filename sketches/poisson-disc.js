@@ -6,7 +6,8 @@ var sketch = function (p) {
         cellSize = minDist / Math.sqrt(dimensions),
         queue = [],
         samples = [],
-        sample;
+        sample, 
+        colors = ['#FC0501', '#FE4164', '#161544', '#5B1341'];
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
@@ -16,15 +17,14 @@ var sketch = function (p) {
     };
 
     p.draw = function () {
-        p.background(0);
+        p.background(255);
         p.fill(255);
 
         for (var i = 0; i < samples.length; i++) {
-            p.fill(175);
+            p.fill(255);
             //p.ellipse(samples[i].x, samples[i].y, 50, 50);
-            p.strokeWeight(1);
-            p.stroke(175);
-            p.fill(255, 0, 0);
+            p.strokeWeight(4);
+            p.stroke(255);
             flower(samples[i]);
         }
         p.noLoop();
@@ -33,26 +33,30 @@ var sketch = function (p) {
 
     function flower(point) {
         var r = 60,
-            petals = 30,
             size = r/2,
-            stroke = 1,
-            layers = 3;
+            petals = 36,
+            layers = 4,
+            n = layers + 1,
+            m = size,
+            shift = p.createVector(0, 0);
+            shift = p.createVector(p.random(0, layers), 0).rotate(p.random(0, p.TWO_PI));
+        p.fill(colors[Math.floor(Math.random() * 4)]);
         while (layers > 0) {
-            var spacing = p.TWO_PI/petals;
+            var spacing = p.TWO_PI/petals, 
+                offset = p.random(0, p.TWO_PI);
             for (var i = 0; i < petals; i++) {
-                var angle = spacing * i;
+                var angle = spacing * i + offset;
                 p.push();
-                p.translate(point.x, point.y);
+                p.translate(point.x + shift.x, point.y + shift.y);
                 p.rotate(angle);
-                p.strokeWeight(stroke);
-                p.line(0, 0, size, 0);
-                p.ellipse(r, 0, size * 2, size);
+                p.arc(r, 0, size * 4, size, -p.PI/2, p.PI/2, p.CHORD);
+                //p.ellipse(r, 0, size * 2, size);
                 p.pop();
             }
-            petals = Math.round(petals/2);
-            size *= 0.6;
-            r *= 0.8;
-            stroke ++;
+            shift.div(layers);
+            petals = Math.floor(petals * 0.75);
+            size -= 30/60 * (n - layers);
+            r -= 60 * 0.1 * (n - layers);
             layers--;
         }
 
