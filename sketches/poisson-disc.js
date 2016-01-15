@@ -7,7 +7,7 @@ var sketch = function (p) {
         queue = [],
         samples = [],
         sample, 
-        colors = ['#FC0501', '#FE4164', '#161544', '#5B1341'];
+        colors = ['#FC0501', '#FE4164', '#161544', '#70276C'];
 
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
@@ -18,47 +18,105 @@ var sketch = function (p) {
 
     p.draw = function () {
         p.background(255);
-        p.fill(255);
-
         for (var i = 0; i < samples.length; i++) {
-            p.fill(255);
-            //p.ellipse(samples[i].x, samples[i].y, 50, 50);
+
             p.strokeWeight(4);
             p.stroke(255);
             flower(samples[i]);
+            p.fill(175);
+            p.noStroke();
+            // p.ellipse(samples[i].x, samples[i].y, 60, 60);
         }
         p.noLoop();
     };
 
 
     function flower(point) {
-        var r = 60,
-            size = r/2,
-            petals = 36,
-            layers = 4,
-            n = layers + 1,
-            m = size,
-            shift = p.createVector(0, 0);
-            shift = p.createVector(p.random(0, layers), 0).rotate(p.random(0, p.TWO_PI));
-        p.fill(colors[Math.floor(Math.random() * 4)]);
-        while (layers > 0) {
-            var spacing = p.TWO_PI/petals, 
-                offset = p.random(0, p.TWO_PI);
-            for (var i = 0; i < petals; i++) {
-                var angle = spacing * i + offset;
-                p.push();
-                p.translate(point.x + shift.x, point.y + shift.y);
-                p.rotate(angle);
-                p.arc(r, 0, size * 4, size, -p.PI/2, p.PI/2, p.CHORD);
-                //p.ellipse(r, 0, size * 2, size);
-                p.pop();
+        var r,
+            size,
+            layers,
+            shift,
+            color = colors[Math.floor(Math.random() * 4)];
+        p.fill(color);
+        if (color == '#FC0501' || color == '#161544') {
+            r = 100;
+            size = 30;
+            layers = 8;
+            shift = p.createVector(p.random(0, layers/2)).rotate(p.random(0, p.TWO_PI));
+            var step = 10;
+            p.fill(255);
+            p.ellipse(point.x, point.y, r * 2, r * 2);
+            p.fill(color);
+            while (layers > 0 || r > 25) {
+                var offset = p.random(0, p.TWO_PI),
+                    petals = Math.round((p.TWO_PI * r)/size);
+                if (petals < 4) { break; }
+                for (var i = 0; i < petals; i++) {
+                    var angle = p.TWO_PI/petals * i + offset;
+                    p.push();
+                    p.translate(point.x + shift.x, point.y + shift.y);
+                    p.rotate(angle);
+                    p.arc(r, 0, size, size, -p.PI/2, p.PI/2, p.CHORD);
+                    p.pop();
+                }
+                shift.div(layers);
+                r -= step;
+                layers--;
             }
+        } else {
+            r = 60;
+            size = 30;
+            layers = 4;
+            shift = p.createVector(p.random(0, layers)).rotate(p.random(0, p.TWO_PI));
+            var n = layers;
+            p.fill(255);
+            p.ellipse(point.x, point.y, r * 2, r * 2);
+            p.fill(color);
+            while (layers > 0 || r > 25) {
+                var offset = p.random(0, p.TWO_PI),
+                    petals = Math.round((p.TWO_PI * r)/size  * 2);
+                if (petals < 4) { break; }
+                for (var i = 0; i < petals; i++) {
+                    var angle = p.TWO_PI/petals * i + offset;
+                    p.push();
+                    p.translate(point.x + shift.x, point.y + shift.y);
+                    p.rotate(angle);
+                    p.arc(r, 0, size * 4, size, -p.PI/2, p.PI/2, p.CHORD);
+                    p.pop();
+                }
+            r *= 0.75;
+            size *= 0.9;
             shift.div(layers);
-            petals = Math.floor(petals * 0.75);
-            size -= 30/60 * (n - layers);
-            r -= 60 * 0.1 * (n - layers);
             layers--;
+            }
         }
+
+        // var r = 80,
+        //     size = r * 0.5,
+        //     petals = 36,
+        //     layers = 8,
+        //     n = layers + 1,
+        //     m = size,
+        //     shift = p.createVector(p.random(0, layers), 0).rotate(p.random(0, p.TWO_PI));
+        // p.fill(colors[Math.floor(Math.random() * 4)]);
+        // while (layers > 0) {
+        //     var spacing = p.TWO_PI/petals, 
+        //         offset = p.random(0, p.TWO_PI);
+        //     for (var i = 0; i < petals; i++) {
+        //         var angle = spacing * i + offset;
+        //         p.push();
+        //         p.translate(point.x + shift.x, point.y + shift.y);
+        //         p.rotate(angle);
+        //         p.arc(r, 0, size, size, -p.PI/2, p.PI/2, p.CHORD);
+        //         //p.ellipse(r, 0, size * 2, size);
+        //         p.pop();
+        //     }
+        //     shift.div(layers);
+        //     petals = Math.floor(petals * 0.75);
+        //     // size -= 30/60 * (n - layers);
+        //     r -= 60 * 0.1 * (n - layers);
+        //     layers--;
+        // }
 
     }
 
