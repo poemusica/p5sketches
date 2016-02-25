@@ -41,8 +41,8 @@ var sketch = function (p) {
             loc: pos,
             width: p.random(100, 150),
             height: p.random(100, 200),
-            rows: Math.floor(p.random(3, 10)),
-            cols: Math.floor(p.random(3, 10)),
+            rows: Math.round(p.random(3, 10)),
+            cols: Math.round(p.random(3, 10)),
             },
             xmarginLimit = data.width/2,
             ymarginLimit = data.height/2;
@@ -71,8 +71,8 @@ var sketch = function (p) {
             loc: pos,
             width: p.random(100, 150),
             height: p.random(100, 200),
-            rows: 1,
-            cols: Math.floor(p.random(10, 30)),
+            rows: Math.round(p.random(3, 10)),
+            cols: Math.round(p.random(10, 30)),
         };
         data.margin = p.createVector(0, 0);
         var xpaddingLimit = (data.width - 2 * data.margin.x)/data.cols,
@@ -89,8 +89,8 @@ var sketch = function (p) {
             loc: pos,
             width: p.random(100, 150),
             height: p.random(100, 200),
-            rows: Math.floor(p.random(25, 50)),
-            cols: 1,
+            rows: Math.round(p.random(25, 50)),
+            cols: Math.round(p.random(3, 8)),
         };
         data.margin = p.createVector(0, 0);
         var xpaddingLimit = (data.width - 2 * data.margin.x)/data.cols,
@@ -124,10 +124,13 @@ var sketch = function (p) {
         p.translate(offset.x, offset.y);
         for (var i = 0; i < grid.grid.length; i++) {
             var cell = grid.grid[i];
+            // With columns
+            // p.rect(cell.x + data.padding.x, cell.y + data.padding.y, grid.cellWidth - 2 * data.padding.x, grid.cellHeight - 2 * data.padding.y);
+            p.line(cell.x + grid.cellWidth/2, cell.y + data.padding.y, cell.x + grid.cellWidth/2, cell.y + grid.cellHeight - data.padding.y);
             p.push();
             //Without outer margin and padding
-            p.translate(cell.x + grid.cellWidth/2, cell.y - data.padding.y);
-            p.line(0, 0, 0, grid.cellHeight + data.padding.y * 2);
+            // p.translate(cell.x + grid.cellWidth/2, cell.y - data.padding.y);
+            // p.line(0, 0, 0, grid.cellHeight + data.padding.y * 2);
             // With outer margin and padding
             // p.translate(cell.x + grid.cellWidth/2, cell.y + data.padding.y);
             // p.line(0, 0, 0, grid.cellHeight - 2 * data.padding.y);
@@ -145,10 +148,12 @@ var sketch = function (p) {
         p.translate(offset.x, offset.y);
         for (var i = 0; i < grid.grid.length; i++) {
             var cell = grid.grid[i];
+            // With rows
+            p.line(cell.x + data.padding.x, cell.y + grid.cellHeight/2, cell.x + grid.cellWidth - data.padding.x, cell.y + grid.cellHeight/2);
             p.push();
             // Without outer margin and padding
-            p.translate(cell.x - data.padding.x, cell.y + grid.cellHeight/2);
-            p.line(0, 0, grid.cellWidth + data.padding.x * 2, 0);
+            // p.translate(cell.x - data.padding.x, cell.y + grid.cellHeight/2);
+            // p.line(0, 0, grid.cellWidth + data.padding.x * 2, 0);
             // With outer margin and padding
             // p.translate(cell.x + data.padding.x, cell.y + grid.cellHeight/2);
             // p.line(0, 0, grid.cellWidth - 2 * data.padding.x, 0);
