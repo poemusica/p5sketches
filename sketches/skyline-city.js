@@ -56,7 +56,10 @@ var sketch = function (p) {
 
     function makeForeground() {
         var graphic = p.createGraphics(p.width, p.height);
-        graphic.fill(175);
+        graphic.fill(0);
+        graphic.stroke(scale(0.5).brighten().rgb());
+        graphic.strokeWeight(2);
+        textures.color = p.color(scale(0.5).rgb());
         graphic.rect(100, 100, 100, 150);
         textures.rects(p.createVector(100, 100), 100, 150, graphic);
         graphic.rect(300, 100, 100, 150);
@@ -67,8 +70,10 @@ var sketch = function (p) {
         textures.colsOfHLines(p.createVector(700, 100), 100, 150, graphic);
         graphic.rect(900, 100, 100, 150);
         textures.rowsOfVLines(p.createVector(900, 100), 100, 150, graphic);
-        graphic.rect(100, 350, 100, 150);
-        textures.rowsOfRects(p.createVector(100, 350), 100, 150, graphic);
+        graphic.rect(100, 350, 100, 350);
+        textures.rowsOfRects(p.createVector(100, 350), 100, 350, graphic);
+        graphic.rect(300, 350, 100, 350);
+        textures.rowsOfRectsDivided(p.createVector(300, 350), 100, 350, graphic);
         return graphic;
     }
 
@@ -103,6 +108,7 @@ var sketch = function (p) {
     textures = function(){
         var module = {};
         module.index = [];
+        module.color = null;
 
         function makeGrid(rows, cols, width, height) {
             var grid = {
@@ -128,6 +134,7 @@ var sketch = function (p) {
 
         module.colsOfHLines = function(loc, w, h, graphic) {
             graphic.push();
+            graphic.stroke(module.color);
             var rows = Math.round(p.random(25, 50)),
                 cols = Math.round(p.random(3, 8));
             var margin = p.createVector(2, 2),
@@ -140,7 +147,6 @@ var sketch = function (p) {
                                 h - 2*margin.y - 2*padding.y);
             var offset = p5.Vector.add(loc, margin);
             offset.add(padding);
-            graphic.fill(255);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i];
@@ -155,6 +161,7 @@ var sketch = function (p) {
 
         module.rowsOfVLines = function(loc, w, h, graphic) {
             graphic.push();
+            graphic.stroke(module.color);
             var rows = Math.round(p.random(3, 10)),
                 cols = Math.round(p.random(10, 30));
             var margin = p.createVector(2, 2),
@@ -167,7 +174,6 @@ var sketch = function (p) {
                                 h - 2*margin.y - 2*padding.y);
             var offset = p5.Vector.add(loc, margin);
             offset.add(padding);
-            graphic.fill(255);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i];
@@ -182,13 +188,13 @@ var sketch = function (p) {
 
         module.hLines = function(loc, w, h, graphic) {
             graphic.push();
+            graphic.stroke(module.color);
             var rows = Math.round(p.random(10, h/5)),
                 cols = 1,
                 margin = p.createVector(3, 3),
                 offset = p5.Vector.add(loc, margin),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y);
             graphic.strokeJoin(p.BEVEL);
-            graphic.stroke(0);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i];
@@ -203,13 +209,13 @@ var sketch = function (p) {
 
         module.vLines = function(loc, w, h, graphic) {
             graphic.push();
+            graphic.stroke(module.color);
             var rows = 1,
                 cols = Math.round(p.random(10, w/5)),
                 margin = p.createVector(3, 3),
                 offset = p5.Vector.add(loc, margin),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y);
             graphic.strokeJoin(p.BEVEL);
-            graphic.stroke(0);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i];
@@ -224,6 +230,8 @@ var sketch = function (p) {
 
         module.rects = function(loc, w, h, graphic) {
             graphic.push();
+            graphic.fill(module.color);
+            graphic.noStroke();
             var rows = Math.round(p.random(3, 10)),
                 cols = Math.round(p.random(3, 10)),
                 margin = p.createVector(p.random(0, w * 0.05),
@@ -235,11 +243,9 @@ var sketch = function (p) {
             while ((w - 2*margin.x - 2*padding.x*cols)/cols < 5) { cols--; }
             while ((h - 2*margin.y - 2*padding.y*rows)/rows < 5) { rows--; }
             var grid = makeGrid(rows, cols,
-                                w - 2*margin.x - 2*padding.x,
-                                h - 2*margin.y - 2*padding.y);
+                                w - 2 * margin.x,
+                                h - 2 * margin.y);
             var offset = p5.Vector.add(loc, margin);
-            offset.add(padding);
-            graphic.fill(255);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i];
@@ -254,32 +260,30 @@ var sketch = function (p) {
 
         module.rowsOfRects = function(loc, w, h, graphic) {
             graphic.push();
-            var rows = Math.round(p.random(3, h/15)),
+            graphic.fill(module.color);
+            graphic.noStroke();
+            var rows = Math.round(p.random(h/60, h/45)),
                 cols = 1,
-                margin = p.createVector(3, 3),
-                padding = p.createVector(4, 4),
-                offset = p5.Vector.add(loc, margin),
+                margin = p.createVector(8, 8),
+                padding = p.createVector(0, 6),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y),
-                innerRows = 3, //Math.round(p.random(3, 10)),
-                innerCols = 3, //Math.round(p.random(3, 10)),
-                innerMargin = p.createVector(2, 2),
+                innerRows = Math.round(p.random(2, 4)),
+                innerCols = Math.round(p.random(3, 5)),
                 innerPadding = p.createVector(2, 2),
                 innerGrid = makeGrid(innerRows, innerCols,
-                                     grid.cellWidth - 2*innerMargin.x,
-                                     grid.cellHeight - 2*innerMargin.y);
-            offset.add(padding);
-            graphic.translate(offset.x, offset.y);
+                                     grid.cellWidth - 2*padding.x,
+                                     grid.cellHeight - 2*padding.y);
+            graphic.translate(loc.x, loc.y);
+            graphic.translate(margin.x, margin.y);
             for (var i = 0; i < grid.grid.length; i++) {
-                var cell = grid.grid[i],
-                    innerOffset = p5.Vector.add(cell, innerMargin);
-                innerOffset.add(innerPadding);
-                graphic.push()
-                graphic.translate(innerOffset.x, innerOffset.y);
+                graphic.push();
+                var cell = grid.grid[i];
+                graphic.translate(cell.x, cell.y);
+                graphic.translate(padding.x, padding.y);
                 for (var j = 0; j < innerGrid.grid.length; j++) {
-                    graphic.fill(255);
                     var innerCell = innerGrid.grid[j];
-                    graphic.rect(innerCell.x,
-                                 innerCell.y,
+                    graphic.rect(innerCell.x + innerPadding.x,
+                                 innerCell.y + innerPadding.y,
                                  innerGrid.cellWidth - 2 * innerPadding.x,
                                  innerGrid.cellHeight - 2 * innerPadding.y);
                 }
@@ -288,6 +292,47 @@ var sketch = function (p) {
             graphic.pop();
         };
         module.index.push(module.rowsOfRects);
+
+        module.rowsOfRectsDivided = function(loc, w, h, graphic) {
+            graphic.push();
+            graphic.fill(module.color);
+            graphic.noStroke();
+            var rows = Math.round(p.random(h/60, h/45)),
+                cols = 1,
+                margin = p.createVector(8, 8),
+                padding = p.createVector(0, 6),
+                grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y),
+                innerRows = Math.round(p.random(2, 4)),
+                innerCols = Math.round(p.random(3, 5)),
+                innerPadding = p.createVector(2, 2),
+                innerGrid = makeGrid(innerRows, innerCols,
+                                     grid.cellWidth - 2*padding.x,
+                                     grid.cellHeight - 2*padding.y);
+            graphic.translate(loc.x, loc.y);
+            graphic.translate(margin.x, margin.y);
+            for (var i = 0; i < grid.grid.length; i++) {
+                graphic.push();
+                var cell = grid.grid[i];
+                graphic.translate(cell.x, cell.y);
+                if (i !== 0) {
+                    graphic.push();
+                    graphic.stroke(module.color);
+                    graphic.line(-margin.x+2, 0, grid.cellWidth + margin.x-2, 0);
+                    graphic.pop();
+                }
+                graphic.translate(padding.x, padding.y);
+                for (var j = 0; j < innerGrid.grid.length; j++) {
+                    var innerCell = innerGrid.grid[j];
+                    graphic.rect(innerCell.x + innerPadding.x,
+                                 innerCell.y + innerPadding.y,
+                                 innerGrid.cellWidth - 2 * innerPadding.x,
+                                 innerGrid.cellHeight - 2 * innerPadding.y);
+                }
+                graphic.pop();
+            }
+            graphic.pop();
+        };
+        module.index.push(module.rowsOfRectsDivided);
 
         return module;
     }();
