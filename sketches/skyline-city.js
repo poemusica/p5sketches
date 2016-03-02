@@ -8,12 +8,14 @@ var sketch = function (p) {
         distributors;
 
     p.setup = function () {
+        p.randomSeed((p.random() * 4294967296)  >>> 0);
         p.createCanvas(p.windowWidth, p.windowHeight);
         scale = setScale();
         gradient = makeGradient();
         city = makeCity();
         stars = makeStars();
         stars.rotation = 0;
+        for (var i=0; i<10; i++) { console.log(p.random()); }
     };
 
     p.draw = function () {
@@ -43,10 +45,10 @@ var sketch = function (p) {
 
     function makeGradient() {
         var graphic = p.createGraphics(p.width, p.height);
-        for (var y = 0; y <= p.height; y++) {
-            var c = scale(y/p.height).rgb();
+        for (var y = 0; y <= graphic.height; y++) {
+            var c = scale(y/graphic.height).rgb();
             graphic.stroke(c);
-            graphic.line(0, y, p.width, y);
+            graphic.line(0, y, graphic.width, y);
         }
         return graphic;
     }
@@ -87,11 +89,11 @@ var sketch = function (p) {
                     loc = p.createVector(x - width/2, graphic.height),
                     capH = p.random() > 0.3 ? p.ceil(height * (p.random(5, 10)/100)) : 0;
                     bodyH = height - capH,
-                    bodyTx = textures.index[Math.floor(Math.random() * textures.index.length)];
+                    bodyTx = textures.index[p.floor(p.random(textures.index.length))];
                 graphic.rect(loc.x, loc.y - bodyH, width, bodyH);
                 bodyTx(p.createVector(loc.x, loc.y - bodyH), width, bodyH, graphic);
                 if (capH > 0) {
-                    capTx = caps.index[Math.floor(Math.random() * caps.index.length)];
+                    capTx = caps.index[p.floor(p.random(caps.index.length))];
                     capTx(p.createVector(loc.x, loc.y - bodyH), width, capH, graphic);
                 }
                 fgCount++;
@@ -114,7 +116,7 @@ var sketch = function (p) {
     function setScale() {
         var l = [chroma.random(), chroma.random(), chroma.random(), chroma.random()],
             bezInterpolator = null
-            chance = Math.random();
+            chance = p.random();
         if (chance > 0.5) {
             l.sort(function(a, b) {
               return b.get('hcl.l') - a.get('hcl.l');
@@ -199,7 +201,7 @@ var sketch = function (p) {
 
         module.rectangle = function(loc, w, h, graphic) {
             graphic.push();
-            Math.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
+            p.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
             graphic.stroke(module.stroke);
             graphic.strokeWeight(2);
             graphic.strokeJoin(p.MITER);
@@ -225,7 +227,7 @@ var sketch = function (p) {
                 // top left
                 x4 = x1 + incline,
                 y4 = y3;
-            Math.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
+            p.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
             graphic.stroke(module.stroke);
             graphic.strokeWeight(2);
             graphic.strokeJoin(p.BEVEL);
@@ -236,11 +238,11 @@ var sketch = function (p) {
 
         module.triangle = function(loc, w, h, graphic) {
             graphic.push();
-            Math.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
+            p.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
             graphic.stroke(module.stroke);
             graphic.strokeWeight(2);
             graphic.strokeJoin(p.BEVEL);
-            var chance = Math.random(),
+            var chance = p.random(),
                 x1 = loc.x,
                 y1 = loc.y,
                 x2 = x1 + w,
@@ -258,7 +260,7 @@ var sketch = function (p) {
 
         module.dome = function(loc, w, h, graphic) {
             graphic.push();
-            Math.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
+            p.random() > 0.5 ?  graphic.fill(module.fill) : graphic.fill(0);
             graphic.stroke(module.stroke);
             graphic.strokeWeight(2);
             graphic.strokeJoin(p.BEVEL);
@@ -302,8 +304,8 @@ var sketch = function (p) {
         module.colsOfHLines = function(loc, w, h, graphic) {
             graphic.push();
             graphic.stroke(module.color);
-            var rows = Math.round(p.random(25, 50)),
-                cols = Math.round(p.random(3, 8));
+            var rows = p.round(p.random(25, 50)),
+                cols = p.round(p.random(3, 8));
             var margin = p.createVector(2, 2),
                 padding = p.createVector(
                         p.random(2, (w - 2 * margin.x)/cols * 0.25), 0);
@@ -329,8 +331,8 @@ var sketch = function (p) {
         module.rowsOfVLines = function(loc, w, h, graphic) {
             graphic.push();
             graphic.stroke(module.color);
-            var rows = Math.round(p.random(3, 10)),
-                cols = Math.round(p.random(10, 30));
+            var rows = p.round(p.random(3, 10)),
+                cols = p.round(p.random(10, 30));
             var margin = p.createVector(2, 2),
                 padding = p.createVector(
                         0, p.random(2, (h - 2 * margin.y)/rows * 0.25));
@@ -356,7 +358,7 @@ var sketch = function (p) {
         module.hLines = function(loc, w, h, graphic) {
             graphic.push();
             graphic.stroke(module.color);
-            var rows = Math.round(p.random(10, h/5)),
+            var rows = p.round(p.random(10, h/5)),
                 cols = 1,
                 margin = p.createVector(3, 3),
                 offset = p5.Vector.add(loc, margin),
@@ -378,7 +380,7 @@ var sketch = function (p) {
             graphic.push();
             graphic.stroke(module.color);
             var rows = 1,
-                cols = Math.round(p.random(10, w/5)),
+                cols = p.round(p.random(10, w/5)),
                 margin = p.createVector(3, 3),
                 offset = p5.Vector.add(loc, margin),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y);
@@ -398,18 +400,18 @@ var sketch = function (p) {
         module.hStripes = function(loc, w, h, graphic) {
             graphic.push();
             graphic.stroke(module.color);
-            var rows = Math.round(p.random(h/60, h/50)),
+            var rows = p.round(p.random(h/60, h/50)),
                 cols = 1,
                 margin = p.createVector(3, 3),
                 offset = p5.Vector.add(loc, margin),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y),
                 thins = [0, 1, 2, 3, 4, 5],
-                fixed = Math.floor(Math.random() * thins.length),
+                fixed = p.floor(p.random(thins.length)),
                 pattern = [fixed],
                 weight = 2;
             thins.splice(fixed, 1);
             for (var i = 0; i < 3; i++) {
-                var index = Math.floor(Math.random() * thins.length);
+                var index = p.floor(p.random(thins.length));
                 if ( p.random() > 0.5) {
                     pattern.push(thins[index]);
                     thins.splice(index, 1);
@@ -445,8 +447,8 @@ var sketch = function (p) {
             graphic.push();
             graphic.fill(module.color);
             graphic.noStroke();
-            var rows = Math.round(p.random(3, 10)),
-                cols = Math.round(p.random(3, 10)),
+            var rows = p.round(p.random(3, 10)),
+                cols = p.round(p.random(3, 10)),
                 margin = p.createVector(p.random(0, w * 0.15),
                                         p.random(0, h * 0.05)),
                 padding = p.createVector(
@@ -475,13 +477,13 @@ var sketch = function (p) {
             graphic.push();
             graphic.fill(module.color);
             graphic.noStroke();
-            var rows = Math.round(p.random(h/60, h/45)),
+            var rows = p.round(p.random(h/60, h/45)),
                 cols = 1,
                 margin = p.createVector(8, 8),
                 padding = p.createVector(0, 6),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y),
-                innerRows = Math.round(p.random(2, 4)),
-                innerCols = Math.round(p.random(3, 5)),
+                innerRows = p.round(p.random(2, 4)),
+                innerCols = p.round(p.random(3, 5)),
                 innerPadding = p.createVector(2, 2),
                 innerGrid = makeGrid(innerRows, innerCols,
                                      grid.cellWidth - 2*padding.x,
@@ -510,13 +512,13 @@ var sketch = function (p) {
             graphic.push();
             graphic.fill(module.color);
             graphic.noStroke();
-            var rows = Math.round(p.random(h/60, h/45)),
+            var rows = p.round(p.random(h/60, h/45)),
                 cols = 1,
                 margin = p.createVector(8, 8),
                 padding = p.createVector(0, 6),
                 grid = makeGrid(rows, cols, w - 2*margin.x, h - 2*margin.y),
-                innerRows = Math.round(p.random(2, 4)),
-                innerCols = Math.round(p.random(3, 5)),
+                innerRows = p.round(p.random(2, 4)),
+                innerCols = p.round(p.random(3, 5)),
                 innerPadding = p.createVector(2, 2),
                 innerGrid = makeGrid(innerRows, innerCols,
                                      grid.cellWidth - 2*padding.x,
