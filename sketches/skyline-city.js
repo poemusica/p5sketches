@@ -1,5 +1,8 @@
 var sketch = function (p) {
     var scale,
+        seed,
+        scroll = 0,
+        mid = 0.5,
         gradient,
         city,
         stars,
@@ -8,30 +11,36 @@ var sketch = function (p) {
         distributors;
 
     p.setup = function () {
-        p.randomSeed((p.random() * 4294967296)  >>> 0);
+        seed = (p.random() * 4294967296)  >>> 0;
+        p.randomSeed(seed);
         p.createCanvas(p.windowWidth, p.windowHeight);
         scale = setScale();
         gradient = makeGradient();
         city = makeCity();
         stars = makeStars();
         stars.rotation = 0;
-        for (var i=0; i<10; i++) { console.log(p.random()); }
     };
 
     p.draw = function () {
         p.imageMode(p.CORNER);
-        p.image(gradient, 0, 0, gradient.width, gradient.height, 0, 0, p.width, p.height);
+        p.image(gradient, 0, scroll, gradient.width, gradient.height, 0, 0, p.width, p.height * 2);
+        p.image(gradient, 0, 0, gradient.width, gradient.height, 0, p.height * 2 - scroll, p.width, p.height * 2);
+        // p.line(0, gradient.height - scroll, p.width, gradient.height - scroll);
+        mid = p.map(p.sin( p.map(scroll, 0, gradient.height, 0, p.TWO_PI) ), -1, 1, 0, 1);
+        scroll += 5;
+        if (scroll > gradient.height) { scroll = 0; }
         p.stroke(255);
         p.push();
         p.rotate(stars.rotation);
         for (var i = 0; i < stars.length; i++) {
             var v = stars[i];
-            p.strokeWeight(v.size + p.random(-0.5, 0.5));
+            p.strokeWeight(v.size + Math.random(-0.5, 0.5));
             p.point(v.x, v.y);
         }
         stars.rotation -= 0.0003;
         p.pop();
-
+        p.randomSeed(seed);
+        city = makeCity();
         p.image(city, 0, 0, city.width, city.height, 0, 0, p.width, p.height);
     };
 
@@ -44,11 +53,18 @@ var sketch = function (p) {
     };
 
     function makeGradient() {
-        var graphic = p.createGraphics(p.width, p.height);
-        for (var y = 0; y <= graphic.height; y++) {
-            var c = scale(y/graphic.height).rgb();
+        var graphic = p.createGraphics(p.width, p.height * 2);
+        for (var y = 0; y < graphic.height/2; y++) {
+            var c = scale(y/(graphic.height/2)).rgb();
             graphic.stroke(c);
             graphic.line(0, y, graphic.width, y);
+        }
+        var count = 0;
+        for (var y = graphic.height/2; y <= graphic.height; y++) {
+            var c = scale((y - graphic.height/2)/(graphic.height/2)).rgb();
+            graphic.stroke(c);
+            graphic.line(0, graphic.height - count, graphic.width, graphic.height - count);
+            count++;
         }
         return graphic;
     }
@@ -61,7 +77,7 @@ var sketch = function (p) {
             fgProb = p.random(0.5, 0.85),
             bgCount= 0,
             fgCount = 0;
-        graphic.fill(scale(0.65).darken(2).rgb());
+        graphic.fill(scale(mid + 0.15).darken(2).rgb());
         graphic.noStroke(0);
         while (bgCount < 15) {
             var x = bgDistributor();
@@ -75,11 +91,11 @@ var sketch = function (p) {
         }
 
         graphic.fill(0);
-        graphic.stroke(scale(0.5).brighten().rgb());
+        graphic.stroke(scale(mid).brighten().rgb());
         graphic.strokeWeight(2);
-        textures.color = p.color(scale(0.5).rgb());
-        caps.stroke = p.color(scale(0.5).brighten().rgb());
-        caps.fill = p.color(scale(0.5).rgb());
+        textures.color = p.color(scale(mid).rgb());
+        caps.stroke = p.color(scale(mid).brighten().rgb());
+        caps.fill = p.color(scale(mid).rgb());
 
         while (fgCount < 20) {
             var x = fgDistributor();
@@ -127,7 +143,7 @@ var sketch = function (p) {
             });
         }
         bezInterpolator = chroma.bezier([l[0], l[1], l[2], l[3]]);
-        return chroma.scale(bezInterpolator).correctLightness(true);
+        return chroma.scale(bezInterpolator).correctLightness(true).padding(0.15);
     }
 
     distributors = function() {
