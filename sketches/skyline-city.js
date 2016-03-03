@@ -2,66 +2,85 @@ var sketch = function (p) {
     var scale,
         seed,
         scroll = 0,
-        mid = 0.5,
+        mid = 0,
         gradient,
-        city,
         stars,
         caps,
         textures,
         distributors;
 
     p.setup = function () {
+        p.createCanvas(p.windowWidth, p.windowHeight);
+        p.imageMode(p.CORNER);
         seed = (p.random() * 4294967296)  >>> 0;
         p.randomSeed(seed);
-        p.createCanvas(p.windowWidth, p.windowHeight);
         scale = setScale();
         gradient = makeGradient();
-        city = makeCity();
         stars = makeStars();
         stars.rotation = 0;
     };
 
     p.draw = function () {
-        p.imageMode(p.CORNER);
-        p.image(gradient, 0, scroll, gradient.width, gradient.height, 0, 0, p.width, p.height * 2);
-        p.image(gradient, 0, 0, gradient.width, gradient.height, 0, p.height * 2 - scroll, p.width, p.height * 2);
+        p.background(0);
+        p.image(gradient, 0, 0, gradient.width, gradient.height, 0, -scroll, p.width, p.height * 4);
+        p.image(gradient, 0, 0, gradient.width, gradient.height, 0, p.height * 4 - scroll, p.width, p.height * 4);
         // p.line(0, gradient.height - scroll, p.width, gradient.height - scroll);
-        mid = p.map(p.sin( p.map(scroll, 0, gradient.height, 0, p.TWO_PI) ), -1, 1, 0, 1);
-        scroll += 5;
+
+        if (scroll < gradient.height/8) { mid = 0; }
+        else if (scroll > gradient.height/8 && scroll < gradient.height * (3/8)) {
+            mid = p.map(scroll, gradient.height/8, gradient.height * (3/8), 0, 1);
+        }
+        else if (scroll > gradient.height * (3/8) && scroll < gradient.height * (5/8)) { mid = 1; }
+        else if (scroll > gradient.height * (5/8) && scroll < gradient.height* (7/8)) {
+            mid = p.map(scroll, gradient.height * (5/8), gradient.height * (7/8), 1, 0);
+        }
+        else if (scroll > gradient.height * (7/8)) { mid = 0; }
+
+        scroll += 1;
         if (scroll > gradient.height) { scroll = 0; }
         p.stroke(255);
         p.push();
         p.rotate(stars.rotation);
+        p.stroke(255);
         for (var i = 0; i < stars.length; i++) {
             var v = stars[i];
-            p.strokeWeight(v.size + Math.random(-0.5, 0.5));
+            p.strokeWeight(v.size + Math.random() - 0.5);
             p.point(v.x, v.y);
         }
         stars.rotation -= 0.0003;
         p.pop();
         p.randomSeed(seed);
-        city = makeCity();
-        p.image(city, 0, 0, city.width, city.height, 0, 0, p.width, p.height);
+        makeCity(p);
     };
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         gradient = makeGradient();
-        city = makeCity();
         stars = makeStars();
         stars.rotation = 0;
+        makeCity(city);
     };
 
     function makeGradient() {
-        var graphic = p.createGraphics(p.width, p.height * 2);
-        for (var y = 0; y < graphic.height/2; y++) {
-            var c = scale(y/(graphic.height/2)).rgb();
+        var graphic = p.createGraphics(p.width, p.height * 4),
+            c = scale(0).rgb(),
+            count = 0;
+        for (var y = 0; y < graphic.height/4; y++) {
             graphic.stroke(c);
             graphic.line(0, y, graphic.width, y);
         }
-        var count = 0;
-        for (var y = graphic.height/2; y <= graphic.height; y++) {
-            var c = scale((y - graphic.height/2)/(graphic.height/2)).rgb();
+        for (var y = graphic.height/4; y < graphic.height/2; y++) {
+            c = scale( p.map(y, graphic.height/4, graphic.height/2, 0, 1) ).rgb() ;
+            graphic.stroke(c);
+            graphic.line(0, y, graphic.width, y);
+        }
+        c = scale(1).rgb();
+        for (var y = graphic.height/2; y < graphic.height * (3/4); y++) {
+            graphic.stroke(c);
+            graphic.line(0, y, graphic.width, y);
+        }
+        for (var y = graphic.height * (3/4); y <= graphic.height; y++) {
+            c = scale((y - graphic.height * (3/4))/(graphic.height/4)).rgb();
             graphic.stroke(c);
             graphic.line(0, graphic.height - count, graphic.width, graphic.height - count);
             count++;
@@ -69,14 +88,14 @@ var sketch = function (p) {
         return graphic;
     }
 
-    function makeCity() {
-        var graphic = p.createGraphics(p.width, p.height),
-            bgDistributor = distributors.makeThirds(graphic.width),
+    function makeCity(graphic) {
+        var bgDistributor = distributors.makeThirds(graphic.width),
             fgDistributor = distributors.makeHalves(graphic.width),
             bgProb = p.random(0.5, 0.85),
             fgProb = p.random(0.5, 0.85),
             bgCount= 0,
             fgCount = 0;
+        graphic.push();
         graphic.fill(scale(mid + 0.15).darken(2).rgb());
         graphic.noStroke(0);
         while (bgCount < 15) {
@@ -115,6 +134,7 @@ var sketch = function (p) {
                 fgCount++;
             }
         }
+        graphic.pop();
         return graphic;
     }
 
