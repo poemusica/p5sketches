@@ -7,25 +7,43 @@ var sketch = function (p) {
         stars,
         caps,
         textures,
-        distributors;
+        distributors,
+        data = {},
+        gui;
 
     p.setup = function () {
+        // P5 prep.
         p.createCanvas(p.windowWidth, p.windowHeight);
         p.imageMode(p.CORNER);
         seed = (p.random() * 4294967296)  >>> 0;
-        p.randomSeed(seed);
         scale = setScale();
         gradient = makeGradient();
         stars = makeStars();
         stars.rotation = 0;
+        // GUI prep.
+        gui = new dat.GUI( { autoPlace: false } );
+        var guiElt = gui.domElement;
+        document.getElementById('p5-sketch').appendChild(guiElt);
+        guiElt.style.position = 'fixed';
+        guiElt.style.left = '0px';
+        guiElt.style.top = '0px';
+        data.palette = function() {
+            scale = setScale();
+            gradient = makeGradient();
+        };
+        gui.add(data,'palette').name('Change palette');
+        data.city = function() {
+            seed = (p.random() * 4294967296)  >>> 0;
+        };
+        gui.add(data,'city').name('Change city');
+
     };
 
     p.draw = function () {
-        p.background(0);
+        // Gradient background
         p.image(gradient, 0, 0, gradient.width, gradient.height, 0, -scroll, p.width, p.height * 4);
         p.image(gradient, 0, 0, gradient.width, gradient.height, 0, p.height * 4 - scroll, p.width, p.height * 4);
-        // p.line(0, gradient.height - scroll, p.width, gradient.height - scroll);
-
+        // Set color for city maker.
         if (scroll < gradient.height/8) { mid = 0; }
         else if (scroll > gradient.height/8 && scroll < gradient.height * (3/8)) {
             mid = p.map(scroll, gradient.height/8, gradient.height * (3/8), 0, 1);
@@ -35,10 +53,10 @@ var sketch = function (p) {
             mid = p.map(scroll, gradient.height * (5/8), gradient.height * (7/8), 1, 0);
         }
         else if (scroll > gradient.height * (7/8)) { mid = 0; }
-
-        scroll += 1;
+        // Increment and wrap background scroll.
+        scroll += 2;
         if (scroll > gradient.height) { scroll = 0; }
-        p.stroke(255);
+        // Update and draw stars.
         p.push();
         p.rotate(stars.rotation);
         p.stroke(255);
@@ -49,8 +67,8 @@ var sketch = function (p) {
         }
         stars.rotation -= 0.0003;
         p.pop();
-        p.randomSeed(seed);
-        makeCity(p);
+        // Update and draw city.
+        makeCity(p, seed);
     };
 
     p.windowResized = function () {
@@ -58,9 +76,10 @@ var sketch = function (p) {
         gradient = makeGradient();
         stars = makeStars();
         stars.rotation = 0;
-        makeCity(city);
+        makeCity(p, seed);
     };
 
+    // Returns gradient graphic.
     function makeGradient() {
         var graphic = p.createGraphics(p.width, p.height * 4),
             c = scale(0).rgb(),
@@ -88,7 +107,9 @@ var sketch = function (p) {
         return graphic;
     }
 
-    function makeCity(graphic) {
+    // Draws city.
+    function makeCity(graphic, randSeed) {
+        p.randomSeed(seed)
         var bgDistributor = distributors.makeThirds(graphic.width),
             fgDistributor = distributors.makeHalves(graphic.width),
             bgProb = p.random(0.5, 0.85),
@@ -96,6 +117,7 @@ var sketch = function (p) {
             bgCount= 0,
             fgCount = 0;
         graphic.push();
+        // Draw distant buildings.
         graphic.fill(scale(mid + 0.15).darken(2).rgb());
         graphic.noStroke(0);
         while (bgCount < 15) {
@@ -108,14 +130,14 @@ var sketch = function (p) {
                 bgCount++;
             }
         }
-
+        // Set foreground styles.
         graphic.fill(0);
         graphic.stroke(scale(mid).brighten().rgb());
         graphic.strokeWeight(2);
         textures.color = p.color(scale(mid).rgb());
         caps.stroke = p.color(scale(mid).brighten().rgb());
         caps.fill = p.color(scale(mid).rgb());
-
+        // Draw foreground buildings.
         while (fgCount < 20) {
             var x = fgDistributor();
             if (p.random() < fgProb) {
@@ -138,6 +160,7 @@ var sketch = function (p) {
         return graphic;
     }
 
+    // Returns array of points within a radius.
     function makeStars() {
         var result = [],
             radius = p.max(p.width, p.height) * 2;
@@ -149,6 +172,7 @@ var sketch = function (p) {
         return result;
     }
 
+    // Returns a chroma scale.
     function setScale() {
         var l = [chroma.random(), chroma.random(), chroma.random(), chroma.random()],
             bezInterpolator = null
@@ -166,6 +190,7 @@ var sketch = function (p) {
         return chroma.scale(bezInterpolator).correctLightness(true).padding(0.15);
     }
 
+    // 1-dimensional distributor module
     distributors = function() {
         var module = {};
         module.index = [];
@@ -229,6 +254,7 @@ var sketch = function (p) {
         return module;
     }();
 
+    // Cap drawing module
     caps = function() {
         var module = {};
         module.index = [];
@@ -310,6 +336,7 @@ var sketch = function (p) {
         return module;
     }();
 
+    // Texture drawing module
     textures = function(){
         var module = {};
         module.index = [];
