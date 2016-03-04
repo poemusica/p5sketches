@@ -516,7 +516,8 @@ var sketch = function (p) {
                                         p.random(0, h * 0.05)),
                 padding = p.createVector(
                         p.random(5, (w - 2 * margin.x)/cols * 0.25),
-                        p.random(5, (h - 2 * margin.y)/rows * 0.25));
+                        p.random(5, (h - 2 * margin.y)/rows * 0.25)),
+                dark = chroma(p.red(module.color), p.green(module.color), p.blue(module.color)).darken(2).rgb();
 
             while ((w - 2*margin.x - 2*padding.x*cols)/cols < 5) { cols--; }
             while ((h - 2*margin.y - 2*padding.y*rows)/rows < 5) { rows--; }
@@ -526,11 +527,17 @@ var sketch = function (p) {
             var offset = p5.Vector.add(loc, margin);
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
-                var cell = grid.grid[i];
+                var cell = grid.grid[i],
+                    limit = p.floor(p.random(500, 10000));
+                graphic.push();
+                if (p.frameCount % limit > limit * 0.75) {
+                    graphic.fill(dark);
+                }
                 graphic.rect(cell.x + padding.x,
                              cell.y + padding.y,
                              grid.cellWidth - 2 * padding.x,
                              grid.cellHeight - 2 * padding.y);
+                graphic.pop();
             }
             graphic.pop();
         };
@@ -550,7 +557,8 @@ var sketch = function (p) {
                 innerPadding = p.createVector(2, 2),
                 innerGrid = makeGrid(innerRows, innerCols,
                                      grid.cellWidth - 2*padding.x,
-                                     grid.cellHeight - 2*padding.y);
+                                     grid.cellHeight - 2*padding.y),
+                dark = chroma(p.red(module.color), p.green(module.color), p.blue(module.color)).darken(2).rgb();
             graphic.translate(loc.x, loc.y);
             graphic.translate(margin.x, margin.y);
             for (var i = 0; i < grid.grid.length; i++) {
@@ -559,11 +567,17 @@ var sketch = function (p) {
                 graphic.translate(cell.x, cell.y);
                 graphic.translate(padding.x, padding.y);
                 for (var j = 0; j < innerGrid.grid.length; j++) {
-                    var innerCell = innerGrid.grid[j];
+                    var innerCell = innerGrid.grid[j],
+                        limit = p.floor(p.random(500, 10000));
+                    graphic.push();
+                    if (p.frameCount % limit > limit * 0.75) {
+                        graphic.fill(dark);
+                    }
                     graphic.rect(innerCell.x + innerPadding.x,
                                  innerCell.y + innerPadding.y,
                                  innerGrid.cellWidth - 2 * innerPadding.x,
                                  innerGrid.cellHeight - 2 * innerPadding.y);
+                    graphic.pop();
                 }
                 graphic.pop();
             }
@@ -585,7 +599,8 @@ var sketch = function (p) {
                 innerPadding = p.createVector(2, 2),
                 innerGrid = makeGrid(innerRows, innerCols,
                                      grid.cellWidth - 2*padding.x,
-                                     grid.cellHeight - 2*padding.y);
+                                     grid.cellHeight - 2*padding.y),
+                dark = chroma(p.red(module.color), p.green(module.color), p.blue(module.color)).darken(2).rgb();
             graphic.translate(loc.x, loc.y);
             graphic.translate(margin.x, margin.y);
             for (var i = 0; i < grid.grid.length; i++) {
@@ -600,11 +615,17 @@ var sketch = function (p) {
                 }
                 graphic.translate(padding.x, padding.y);
                 for (var j = 0; j < innerGrid.grid.length; j++) {
-                    var innerCell = innerGrid.grid[j];
+                    var innerCell = innerGrid.grid[j],
+                        limit = p.floor(p.random(500, 10000));
+                    graphic.push();
+                    if (p.frameCount % limit > limit * 0.75) {
+                        graphic.fill(dark);
+                    }
                     graphic.rect(innerCell.x + innerPadding.x,
                                  innerCell.y + innerPadding.y,
                                  innerGrid.cellWidth - 2 * innerPadding.x,
                                  innerGrid.cellHeight - 2 * innerPadding.y);
+                    graphic.pop();
                 }
                 graphic.pop();
             }
