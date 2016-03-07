@@ -528,9 +528,10 @@ var sketch = function (p) {
             graphic.translate(offset.x, offset.y);
             for (var i = 0; i < grid.grid.length; i++) {
                 var cell = grid.grid[i],
-                    limit = p.floor(p.random(500, 10000));
+                    tOff = p.floor(p.random(0, 60*60*3)),
+                    limit = p.floor(p.random(60*60, 60*60*3));
                 graphic.push();
-                if (p.frameCount % limit > limit * 0.75) {
+                if ( (p.frameCount + tOff) % limit > limit * 0.75) {
                     graphic.fill(dark);
                 }
                 graphic.rect(cell.x + padding.x,
@@ -568,9 +569,10 @@ var sketch = function (p) {
                 graphic.translate(padding.x, padding.y);
                 for (var j = 0; j < innerGrid.grid.length; j++) {
                     var innerCell = innerGrid.grid[j],
-                        limit = p.floor(p.random(500, 10000));
+                        tOff = p.floor(p.random(0, 60*60*3)),
+                        limit = p.floor(p.random(60*60, 60*60*3));
                     graphic.push();
-                    if (p.frameCount % limit > limit * 0.75) {
+                    if ( (p.frameCount + tOff) % limit > limit * 0.75) {
                         graphic.fill(dark);
                     }
                     graphic.rect(innerCell.x + innerPadding.x,
@@ -616,9 +618,10 @@ var sketch = function (p) {
                 graphic.translate(padding.x, padding.y);
                 for (var j = 0; j < innerGrid.grid.length; j++) {
                     var innerCell = innerGrid.grid[j],
-                        limit = p.floor(p.random(500, 10000));
+                        tOff = p.floor(p.random(0, 60*60*3)),
+                        limit = p.floor(p.random(60*60, 60*60*3));
                     graphic.push();
-                    if (p.frameCount % limit > limit * 0.75) {
+                    if ( (p.frameCount + tOff) % limit > limit * 0.75) {
                         graphic.fill(dark);
                     }
                     graphic.rect(innerCell.x + innerPadding.x,
