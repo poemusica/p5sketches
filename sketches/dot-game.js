@@ -12,35 +12,98 @@ var sketch = function (p) {
         MID_GRAY: [70,70,70]
     };
 
-    var game,
-        state = {},
+    var game = {
+            state: null,
+            systems: [],
+            entities: {},
+        },
         ECS = {
+            Entity: {},
             Components: {},
+            Assemblages: {},
             systems: {},
             entities: {}
-        };
+        },
+        state = {};
 
     /***************************************************************************
     Native p5 commands
     ***************************************************************************/
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
+        
+        game.entities = game.initializeEntities();
+        ECS.entities = game.entities;
+        game.systems = [
+            'updateAcceleration',
+            'updateLocation',
+            'detectCollisions',
+            'resizeInventory',
+            'updateEquipped',
+            'updateEmote',
+            'renderBoundaries',
+            'renderCircle',
+            'renderEmote',
+            'renderInventory'
+        ];
+
+        checkBrowserSupport();
+    };
+
+    p.draw = function () {
+        game.state();
+    };
+
+    p.windowResized = function () {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+        // TODO: resize walls
+    };
+    /***************************************************************************
+    Gamepad utils
+    ***************************************************************************/
+    function checkBrowserSupport() {
+        if (!navigator.getGamepads){
+            var error = "Your browser does not support gamepads."
+                        + "\nPlease try again using Chrome.";
+            game.state = state.error(error);
+        } else {
+            var error = "Please connect your gamepad and refresh the page.";
+            gamepadReady(function() { game.state = state.ready; }, error);
+        }
+    }
+
+    function gamepadReady(callback, error) {
+        if (navigator.getGamepads()[0] == undefined) {
+            game.state = state.error(error);
+        } else {
+            callback();
+        }
+    }
+    /***************************************************************************
+    Game logic
+    ***************************************************************************/
+    game.initializeEntities = function() {
+        var entities = {};
         // Note: Assumes default rect and ellipse modes.
+        // Make player.
         var player = new ECS.Assemblages.Player({
             loc: new p5.Vector(p.width/2, p.height/2),
-            inventory: [colors.BLUE, colors.GREEN, colors.YELLOW, colors.ORANGE, colors.RED],
+            inventory: [colors.BLUE, colors.GREEN, colors.YELLOW, colors.ORANGE,
+                        colors.RED],
             shape: 'circle',
             size: 50,
         });
-        ECS.entities[player.id] = player;
+        entities[player.id] = player;
+        // Make NPCs.
         for (var i = 0; i < 10; i++) {
             var npc = new ECS.Assemblages.NPC({
                 shape: 'circle', 
                 size: 50,
                 fill: [0,0]
             });
-            ECS.entities[npc.id] = npc;
+            entities[npc.id] = npc;
         }
+        // Make walls.
         var walls = [
             {x: 10, y: 10, width: p.width - 20, height: 10},
             {x: 10, y: p.height - 20, width: p.width - 20, height: 10},
@@ -55,74 +118,17 @@ var sketch = function (p) {
                         width: data.width,
                         height: data.height,
                     });
-            ECS.entities[wall.id] = wall;
+            entities[wall.id] = wall;
         }
 
-        if (!navigator.getGamepads){
-            var error = "Your browser does not support gamepads.\nPlease try again using Chrome.";
-            game = state.error(error);
-        } else {
-            var error = "Please connect your gamepad and refresh the page.";
-            gamepadReady(function() { game = state.ready; }, error);
-        }
+        return entities;
     };
-
-    p.draw = function () {
-        game();
-    };
-
-    p.windowResized = function () {
-        p.resizeCanvas(p.windowWidth, p.windowHeight);
-        // TODO: resize walls
-    };
-    /***************************************************************************
-    Gamepad utils
-    ***************************************************************************/
-    function gamepadReady(callback, error) {
-        if (navigator.getGamepads()[0] == undefined) {
-            game = state.error(error);
-        } else {
-            callback();
-        }
-    }
-    /***************************************************************************
-    Other utils
-    ***************************************************************************/
-    function randomLoc() {
-        return new p5.Vector(p.random(0, p.width), p.random(0, p.height));
-    }
-    /***************************************************************************
-    Collisions
-    ***************************************************************************/
-    // Note: Assumes default ellipse mode (center) and rect mode (corner).
-    function circleCircle(center1, size1, center2, size2) {
-        var rebound = p5.Vector.sub(center1, center2),
-            d = rebound.mag();
-            if (d <= size1/2 + size2/2) { return rebound; }
-            return false;
-    }
-
-    function circleRect(center, size, corner, w, h) {
-        var test = new p5.Vector(center.x, center.y);
-        // which edge is closest?
-        if (center.x < corner.x) { test.x = corner.x; } // test left edge
-        else if (center.x > corner.x + w) { test.x = corner.x + w; } // right edge
-        if (center.y < corner.y) { test.y = corner.y; } // top edge
-        else if (center.y > corner.y + h) { test.y = corner.y + h; } // bottom edge
-
-        // get distance from closest edges
-        var rebound = p5.Vector.sub(center, test),
-            d = rebound.mag();
-        
-        // if the distance is less than the radius, collision!
-        if (d <= size/2) { return rebound; }
-        return false;
-    }
     /***************************************************************************
     Program states
     ***************************************************************************/
     state.error = function(error) {
-        var message = error || "An error has occurred.\nPlease reconnect your gamepad and refresh the page."
+        var message = error || "An error has occurred."
+                      + "\nPlease reconnect your gamepad and refresh the page."
         p.background(0);
         p.fill(255);
         p.textSize(18);
@@ -133,10 +139,11 @@ var sketch = function (p) {
 
     state.calibrate = function () {
         setTimeout(function() {
-            var error = "Gamepad disconnected.\nPlease reconnect your gamepad and refresh the page.";
+            var error = "Gamepad disconnected." +
+                        "\nPlease reconnect your gamepad and refresh the page.";
             gamepadReady(function() {
                 var gamepad = navigator.getGamepads()[0];
-                game = state.ready;
+                game.state = state.ready;
                 p.loop();
             }, error);
         }, 2000);
@@ -150,7 +157,8 @@ var sketch = function (p) {
     };
 
     state.ready = function() {
-        var error = "Gamepad disconnected.\nPlease reconnect your gamepad and refresh the page."
+        var error = "Gamepad disconnected."
+                    + "\nPlease reconnect your gamepad and refresh the page."
         gamepadReady(function(){
             var gamepad = navigator.getGamepads()[0];
             p.background(colors.GRAY);
@@ -161,27 +169,20 @@ var sketch = function (p) {
             p.textSize(18);
             p.text("Press A to start.", p.width/2, p.height/2 + 36);
             if (gamepad.buttons[0].pressed) {
-                game = state.play;
+                game.state = state.play;
             }
         }, error);
     };
 
     state.play = function() {
-        var error = "Gamepad disconnected.\nPlease reconnect your gamepad and refresh the page."
+        var error = "Gamepad disconnected."
+                    + "\nPlease reconnect your gamepad and refresh the page."
         gamepadReady(function() {
 
             p.background(colors.GRAY);
-
-            ECS.systems.updateAcceleration(ECS.entities);
-            ECS.systems.updateLocation(ECS.entities);
-            ECS.systems.detectCollisions(ECS.entities);
-            ECS.systems.resizeInventory(ECS.entities);
-            ECS.systems.updateEquipped(ECS.entities);
-            ECS.systems.updateEmote(ECS.entities);
-            ECS.systems.renderBoundaries(ECS.entities);
-            ECS.systems.renderCircle(ECS.entities);
-            ECS.systems.renderEmote(ECS.entities);
-            ECS.systems.renderInventory(ECS.entities);
+            for (var i = 0; i < game.systems.length; i++) {
+                ECS.systems[game.systems[i]](ECS.entities);
+            }
 
         }, error);
     };
@@ -633,7 +634,39 @@ var sketch = function (p) {
             }
         }        
     };
-    /**************************************************************************/
+    /***************************************************************************
+    Collisions
+    ***************************************************************************/
+    // Note: Assumes default ellipse mode (center) and rect mode (corner).
+    function circleCircle(center1, size1, center2, size2) {
+        var rebound = p5.Vector.sub(center1, center2),
+            d = rebound.mag();
+            if (d <= size1/2 + size2/2) { return rebound; }
+            return false;
+    }
+
+    function circleRect(center, size, corner, w, h) {
+        var test = new p5.Vector(center.x, center.y);
+        // which edge is closest?
+        if (center.x < corner.x) { test.x = corner.x; } // test left edge
+        else if (center.x > corner.x + w) { test.x = corner.x + w; } // right edge
+        if (center.y < corner.y) { test.y = corner.y; } // top edge
+        else if (center.y > corner.y + h) { test.y = corner.y + h; } // bottom edge
+
+        // get distance from closest edges
+        var rebound = p5.Vector.sub(center, test),
+            d = rebound.mag();
+        
+        // if the distance is less than the radius, collision!
+        if (d <= size/2) { return rebound; }
+        return false;
+    }
+    /***************************************************************************
+    Other utils
+    ***************************************************************************/
+    function randomLoc() {
+        return new p5.Vector(p.random(0, p.width), p.random(0, p.height));
+    }
 };
 /*******************************************************************************
 Main
