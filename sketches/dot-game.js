@@ -26,15 +26,37 @@ var sketch = function (p) {
     ***************************************************************************/
     p.setup = function () {
         p.createCanvas(p.windowWidth, p.windowHeight);
-
+        // Note: Assumes default rect and ellipse modes.
         var player = new ECS.Assemblages.Player({
             loc: new p5.Vector(p.width/2, p.height/2),
-            inventory: [colors.BLUE, colors.GREEN, colors.YELLOW, colors.ORANGE, colors.RED]
+            inventory: [colors.BLUE, colors.GREEN, colors.YELLOW, colors.ORANGE, colors.RED],
+            shape: 'circle',
+            size: 50,
         });
         ECS.entities[player.id] = player;
         for (var i = 0; i < 10; i++) {
-            var npc = new ECS.Assemblages.NPC();
+            var npc = new ECS.Assemblages.NPC({
+                shape: 'circle', 
+                size: 50,
+                fill: [0,0]
+            });
             ECS.entities[npc.id] = npc;
+        }
+        var walls = [
+            {x: 10, y: 10, width: p.width - 20, height: 10},
+            {x: 10, y: p.height - 20, width: p.width - 20, height: 10},
+            {x: 10, y: 10, width: 10, height: p.height - 20},
+            {x: p.width - 20, y: 10, width: 10, height: p.height - 20}, 
+        ];
+        for (var i = 0; i < walls.length; i++) {
+                var data = walls[i],
+                    wall = new ECS.Assemblages.StaticBoundary({
+                        loc: new p5.Vector(data.x, data.y),
+                        shape: 'rectangle',
+                        width: data.width,
+                        height: data.height,
+                    });
+            ECS.entities[wall.id] = wall;
         }
 
         if (!navigator.getGamepads){
@@ -52,6 +74,7 @@ var sketch = function (p) {
 
     p.windowResized = function () {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
+        // TODO: resize walls
     };
     /***************************************************************************
     Gamepad utils
@@ -69,6 +92,33 @@ var sketch = function (p) {
     ***************************************************************************/
     function randomLoc() {
         return new p5.Vector(p.random(0, p.width), p.random(0, p.height));
+    }
+    /***************************************************************************
+    Collisions
+    ***************************************************************************/
+    // Note: Assumes default ellipse mode (center) and rect mode (corner).
+    function circleCircle(center1, size1, center2, size2) {
+        var rebound = p5.Vector.sub(center1, center2),
+            d = rebound.mag();
+            if (d <= size1/2 + size2/2) { return rebound; }
+            return false;
+    }
+
+    function circleRect(center, size, corner, w, h) {
+        var test = new p5.Vector(center.x, center.y);
+        // which edge is closest?
+        if (center.x < corner.x) { test.x = corner.x; } // test left edge
+        else if (center.x > corner.x + w) { test.x = corner.x + w; } // right edge
+        if (center.y < corner.y) { test.y = corner.y; } // top edge
+        else if (center.y > corner.y + h) { test.y = corner.y + h; } // bottom edge
+
+        // get distance from closest edges
+        var rebound = p5.Vector.sub(center, test),
+            d = rebound.mag();
+        
+        // if the distance is less than the radius, collision!
+        if (d <= size/2) { return rebound; }
+        return false;
     }
     /***************************************************************************
     Program states
@@ -128,7 +178,10 @@ var sketch = function (p) {
             ECS.systems.detectCollisions(ECS.entities);
             ECS.systems.resizeInventory(ECS.entities);
             ECS.systems.updateEquipped(ECS.entities);
-            ECS.systems.renderDot(ECS.entities);
+            ECS.systems.updateEmote(ECS.entities);
+            ECS.systems.renderBoundaries(ECS.entities);
+            ECS.systems.renderCircle(ECS.entities);
+            ECS.systems.renderEmote(ECS.entities);
             ECS.systems.renderInventory(ECS.entities);
 
         }, error);
@@ -179,7 +232,11 @@ var sketch = function (p) {
     Component definitions
     ***************************************************************************/
     ECS.Components.Appearance = function( params ) {
-        this.size = params ? params.size || 50 : 50;
+        this.shape = params ? params.shape || false : false;
+        this.size = params ? params.size || false : false;
+        this.width = params ? params.width || false : false;
+        this.height = params ? params.height || false : false;
+        this.base = params ? params.base || false : false;
         this.fill = params ? params.fill || colors.MID_GRAY : colors.MID_GRAY;
         this.stroke = params ? params.stroke || colors.MID_GRAY : colors.MID_GRAY;
         this.strokeWeight = params ? params.strokeWeight || 4 : 4;
@@ -193,15 +250,17 @@ var sketch = function (p) {
     };
     ECS.Components.BoundByScreen.prototype.name = 'boundByScreen';
 
-    ECS.Components.Collider = function() {
+    ECS.Components.Collider = function( params ) {
         this.collides = true;
         this.hit = false;
+        this.collisionForce = new p5.Vector(0, 0);
         return this;
     };
     ECS.Components.Collider.prototype.name = 'collider';
 
-    ECS.Components.Emoter = function() {
-        this.emotes = true;
+    ECS.Components.Emoter = function( params ) {
+        this.emoting = false;
+        this.size = 0;
         return this;
     };
     ECS.Components.Emoter.prototype.name = 'emoter';
@@ -260,15 +319,23 @@ var sketch = function (p) {
             entity.addComponent( new ECS.Components.Location(params) );
             entity.addComponent( new ECS.Components.Mover(params) );
             return entity;
+        },
+        StaticBoundary: function ( params ) {
+            var entity = new ECS.Entity();
+            entity.addComponent( new ECS.Components.Appearance(params) );
+            entity.addComponent( new ECS.Components.Collider(params) );
+            entity.addComponent( new ECS.Components.Location(params) );
+            return entity;            
         }
     };
     /***************************************************************************
     System definitions
     ***************************************************************************/
-    ECS.systems.renderDot = function(entities) {
+    ECS.systems.renderCircle = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (e.components.appearance && e.components.location) {
+            if (e.components.appearance && e.components.appearance.size 
+                && e.components.location) {
                 var fill = e.components.appearance.fill,
                     stroke = e.components.appearance.stroke;
                 if (e.components.hasInventory) {
@@ -291,10 +358,51 @@ var sketch = function (p) {
         }
     };
 
-    ECS.systems.renderInventory = function(entities) {
+    ECS.systems.renderEmote = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (e.components.emoter && e.components.emoter.emoting
+                && e.components.location && e.components.appearance
+                && e.components.hasInventory && e.components.hasInventory.equipped) {
+                var alpha = p.map(e.components.emoter.size, 
+                                  e.components.appearance.size,
+                                  e.components.appearance.size * 3, 255, 0),
+                    stroke = e.components.hasInventory.equipped;
+                p.push();
+                p.translate(e.components.location.loc.x, 
+                            e.components.location.loc.y);
+                p.noFill();
+                p.stroke(stroke.concat(alpha));
+                p.strokeWeight(e.components.appearance.strokeWeight);
+                p.ellipse(0, 0, e.components.emoter.size, e.components.emoter.size);
+                p.pop();
+            }
+        }
+    };
+
+    ECS.systems.renderBoundaries = function(entities) {
         for (var id in entities) {
             var e = entities[id];
             if (e.components.appearance && e.components.location 
+                && !e.components.mover) {
+                p.push();
+                p.translate(e.components.location.loc.x, 
+                            e.components.location.loc.y);
+                p.fill(e.components.appearance.fill);
+                p.stroke(e.components.appearance.stroke);
+                p.strokeWeight(e.components.appearance.strokeWeight);
+                p.rect(0, 0, e.components.appearance.width,
+                        e.components.appearance.height);
+                p.pop();
+            }
+        }
+    };
+
+    ECS.systems.renderInventory = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (e.components.location && e.components.appearance
+                && e.components.appearance.size
                 && e.components.hasInventory 
                 && e.components.hasInventory.open > e.components.appearance.size) {
                 var length = e.components.hasInventory.inventory.length,
@@ -376,6 +484,36 @@ var sketch = function (p) {
         }
     };
 
+    ECS.systems.updateEmote = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (!e.components.emoter || !e.components.appearance) { continue; }
+            if (e.components.emoter.emoting) {
+                var min = e.components.appearance.size,
+                    max = e.components.appearance.size * 3;
+                e.components.emoter.size += 2;
+                e.components.emoter.size = p.constrain(
+                    e.components.emoter.size, min, max);
+                if (e.components.emoter.size >= max) {
+                    e.components.emoter.emoting = false;
+                    e.components.emoter.size = 0;
+                }
+            }
+            // Player logic
+            if (e.components.playerControlled && !e.components.emoter.emoting 
+                && e.components.hasInventory && e.components.hasInventory.equipped) {
+                var gamepad = navigator.getGamepads()[0],
+                    rTrigger = gamepad.buttons[7].value;
+                if (rTrigger > 0.5) {
+                    e.components.emoter.emoting = true;
+                }
+            } else {
+                // TODO: NPC logic
+            }
+            
+        }
+    };
+
     ECS.systems.updateEquipped = function(entities) {
         // Set equipped and update appearance variables
         for (var id in entities) {
@@ -403,17 +541,26 @@ var sketch = function (p) {
         for (var id in entities) {
             var e = entities[id];
             if (e.components.location && e.components.mover) {
+                // Reset acceleration
+                e.components.mover.acc.set(0, 0);
                 // Player logic
                 if (e.components.playerControlled) {
-                    var gamepad = navigator.getGamepads()[0];
-                    e.components.mover.acc.set(gamepad.axes[0], gamepad.axes[1]);
-                    if (e.components.mover.acc.magSq() < 1) {
-                        e.components.mover.acc = e.components.mover.vel.copy();
-                        e.components.mover.acc.rotate(Math.PI);
-                        e.components.mover.acc.mult(0.05);
-                    }
+                    var gamepad = navigator.getGamepads()[0],
+                        playerForce = new p5.Vector(gamepad.axes[0], gamepad.axes[1]);
+                    e.components.mover.acc.add(playerForce);
                 } else {
                     // TODO: autonomous behaviors
+                }
+                // Apply collision forces
+                if (e.components.collider) {
+                    var collisionForce = e.components.collider.collisionForce;
+                    e.components.mover.acc.add(collisionForce);
+                }
+                // Friction / Moving objects naturally come to rest.
+                if (e.components.mover.acc.magSq() < 1) {
+                    e.components.mover.acc = e.components.mover.vel.copy();
+                    e.components.mover.acc.rotate(Math.PI);
+                    e.components.mover.acc.mult(0.05);
                 }
             }
         }
@@ -423,21 +570,42 @@ var sketch = function (p) {
         // TODO: spatial hash optimization
         for (var id1 in entities) {
             var e1 = entities[id1],
-                hit = false;
-            if (!e1.components.collider || !e1.components.appearance) { continue; }
+                hit = false,
+                collisionForce = new p5.Vector(0, 0);
+            if (!e1.components.collider || !e1.components.appearance
+                || !e1.components.mover) { continue; }
             for (var id2 in entities) {
                 if (id1 === id2) { continue; }
                 var e2 = entities[id2];
                 if (!e2.components.collider || !e2.components.appearance) { continue; }
-                var larger = p.max(e1.components.appearance.size, 
-                                    e2.components.appearance.size),
-                    d = p5.Vector.dist(e1.components.location.loc, 
-                                       e2.components.location.loc);
-                if (d <= larger) {
-                    hit = true;
+                // Circle hits
+                if (e1.components.appearance.shape == 'circle' && 
+                    e1.components.appearance.shape == e2.components.appearance.shape) {
+                    var rebound = circleCircle(e1.components.location.loc, 
+                        e1.components.appearance.size, e2.components.location.loc,
+                        e2.components.appearance.size);
+                    if (rebound) {
+                        collisionForce.add(rebound.normalize());
+                        hit = true;
+                    }
+                }
+                // Rectangle hits
+                if (e1.components.appearance.shape == 'circle' && 
+                    e2.components.appearance.shape == 'rectangle') {
+
+                    var rebound = circleRect(e1.components.location.loc, 
+                                    e1.components.appearance.size,
+                                    e2.components.location.loc, 
+                                    e2.components.appearance.width, 
+                                    e2.components.appearance.height);
+                    if (rebound) {
+                        collisionForce.add(rebound.normalize());
+                        hit = true;
+                    }
                 }
             }
             e1.components.collider.hit = hit;
+            e1.components.collider.collisionForce = collisionForce;
         }
     };
 
@@ -445,6 +613,7 @@ var sketch = function (p) {
         for (var id in entities) {
             var e = entities[id];
             if (e.components.mover && e.components.location) {
+                //TODO: Limit acceleration steering here?
                 e.components.mover.vel.add(e.components.mover.acc);
                 e.components.mover.vel.limit(e.components.mover.maxSpeed);
                 e.components.location.loc.add(e.components.mover.vel);
@@ -487,4 +656,6 @@ UUID:
 * http://stackoverflow.com/a/8809472
 ECS:
 * http://vasir.net/blog/game-development/how-to-build-entity-component-system-in-javascript
+Collisions:
+* http://www.jeffreythompson.org/collision-detection/table_of_contents.php
 *******************************************************************************/
