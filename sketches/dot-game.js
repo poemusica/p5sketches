@@ -12,14 +12,13 @@ var sketch = function (p) {
         MID_GRAY: [70,70,70]
     };
 
-    var game = {},
+    var game,
         state = {},
         ECS = {
             Components: {},
             systems: {},
             entities: {}
-        },
-        message;
+        };
 
     /***************************************************************************
     Native p5 commands
@@ -60,8 +59,8 @@ var sketch = function (p) {
         }
 
         if (!navigator.getGamepads){
-            message = "Your browser does not support gamepads.\nPlease try again using Chrome.";
-            game = state.error;
+            var error = "Your browser does not support gamepads.\nPlease try again using Chrome.";
+            game = state.error(error);
         } else {
             var error = "Please connect your gamepad and refresh the page.";
             gamepadReady(function() { game = state.ready; }, error);
@@ -81,8 +80,7 @@ var sketch = function (p) {
     ***************************************************************************/
     function gamepadReady(callback, error) {
         if (navigator.getGamepads()[0] == undefined) {
-            message = error;
-            game = state.error;
+            game = state.error(error);
         } else {
             callback();
         }
@@ -123,7 +121,8 @@ var sketch = function (p) {
     /***************************************************************************
     Program states
     ***************************************************************************/
-    state.error = function() {
+    state.error = function(error) {
+        var message = error || "An error has occurred.\nPlease reconnect your gamepad and refresh the page."
         p.background(0);
         p.fill(255);
         p.textSize(18);
