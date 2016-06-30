@@ -16,6 +16,7 @@ var sketch = function (p) {
             state: null,
             systems: [],
             entities: {},
+            color: null
         },
         ECS = {
             Entity: {},
@@ -24,8 +25,9 @@ var sketch = function (p) {
             systems: {},
             entities: {}
         },
-        state = {};
-
+        state = {},
+        error = {},
+        timeoutID;
     /***************************************************************************
     Native p5 commands
     ***************************************************************************/
@@ -58,17 +60,20 @@ var sketch = function (p) {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         // TODO: resize walls
     };
+
+    // p.mouseClicked = function() {
+    //     clearTimeout(timeoutID);
+    //     game.state = state.over;
+    // }
     /***************************************************************************
     Gamepad utils
     ***************************************************************************/
     function checkBrowserSupport() {
         if (!navigator.getGamepads){
-            var error = "Your browser does not support gamepads."
-                        + "\nPlease try again using Chrome.";
-            game.state = state.error(error);
+            game.state = state.error(error.unsupported);
         } else {
-            var error = "Please connect your gamepad and refresh the page.";
-            gamepadReady(function() { game.state = state.ready; }, error);
+            gamepadReady(function() { game.state = state.ready; }, 
+                         error.disconnected);
         }
     }
 
@@ -82,6 +87,25 @@ var sketch = function (p) {
     /***************************************************************************
     Game logic
     ***************************************************************************/
+    game.alternateColor = function() {
+        var normalInterval = getRandomInt(2000, 10000);
+        timeoutID = setTimeout(function() {
+            game.state = state.colorSwap;
+            
+            var swappingInterval = getRandomInt(1000, 3000);
+            timeoutID = setTimeout(function() { 
+                var choices = [colors.BLUE, colors.GREEN, colors.YELLOW,
+                               colors.ORANGE, colors.RED],
+                idx = getRandomInt(0, choices.length);
+                game.fill = choices[idx];
+                game.state = state.play;
+                ECS.systems.uniformFill(ECS.entities);
+                game.alternateColor();
+            }, swappingInterval);
+
+        }, normalInterval);
+    };
+
     game.initializeEntities = function() {
         var entities = {};
         // Note: Assumes default rect and ellipse modes.
@@ -124,11 +148,19 @@ var sketch = function (p) {
         return entities;
     };
     /***************************************************************************
+    Error messages
+    ***************************************************************************/
+    error.generic = "An error has occurred."
+                    + "\nPlease reconnect your gamepad and refresh the page."
+    error.disconnected = "Gamepad disconnected." +
+                        "\nPlease reconnect your gamepad and refresh the page.";
+    error.unsupported = "Your browser does not support gamepads."
+                        + "\nPlease try again using Chrome."
+    /***************************************************************************
     Program states
     ***************************************************************************/
-    state.error = function(error) {
-        var message = error || "An error has occurred."
-                      + "\nPlease reconnect your gamepad and refresh the page."
+    state.error = function(msg) {
+        var message = msg || error.generic;
         p.background(0);
         p.fill(255);
         p.textSize(18);
@@ -139,13 +171,11 @@ var sketch = function (p) {
 
     state.calibrate = function () {
         setTimeout(function() {
-            var error = "Gamepad disconnected." +
-                        "\nPlease reconnect your gamepad and refresh the page.";
             gamepadReady(function() {
                 var gamepad = navigator.getGamepads()[0];
                 game.state = state.ready;
                 p.loop();
-            }, error);
+            }, error.disconnected);
         }, 2000);
         p.background(0);
         p.fill(255);
@@ -157,8 +187,6 @@ var sketch = function (p) {
     };
 
     state.ready = function() {
-        var error = "Gamepad disconnected."
-                    + "\nPlease reconnect your gamepad and refresh the page."
         gamepadReady(function(){
             var gamepad = navigator.getGamepads()[0];
             p.background(colors.GRAY);
@@ -170,21 +198,50 @@ var sketch = function (p) {
             p.text("Press A to start.", p.width/2, p.height/2 + 36);
             if (gamepad.buttons[0].pressed) {
                 game.state = state.play;
+                game.alternateColor();
             }
-        }, error);
+        }, error.disconnected);
     };
 
     state.play = function() {
-        var error = "Gamepad disconnected."
-                    + "\nPlease reconnect your gamepad and refresh the page."
         gamepadReady(function() {
 
             p.background(colors.GRAY);
+
             for (var i = 0; i < game.systems.length; i++) {
                 ECS.systems[game.systems[i]](ECS.entities);
             }
 
-        }, error);
+        }, error.disconnected);
+    };
+
+    state.over = function() {
+        gamepadReady(function() {
+
+            p.background(colors.GRAY);
+            p.fill(255);
+            p.textAlign(p.CENTER);
+            p.textSize(36);
+            p.text("Game Over", p.width/2, p.height/2);
+            p.textSize(18);
+            p.text("Thanks for playing.", p.width/2, p.height/2 + 36);
+            p.noLoop();
+
+        }, error.disconnected);
+    };
+
+    state.colorSwap = function() {
+        gamepadReady(function() {
+
+            p.background(colors.GRAY);
+
+            ECS.systems.randomFill(ECS.entities);
+
+            for (var i = 0; i < game.systems.length; i++) {
+                ECS.systems[game.systems[i]](ECS.entities);
+            }
+
+        }, error.disconnected);
     };
     /***************************************************************************
     Entity definitions
@@ -462,24 +519,46 @@ var sketch = function (p) {
     ECS.systems.resizeInventory = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (e.components.hasInventory && e.components.appearance) {
-                var size = e.components.appearance.size;
-                // Player logic
-                if (e.components.playerControlled) {
-                    var gamepad = navigator.getGamepads()[0],
-                        rJoy = new p5.Vector(gamepad.axes[2], gamepad.axes[3]);
-                    if (Math.abs(rJoy.x) > 0.25 || Math.abs(rJoy.y) > 0.25) {
-                        if (e.components.hasInventory.open < size * 3) {
-                            e.components.hasInventory.open += 15; 
-                        }
-                    } else if (e.components.hasInventory.open > size) { 
-                        e.components.hasInventory.open -= 15;
+            if (!e.components.hasInventory || !e.components.appearance) { continue; }
+            var size = e.components.appearance.size;
+            // Player logic
+            if (e.components.playerControlled) {
+                var gamepad = navigator.getGamepads()[0],
+                    rJoy = new p5.Vector(gamepad.axes[2], gamepad.axes[3]);
+                if (Math.abs(rJoy.x) > 0.25 || Math.abs(rJoy.y) > 0.25) {
+                    if (e.components.hasInventory.open < size * 3) {
+                        e.components.hasInventory.open += 15; 
                     }
-                } else {
-                    // TODO: NPC logic
+                } else if (e.components.hasInventory.open > size) { 
+                    e.components.hasInventory.open -= 15;
                 }
-                e.components.hasInventory.open = 
-                    p.constrain(e.components.hasInventory.open, size, size * 3);
+            } else {
+                // TODO: NPC logic
+            }
+            e.components.hasInventory.open = 
+                p.constrain(e.components.hasInventory.open, size, size * 3);
+        }
+    };
+
+    ECS.systems.uniformFill = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (!e.components.appearance || !e.components.mover 
+                || e.components.playerControlled) { continue; }
+            e.components.appearance.fill = game.fill || colors.MID_GRAY;
+        }
+    };
+
+    ECS.systems.randomFill = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (!e.components.appearance || !e.components.mover 
+                || e.components.playerControlled) { continue; }
+            var choices = [colors.BLUE, colors.GREEN, colors.YELLOW,
+                           colors.ORANGE, colors.RED],
+                idx = getRandomInt(0, choices.length);
+            if (Math.random() > 0.98) {
+                e.components.appearance.fill = choices[idx];
             }
         }
     };
@@ -518,21 +597,20 @@ var sketch = function (p) {
         // Set equipped and update appearance variables
         for (var id in entities) {
             var e = entities[id];
-            if (e.components.hasInventory && e.components.appearance) {
-                var length = e.components.hasInventory.inventory.length;
-                // Player logic
-                if (e.components.playerControlled && length > 0 && 
-                    e.components.hasInventory.open >= e.components.appearance.size * 3) {
-                    var gamepad = navigator.getGamepads()[0],
-                        rJoy = new p5.Vector(gamepad.axes[2], gamepad.axes[3]),
-                        dir = rJoy.heading() > 0 ? rJoy.heading() : p.TWO_PI + rJoy.heading(),
-                        theta = p.TWO_PI / length,
-                        idx = Math.floor(dir / theta);
-                    e.components.hasInventory.equipped = 
-                        e.components.hasInventory.inventory[idx];
-                } else {
-                    // TODO: NPC logic
-                }
+            if (!e.components.hasInventory || !e.components.appearance) { continue; }
+            var length = e.components.hasInventory.inventory.length;
+            // Player logic
+            if (e.components.playerControlled && length > 0 && 
+                e.components.hasInventory.open >= e.components.appearance.size * 3) {
+                var gamepad = navigator.getGamepads()[0],
+                    rJoy = new p5.Vector(gamepad.axes[2], gamepad.axes[3]),
+                    dir = rJoy.heading() > 0 ? rJoy.heading() : p.TWO_PI + rJoy.heading(),
+                    theta = p.TWO_PI / length,
+                    idx = Math.floor(dir / theta);
+                e.components.hasInventory.equipped = 
+                    e.components.hasInventory.inventory[idx];
+            } else {
+                // TODO: NPC logic
             }
         }
     };
@@ -540,28 +618,27 @@ var sketch = function (p) {
     ECS.systems.updateAcceleration = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (e.components.location && e.components.mover) {
-                // Reset acceleration
-                e.components.mover.acc.set(0, 0);
-                // Player logic
-                if (e.components.playerControlled) {
-                    var gamepad = navigator.getGamepads()[0],
-                        playerForce = new p5.Vector(gamepad.axes[0], gamepad.axes[1]);
-                    e.components.mover.acc.add(playerForce);
-                } else {
-                    // TODO: autonomous behaviors
-                }
-                // Apply collision forces
-                if (e.components.collider) {
-                    var collisionForce = e.components.collider.collisionForce;
-                    e.components.mover.acc.add(collisionForce);
-                }
-                // Friction / Moving objects naturally come to rest.
-                if (e.components.mover.acc.magSq() < 1) {
-                    e.components.mover.acc = e.components.mover.vel.copy();
-                    e.components.mover.acc.rotate(Math.PI);
-                    e.components.mover.acc.mult(0.05);
-                }
+            if (!e.components.location || !e.components.mover) { continue; }
+            // Reset acceleration
+            e.components.mover.acc.set(0, 0);
+            // Player logic
+            if (e.components.playerControlled) {
+                var gamepad = navigator.getGamepads()[0],
+                    playerForce = new p5.Vector(gamepad.axes[0], gamepad.axes[1]);
+                e.components.mover.acc.add(playerForce);
+            } else {
+                // TODO: autonomous behaviors
+            }
+            // Apply collision forces
+            if (e.components.collider) {
+                var collisionForce = e.components.collider.collisionForce;
+                e.components.mover.acc.add(collisionForce);
+            }
+            // Friction / Moving objects naturally come to rest.
+            if (e.components.mover.acc.magSq() < 1) {
+                e.components.mover.acc = e.components.mover.vel.copy();
+                e.components.mover.acc.rotate(Math.PI);
+                e.components.mover.acc.mult(0.05);
             }
         }
     };
@@ -612,27 +689,26 @@ var sketch = function (p) {
     ECS.systems.updateLocation = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (e.components.mover && e.components.location) {
-                //TODO: Limit acceleration steering here?
-                e.components.mover.vel.add(e.components.mover.acc);
-                e.components.mover.vel.limit(e.components.mover.maxSpeed);
-                e.components.location.loc.add(e.components.mover.vel);
-                if (e.components.boundByScreen.bound && e.components.appearance) {
-                    e.components.location.loc.x = 
-                        p.constrain(e.components.location.loc.x, 
-                                    e.components.appearance.size/2, 
-                                    p.width - e.components.appearance.size/2);
-                    e.components.location.loc.y = 
-                        p.constrain(e.components.location.loc.y, 
-                                    e.components.appearance.size/2, 
-                                    p.height - e.components.appearance.size/2);
-                }    
-                // Eliminate very small numbers
-                if (e.components.mover.vel.magSq() < 0.01) { 
-                    e.components.mover.vel.set(0, 0); 
-                }
+            if (!e.components.mover || !e.components.location) { continue; }
+            //TODO: Limit acceleration steering here?
+            e.components.mover.vel.add(e.components.mover.acc);
+            e.components.mover.vel.limit(e.components.mover.maxSpeed);
+            e.components.location.loc.add(e.components.mover.vel);
+            if (e.components.boundByScreen.bound && e.components.appearance) {
+                e.components.location.loc.x = 
+                    p.constrain(e.components.location.loc.x, 
+                                e.components.appearance.size/2, 
+                                p.width - e.components.appearance.size/2);
+                e.components.location.loc.y = 
+                    p.constrain(e.components.location.loc.y, 
+                                e.components.appearance.size/2, 
+                                p.height - e.components.appearance.size/2);
+            }    
+            // Eliminate very small numbers
+            if (e.components.mover.vel.magSq() < 0.01) { 
+                e.components.mover.vel.set(0, 0); 
             }
-        }        
+        }
     };
     /***************************************************************************
     Collisions
@@ -667,6 +743,10 @@ var sketch = function (p) {
     function randomLoc() {
         return new p5.Vector(p.random(0, p.width), p.random(0, p.height));
     }
+    // Returns a random integer between min (included) and max (excluded)
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
 };
 /*******************************************************************************
 Main
@@ -690,4 +770,6 @@ ECS:
 * http://vasir.net/blog/game-development/how-to-build-entity-component-system-in-javascript
 Collisions:
 * http://www.jeffreythompson.org/collision-detection/table_of_contents.php
+Random Integer Generator:
+* https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 *******************************************************************************/
