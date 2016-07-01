@@ -16,7 +16,8 @@ var sketch = function (p) {
             state: null,
             systems: [],
             entities: {},
-            color: null
+            color: null,
+            over: false,
         },
         ECS = {
             Entity: {},
@@ -37,9 +38,11 @@ var sketch = function (p) {
         game.entities = game.initializeEntities();
         ECS.entities = game.entities;
         game.systems = [
+            'wander',
+            'seek',
+            'detectCollisions',
             'updateAcceleration',
             'updateLocation',
-            'detectCollisions',
             'resizeInventory',
             'updateEquipped',
             'updateEmote',
@@ -60,11 +63,6 @@ var sketch = function (p) {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         // TODO: resize walls
     };
-
-    // p.mouseClicked = function() {
-    //     clearTimeout(timeoutID);
-    //     game.state = state.over;
-    // }
     /***************************************************************************
     Gamepad utils
     ***************************************************************************/
@@ -88,18 +86,19 @@ var sketch = function (p) {
     Game logic
     ***************************************************************************/
     game.alternateColor = function() {
-        var normalInterval = getRandomInt(2000, 10000);
+        var normalInterval = getRandomInt(5000, 10000);
+        clearTimeout(timeoutID);
         timeoutID = setTimeout(function() {
+            var swappingInterval = getRandomInt(500, 3000);
             game.state = state.colorSwap;
-            
-            var swappingInterval = getRandomInt(1000, 3000);
+            clearTimeout(timeoutID);
             timeoutID = setTimeout(function() { 
                 var choices = [colors.BLUE, colors.GREEN, colors.YELLOW,
                                colors.ORANGE, colors.RED],
                 idx = getRandomInt(0, choices.length);
                 game.fill = choices[idx];
-                game.state = state.play;
                 ECS.systems.uniformFill(ECS.entities);
+                game.state = state.play;
                 game.alternateColor();
             }, swappingInterval);
 
@@ -123,7 +122,8 @@ var sketch = function (p) {
             var npc = new ECS.Assemblages.NPC({
                 shape: 'circle', 
                 size: 50,
-                fill: [0,0]
+                fill: [0,0],
+                maxSpeed: 2
             });
             entities[npc.id] = npc;
         }
@@ -209,8 +209,10 @@ var sketch = function (p) {
             p.background(colors.GRAY);
 
             for (var i = 0; i < game.systems.length; i++) {
-                ECS.systems[game.systems[i]](ECS.entities);
+                var wait = ECS.systems[game.systems[i]](ECS.entities);
             }
+
+            if (game.over) { game.state = state.over; }
 
         }, error.disconnected);
     };
@@ -218,7 +220,9 @@ var sketch = function (p) {
     state.over = function() {
         gamepadReady(function() {
 
-            p.background(colors.GRAY);
+            clearTimeout(timeoutID);
+
+            p.background(colors.GRAY.concat(150));
             p.fill(255);
             p.textAlign(p.CENTER);
             p.textSize(36);
@@ -234,12 +238,13 @@ var sketch = function (p) {
         gamepadReady(function() {
 
             p.background(colors.GRAY);
-
             ECS.systems.randomFill(ECS.entities);
 
             for (var i = 0; i < game.systems.length; i++) {
                 ECS.systems[game.systems[i]](ECS.entities);
             }
+
+            if (game.over) { game.state = state.over; }
 
         }, error.disconnected);
     };
@@ -308,12 +313,24 @@ var sketch = function (p) {
     ECS.Components.BoundByScreen.prototype.name = 'boundByScreen';
 
     ECS.Components.Collider = function( params ) {
-        this.collides = true;
         this.hit = false;
         this.collisionForce = new p5.Vector(0, 0);
         return this;
     };
     ECS.Components.Collider.prototype.name = 'collider';
+
+    ECS.Components.Wanderer = function( params ) {
+        this.wanderTheta = 0;
+        this.wanderForce = new p5.Vector(0, 0);
+        return this;
+    };
+    ECS.Components.Wanderer.prototype.name = 'wanderer';
+
+    ECS.Components.Seeker = function( params ) {
+        this.seekForce = new p5.Vector(0, 0);
+        return this;
+    };
+    ECS.Components.Seeker.prototype.name = 'seeker';
 
     ECS.Components.Emoter = function( params ) {
         this.emoting = false;
@@ -375,6 +392,8 @@ var sketch = function (p) {
             entity.addComponent( new ECS.Components.HasInventory(params) );
             entity.addComponent( new ECS.Components.Location(params) );
             entity.addComponent( new ECS.Components.Mover(params) );
+            entity.addComponent( new ECS.Components.Wanderer(params) );
+            entity.addComponent( new ECS.Components.Seeker(params) );
             return entity;
         },
         StaticBoundary: function ( params ) {
@@ -395,12 +414,12 @@ var sketch = function (p) {
                 && e.components.location) {
                 var fill = e.components.appearance.fill,
                     stroke = e.components.appearance.stroke;
-                if (e.components.hasInventory) {
+                if (e.components.hasInventory && e.components.playerControlled) {
                     var equipped = e.components.hasInventory.equipped;
                     stroke = equipped || stroke;
-                }
-                if (e.components.collider) {
-                    fill = e.components.collider.hit ? [0, 0, 0] : fill;
+                } else if (e.components.hasInventory) {
+                    var equipped = e.components.hasInventory.equipped;
+                    fill = equipped || fill;
                 }
                 p.push();
                 p.translate(e.components.location.loc.x, 
@@ -410,6 +429,11 @@ var sketch = function (p) {
                 p.strokeWeight(e.components.appearance.strokeWeight);
                 p.ellipse(0, 0, e.components.appearance.size, 
                           e.components.appearance.size);
+                if (e.components.collider && e.components.collider.hit) {
+                    p.fill(stroke);
+                    p.stroke(stroke);
+                    p.ellipse(0, 0, 5, 5);
+                }
                 p.pop();
             }
         }
@@ -543,22 +567,22 @@ var sketch = function (p) {
     ECS.systems.uniformFill = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (!e.components.appearance || !e.components.mover 
+            if (!e.components.hasInventory
                 || e.components.playerControlled) { continue; }
-            e.components.appearance.fill = game.fill || colors.MID_GRAY;
+            e.components.hasInventory.equipped = game.fill || false;
         }
     };
 
     ECS.systems.randomFill = function(entities) {
         for (var id in entities) {
             var e = entities[id];
-            if (!e.components.appearance || !e.components.mover 
+            if (!e.components.hasInventory
                 || e.components.playerControlled) { continue; }
             var choices = [colors.BLUE, colors.GREEN, colors.YELLOW,
                            colors.ORANGE, colors.RED],
                 idx = getRandomInt(0, choices.length);
             if (Math.random() > 0.98) {
-                e.components.appearance.fill = choices[idx];
+                e.components.hasInventory.equipped = choices[idx];
             }
         }
     };
@@ -628,6 +652,12 @@ var sketch = function (p) {
                 e.components.mover.acc.add(playerForce);
             } else {
                 // TODO: autonomous behaviors
+                if (!e.components.wanderer) { continue; }
+                var wanderForce = e.components.wanderer.wanderForce;
+                e.components.mover.acc.add(wanderForce);
+                if (!e.components.seeker) { continue; }
+                var seekForce = e.components.seeker.seekForce;
+                e.components.mover.acc.add(seekForce);
             }
             // Apply collision forces
             if (e.components.collider) {
@@ -640,6 +670,47 @@ var sketch = function (p) {
                 e.components.mover.acc.rotate(Math.PI);
                 e.components.mover.acc.mult(0.05);
             }
+        }
+    };
+
+    ECS.systems.seek = function(entities) {
+        for (var id1 in entities) {
+            var e1 = entities[id1];
+            if (!e1.components.seeker) { continue; }
+            e1.components.seeker.seekForce.set(0, 0);
+            for (var id2 in entities) {
+                if (id1 === id2) { continue; }
+                var e2 = entities[id2];
+                if (!e1.components.location || !e1.components.mover
+                    || !e2.components.location) { continue; }
+                if (!e1.components.hasInventory || !e2.components.hasInventory
+                    || !e1.components.hasInventory.equipped)
+                { continue; }
+                if (e1.components.hasInventory.equipped == 
+                    e2.components.hasInventory.equipped) { continue; }
+                var desired = p5.Vector.sub(e2.components.location.loc,
+                                            e1.components.location.loc),
+                    steer = p5.Vector.sub(desired, e1.components.mover.vel);
+                steer.limit(5);
+                e1.components.seeker.seekForce.add(steer);
+            }
+            e1.components.seeker.seekForce.normalize();
+        }
+    };  
+
+    ECS.systems.wander = function(entities) {
+        for (var id in entities) {
+            var e = entities[id];
+            if (!e.components.wanderer || !e.components.mover) { continue; }
+            var desired = new p5.Vector(100, 0);
+            desired.rotate(e.components.mover.vel.heading());
+            e.components.wanderer.wanderTheta += p.random(-p.PI/8, p.PI/8);
+            var offset = new p5.Vector(25 * Math.cos(e.components.wanderer.wanderTheta),
+                                       25 * Math.sin(e.components.wanderer.wanderTheta));
+            desired.add(offset);
+            var steer = p5.Vector.sub(desired, e.components.mover.vel);
+            steer.limit(5);
+            e.components.wanderer.wanderForce = steer;
         }
     };
 
@@ -664,6 +735,14 @@ var sketch = function (p) {
                     if (rebound) {
                         collisionForce.add(rebound.normalize());
                         hit = true;
+                    }
+                    if (rebound && e1.components.playerControlled 
+                        && e1.components.hasInventory
+                        && e2.components.hasInventory
+                        && e2.components.hasInventory.equipped
+                        && e1.components.hasInventory.equipped 
+                           != e2.components.hasInventory.equipped) {
+                        game.over = true;
                     }
                 }
                 // Rectangle hits
